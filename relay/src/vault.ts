@@ -1,13 +1,11 @@
 import { DurableObject } from 'cloudflare:workers'
 import type { Env } from './env'
+import { RETENTION, type DumpInfo } from './store'
 
-export type DumpInfo = { id: string; code: string; run: number; tick: number; at: number; size: number }
+export { RETENTION, type DumpInfo }
 
 /** Bytes per stored part (SQLite rows hold 2 MB at most). */
 const PART_BYTES = 1_500_000
-
-/** Dumps kept: the newest `max`, none older than `days`. Pruned by the vault's alarm, once a day while it holds any. */
-export const RETENTION = { days: 30, max: 500 } as const
 
 const DAY_MS = 86_400_000
 

@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers'
-import { CLOSE_CODES, LIMITS, parseClientMessage, type Auth, type Phase, type ServerMessage } from '../../src/net/protocol'
+import { CLOSE_CODES, LIMITS, parseClientMessage, type Auth, type ServerMessage } from '../../src/net/protocol'
 import { jwksKeys, verifyClerkToken } from './auth'
 import type { Env } from './env'
 import { gzip } from './gzip'
@@ -20,9 +20,9 @@ import {
   type Effect,
   type Gen,
   type Identity,
-  type Room,
   type State,
 } from './room'
+import { createSchema, dumpJson, persist, readRoom, syncTexts, type Sql } from './store'
 
 /** A socket's attachment: survives WebSocket hibernation, so the room finds its sockets again. */
 type Attachment = { id: ConnId; ua: string; seat: number | null }
@@ -30,23 +30,7 @@ type Attachment = { id: ConnId; ua: string; seat: number | null }
 /** A socket not seated within this long is closed: no valid `hello`, or one whose auth is still being checked. */
 const HELLO_TIMEOUT_MS = 10_000
 
-/** Ticks of the log per catch-up frame. */
-const TAIL_FRAME_TICKS = 600
-
-const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT NOT NULL)',
-  'CREATE TABLE IF NOT EXISTS log (run INTEGER NOT NULL, tick INTEGER NOT NULL, e TEXT NOT NULL, PRIMARY KEY (run, tick)) WITHOUT ROWID',
-  'CREATE TABLE IF NOT EXISTS hashes (run INTEGER NOT NULL, tick INTEGER NOT NULL, v TEXT NOT NULL, PRIMARY KEY (run, tick)) WITHOUT ROWID',
-  'CREATE TABLE IF NOT EXISTS snaps (run INTEGER NOT NULL, tick INTEGER NOT NULL, part INTEGER NOT NULL, data TEXT NOT NULL, PRIMARY KEY (run, tick, part)) WITHOUT ROWID',
-]
-
-const PHASES: readonly Phase[] = ['lobby', 'playing', 'ended']
-
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
-
-/** The room this object saved (its own JSON), checked for the fields everything else relies on. */
-const isRoom = (v: unknown): v is Room =>
-  isRecord(v) && typeof v.code === 'string' && typeof v.build === 'string' && PHASES.some((p) => p === v.phase) && Array.isArray(v.seats) && Array.isArray(v.banned)
 
 const isAttachment = (v: unknown): v is Attachment =>
   isRecord(v) && typeof v.id === 'string' && typeof v.ua === 'string' && (v.seat === null || typeof v.seat === 'number')
@@ -57,6 +41,12 @@ const randomToken = (bytes: number) => {
 }
 
 const gen: Gen = { secret: () => randomToken(24), seed: () => crypto.getRandomValues(new Uint32Array(1))[0] ?? 0 }
+
+/** The Durable Object's SQLite as the shared storage code sees it (`store.ts`). */
+const sqlOf = (storage: DurableObjectStorage): Sql => ({
+  run: (query, ...args) => void storage.sql.exec(query, ...args),
+  all: (query, ...args) => storage.sql.exec(query, ...args).toArray(),
+})
 
 /** One JWKS cache per isolate, shared by the rooms it runs. */
 let jwks: ReturnType<typeof jwksKeys> | null = null
@@ -73,12 +63,14 @@ export class RoomObject extends DurableObject<Env> {
   private authing = new Set<ConnId>()
   private timer: ReturnType<typeof setTimeout> | null = null
   private alarmAt: number | null = null
+  private readonly sql: Sql
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env)
+    this.sql = sqlOf(ctx.storage)
     void ctx.blockConcurrencyWhile(async () => {
       const now = Date.now()
-      this.state = loadState(this.readRoom(), gen, now)
+      this.state = loadState(readRoom(this.sql), gen, now)
       const back = ctx.getWebSockets().flatMap((ws) => {
         const a: unknown = ws.deserializeAttachment()
         if (!isAttachment(a)) return []
@@ -94,7 +86,7 @@ export class RoomObject extends DurableObject<Env> {
   /** Reserves the room (the Worker's `POST /rooms`). False when the code is taken. */
   async create(init: { code: string; build: string; region: string }): Promise<boolean> {
     const r = createRoom(this.state, init, Date.now())
-    if (r.ok) for (const q of SCHEMA) this.ctx.storage.sql.exec(q)
+    if (r.ok) createSchema(this.sql)
     this.apply(r.effects)
     return r.ok
   }
@@ -172,16 +164,6 @@ export class RoomObject extends DurableObject<Env> {
     return sub ? { id: `u:${sub}`, account: true } : null
   }
 
-  private readRoom(): Room | null {
-    const sql = this.ctx.storage.sql
-    const hasSchema = sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'kv'").toArray().length > 0
-    if (!hasSchema) return null
-    const row = sql.exec<{ v: string }>("SELECT v FROM kv WHERE k = 'room'").toArray()[0]
-    if (!row) return null
-    const v: unknown = JSON.parse(row.v)
-    return isRoom(v) ? v : null
-  }
-
   private send(id: ConnId, text: string) {
     try {
       this.sockets.get(id)?.send(text)
@@ -206,19 +188,7 @@ export class RoomObject extends DurableObject<Env> {
    * each message until what it reflects is durable. Then sets the timers.
    */
   private apply(effects: readonly Effect[]) {
-    const sql = this.ctx.storage.sql
-    let save = false
-    for (const e of effects) {
-      if (e.k === 'save') save = true
-      else if (e.k === 'log') sql.exec('INSERT OR REPLACE INTO log (run, tick, e) VALUES (?, ?, ?)', e.run, e.tick, JSON.stringify(e.entries))
-      else if (e.k === 'hashes') sql.exec('INSERT OR REPLACE INTO hashes (run, tick, v) VALUES (?, ?, ?)', e.run, e.tick, JSON.stringify(e.bySeat))
-      else if (e.k === 'chunk') sql.exec('INSERT OR REPLACE INTO snaps (run, tick, part, data) VALUES (?, ?, ?, ?)', e.run, e.tick, e.part, e.data)
-      else if (e.k === 'keepSnapshot') sql.exec('DELETE FROM snaps WHERE run = ? AND tick <> ?', e.run, e.tick)
-      else if (e.k === 'dropSnapshot') sql.exec('DELETE FROM snaps WHERE run = ? AND tick = ?', e.run, e.tick)
-      else if (e.k === 'dropRun') for (const table of ['log', 'hashes', 'snaps']) sql.exec(`DELETE FROM ${table} WHERE run = ?`, e.run)
-    }
-    const room = this.state.room
-    if (save && room) sql.exec("INSERT OR REPLACE INTO kv (k, v) VALUES ('room', ?)", JSON.stringify(room))
+    persist(this.sql, effects, this.state.room)
     const texts = new Map<ServerMessage, string>()
     let wiped = false
     for (const e of effects) {
@@ -226,7 +196,7 @@ export class RoomObject extends DurableObject<Env> {
         const text = texts.get(e.msg) ?? JSON.stringify(e.msg)
         texts.set(e.msg, text)
         this.send(e.to, text)
-      } else if (e.k === 'sync') this.sendSync(e)
+      } else if (e.k === 'sync') for (const text of syncTexts(this.sql, e)) this.send(e.to, text)
       else if (e.k === 'close') this.closeSocket(e.to, e.reason)
       else if (e.k === 'event') console.log(JSON.stringify({ ev: e.ev, ...e.data }))
       else if (e.k === 'dump') this.ctx.waitUntil(this.dump(e).catch((err: unknown) => console.log(JSON.stringify({ ev: 'dump.failed', error: String(err) }))))
@@ -263,55 +233,16 @@ export class RoomObject extends DurableObject<Env> {
     void (at === null ? this.ctx.storage.deleteAlarm() : this.ctx.storage.setAlarm(at))
   }
 
-  /** A sync: the message, the base snapshot's chunks, then the log from `from` to `to` in frames. */
-  private sendSync(e: Extract<Effect, { k: 'sync' }>) {
-    const sql = this.ctx.storage.sql
-    const run = e.msg.run.id
-    let msg = e.msg
-    const base = msg.base
-    const chunks = base
-      ? sql.exec<{ part: number; data: string }>('SELECT part, data FROM snaps WHERE run = ? AND tick = ? ORDER BY part', run, base.tick).toArray()
-      : []
-    // A snapshot that isn't all there (it never should be) falls back to the seed.
-    if (base && chunks.length !== base.parts) msg = { ...msg, base: null, from: 0 }
-    this.send(e.to, JSON.stringify(msg))
-    if (msg.base) for (const c of chunks) this.send(e.to, JSON.stringify({ t: 'snapPart', tick: msg.base.tick, part: c.part, data: c.data } satisfies ServerMessage))
-    for (let from = msg.from; from < msg.to; from += TAIL_FRAME_TICKS) {
-      const to = Math.min(msg.to, from + TAIL_FRAME_TICKS)
-      const rows = sql.exec<{ tick: number; e: string }>('SELECT tick, e FROM log WHERE run = ? AND tick >= ? AND tick < ? ORDER BY tick', run, from, to).toArray()
-      // Entries are stored as their JSON: spliced in as they are.
-      this.send(e.to, `{"t":"frame","from":${from},"to":${to},"ticks":[${rows.map((r) => `[${r.tick},${r.e}]`).join(',')}]}`)
-    }
-  }
-
   /** Records a dump (a desync, a bad snapshot: room, run start, the whole input log, hashes per seat, builds and user agents) in the vault. */
   private async dump(e: Extract<Effect, { k: 'dump' }>) {
     const room = this.state.room
-    if (!room?.run) return
-    const sql = this.ctx.storage.sql
-    const log = sql.exec<{ tick: number; e: string }>('SELECT tick, e FROM log WHERE run = ? ORDER BY tick', e.run).toArray()
-    const hashes = sql.exec<{ tick: number; v: string }>('SELECT tick, v FROM hashes WHERE run = ? ORDER BY tick', e.run).toArray()
     const at = Date.now()
-    const meta = {
-      code: room.code,
-      build: room.build,
-      region: room.region,
-      createdAt: room.createdAt,
-      at,
-      reason: e.reason,
-      tick: e.tick,
-      reports: e.reports,
-      majority: e.majority,
-      minority: e.minority,
-      run: room.run.start,
-      clock: { next: room.run.next, bound: room.run.bound, agreed: room.run.agreed },
-      seats: room.seats.map((s) => ({ seat: s.seat, account: s.account, name: s.name, build: s.build, ua: s.ua })),
-    }
-    const body = `{"meta":${JSON.stringify(meta)},"log":[${log.map((r) => `[${r.tick},${r.e}]`).join(',')}],"hashes":[${hashes.map((r) => `[${r.tick},${r.v}]`).join(',')}]}`
-    const bytes = await gzip(body)
+    const json = room ? dumpJson(this.sql, room, e, at) : null
+    if (!room || !json) return
+    const bytes = await gzip(json.body)
     const id = `${room.code}-${e.run}-${e.tick}-${randomToken(3)}`
     await this.env.VAULT.getByName('dumps').put({ id, code: room.code, run: e.run, tick: e.tick, at, size: bytes.byteLength }, bytes)
-    console.log(JSON.stringify({ ev: 'dump.saved', id, bytes: bytes.byteLength, logTicks: log.length }))
+    console.log(JSON.stringify({ ev: 'dump.saved', id, bytes: bytes.byteLength, logTicks: json.logTicks }))
   }
 
   /** The room is over: storage, alarm and sockets go. */
