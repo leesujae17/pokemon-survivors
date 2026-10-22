@@ -780,6 +780,17 @@ const stepMoves = (g: Game, input: StepInput, dt: number) => {
   updateDuos(g, dt)
 }
 
+/**
+ * A hitstop running holds the tick: counts it down and says the step stops
+ * there. Co-op's prediction ghost (`coop/predict.ts`) asks the same, so it
+ * sits out the ticks the run will.
+ */
+export const hitstopHolds = (g: Game, dt: number) => {
+  if (g.hitstop <= 0) return false
+  g.hitstop -= dt
+  return true
+}
+
 /** One fixed-timestep simulation tick of a solo run. */
 export const step = (g: Game, input: StepInput, dt: number) => stepTeam(g, [input], dt)
 
@@ -808,10 +819,7 @@ export const stepTeam = (g: Game, inputs: readonly StepInput[], dt: number) => {
   if (updateDomainScene(g, dt)) return
   if (updateLegendScene(g, dt)) return
   if (updatePlaceFall(g, dt)) return
-  if (g.hitstop > 0) {
-    g.hitstop -= dt
-    return
-  }
+  if (hitstopHolds(g, dt)) return
 
   // The run clock stops inside a rift (`clockRuns`); `now` never does.
   g.now += dt
