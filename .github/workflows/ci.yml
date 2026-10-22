@@ -38,7 +38,7 @@ jobs:
   # re-simulation rely on it.
   determinism:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -46,7 +46,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps --only-shell chromium firefox webkit
+      # The install takes ~40 s, but now and then it stalls without a word until the
+      # job times out: give each attempt 4 minutes and try up to three times.
+      - name: Install browsers
+        run: |
+          for attempt in 1 2 3; do
+            timeout 240 npx playwright install --with-deps --only-shell chromium firefox webkit && exit 0
+            echo "::warning::playwright install attempt $attempt stalled or failed, retrying"
+          done
+          exit 1
       - run: npm run determinism
       - if: failure()
         uses: actions/upload-artifact@v4
