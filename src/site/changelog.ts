@@ -33,6 +33,7 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
       { pt: 'Ovo do Kecleon sem o limite de um por dia: até 6, e cada um custa o dobro do anterior (₽ 10.000, 20.000, 40.000…). A conta zera à meia-noite.', en: 'The Kecleon Egg is no longer one a day: up to 6, each costing double the last (₽ 10,000, 20,000, 40,000…). The count resets at midnight.', es: 'El Huevo Kecleon ya no es uno por día: hasta 6, y cada uno cuesta el doble del anterior (₽ 10.000, 20.000, 40.000…). La cuenta vuelve a cero a medianoche.' },
       { pt: 'Incubadora maior: a 4ª e a 5ª vaga, suas para sempre, e a Incubadora Rápida, que faz um ovo andar o dobro.', en: 'A bigger incubator: the 4th and 5th slots, yours for good, and the Quick Incubator, which makes an egg walk twice as fast.', es: 'Una incubadora más grande: el 4.º y el 5.º espacio, tuyos para siempre, y la Incubadora Rápida, que hace que un huevo avance el doble.' },
       { pt: 'As partidas pagam cerca de metade do ₽, agora que a loja tem onde gastar. O que você já guardou continua valendo o mesmo.', en: 'Runs pay about half the ₽, now that the shop has somewhere to spend it. What you already saved keeps its full value.', es: 'Las partidas pagan cerca de la mitad de los ₽, ahora que la tienda tiene en qué gastarlos. Lo que ya ahorraste sigue valiendo lo mismo.' },
+      { pt: 'Groudon e Rayquaza não travam mais numa fase quando ficam paralisados ou congelados sem parar.', en: "Groudon and Rayquaza no longer get stuck in a phase when kept paralyzed or frozen.", es: 'Groudon y Rayquaza ya no se traban en una fase cuando los mantienen paralizados o congelados.' },
     ],
     changes: [
       {
@@ -97,6 +98,26 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
             pt: 'Proteções de golpes diferentes não se emendam mais, como um Protect usado duas vezes seguidas nos jogos. Enquanto Protect, Fly, Dig, Iron Head, Burning Bulwark ou Needle Arm protegem você, a proteção dos outros falha, e só volta a funcionar 0,75 s depois que essa acaba. Cada golpe sozinho continua igual. Obrigado, Armonich, por avisar da build que deixava o jogador imortal!',
             en: "Protections from different moves no longer chain, like Protect used twice in a row in the main games. While Protect, Fly, Dig, Iron Head, Burning Bulwark or Needle Arm shields you, the others' protection fails, and it only works again 0.75 s after that one ends. Each move on its own works as before. Thanks, Armonich, for reporting the build that made the player immortal!",
             es: 'Las protecciones de movimientos distintos ya no se encadenan, como un Protect usado dos veces seguidas en los juegos. Mientras Protect, Fly, Dig, Iron Head, Burning Bulwark o Needle Arm te protegen, la protección de los demás falla, y solo vuelve a funcionar 0,75 s después de que esa termina. Cada movimiento por sí solo sigue igual. ¡Gracias, Armonich, por avisar de la build que dejaba al jugador inmortal!',
+          },
+        ],
+      },
+      {
+        title: { pt: 'Fendas lendárias', en: 'Legendary rifts', es: 'Grietas legendarias' },
+        notes: [
+          {
+            pt: 'Corrigido: Groudon e Rayquaza podiam travar no limite de uma fase para sempre quando ficavam paralisados, congelados ou dormindo sem parar. Agora o golpe final da fase (Precipice Blades, Hyper Beam, Dragon Ascent…) sai mesmo com o lendário sob efeito de status, e a luta segue.',
+            en: "Fixed: Groudon and Rayquaza could get stuck at a phase's limit forever while kept paralyzed, frozen or asleep. Now the phase's signature attack (Precipice Blades, Hyper Beam, Dragon Ascent…) goes off even through a status condition, and the fight moves on.",
+            es: 'Corregido: Groudon y Rayquaza podían quedarse trabados en el límite de una fase para siempre cuando los mantenían paralizados, congelados o dormidos. Ahora el ataque final de la fase (Precipice Blades, Hyper Beam, Dragon Ascent…) sale aunque el legendario tenga un estado, y la pelea sigue.',
+          },
+          {
+            pt: 'Quando você leva um deles até o limite da fase, ele solta o golpe final na hora, em vez de seguir lutando com a vida parada no limite (ou zerada, na última fase).',
+            en: "When you bring one of them down to a phase's limit, it unleashes its signature attack right away, instead of fighting on with its HP stuck at the limit (or at zero, in the last phase).",
+            es: 'Cuando llevas a uno de ellos hasta el límite de la fase, suelta el ataque final al instante, en vez de seguir peleando con la vida detenida en el límite (o en cero, en la última fase).',
+          },
+          {
+            pt: 'Corrigido: um lendário derrotado no meio de um mergulho ou de uma passada para fora da arena (como o Rayquaza) era capturado longe e deixava a recompensa fora do alcance. Agora ele cai no seu lugar na arena.',
+            en: 'Fixed: a legendary defeated mid-dive or while out on a pass off the arena (like Rayquaza) was captured far away and left its loot out of reach. Now it falls back at its spot in the arena.',
+            es: 'Corregido: un legendario derrotado en medio de una zambullida o de una pasada fuera de la arena (como Rayquaza) era capturado lejos y dejaba la recompensa fuera de alcance. Ahora cae en su lugar en la arena.',
           },
         ],
       },
