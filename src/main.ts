@@ -161,11 +161,11 @@ import { suggestionsScreen } from './ui/suggestions'
 import { banner, clearToasts, tickToasts, toast } from './ui/toasts'
 import { bugReportForm, crashPrompt } from './ui/bugReport'
 import { localPlayer, phaseOf } from './game/players'
-import { addBots, bankCoopRun, botCount, buildRefusal, coopClient, coopEntry, coopEventFor, coopUrl, linkedRoom, linkRoom, markBuildReload, onCoopEntry, refreshCoopEntry, removeBots, reportHeal, setCoopBeta, setCoopSaUrl, setCoopUrl, surrenderBots } from './coopShell'
+import { addBots, bankCoopRun, botCount, buildRefusal, coopClient, coopEntry, coopEventFor, coopUrl, linkedRoom, linkRoom, markBuildReload, onCoopEntry, refreshCoopEntry, removeBots, reportHeal, setCoopBeta, setCoopUrl, setCoopVpsUrl, surrenderBots } from './coopShell'
 import type { CloseWhy, CoopClient } from './coop/client'
 import { coopAccess, coopStarter, freshInvites } from './coop/lobby'
 import { REF_PARAM } from './game/referral'
-import { PROTOCOL, parseRoomCode } from './net/protocol'
+import { PROTOCOL, VPS_HOMES, parseRoomCode } from './net/protocol'
 import { isRecord } from './game/parse'
 import type { CoopInvite } from './game/friends'
 import { dismissInvite, onPresence, setActivity } from './net/friends'
@@ -2898,7 +2898,7 @@ const devLandmark = (g: Game, id?: LandmarkId, dy = 60) => {
  * failure would, `('fresh')` rejoins as a new tab (the snapshot), `('desync')`
  * nudges this client's state off the team's (the relay heals it), `('pick', id)` another
  * Pokémon for the room, `('url', u)`
- * points at another relay (null: the default), `('sa', u)` sets the São Paulo relay (South American hosts' rooms), `('net')` the connection numbers; `('room')` and
+ * points at another relay (null: the default), `('relay', home, u)` sets a VPS relay (`sa`: São Paulo, for South American hosts' rooms), `('net')` the connection numbers; `('room')` and
  * `('hub')` open those screens, `('beta', true|false|null)` forces the lobby's tile on this device,
  * `('build')` joins a room made for another build (the "update" refusal) and `('invite', code, name)`
  * stages a friend's invite banner without the API.
@@ -2967,9 +2967,13 @@ const devCoop = async (cmd?: string, arg?: string | number | boolean | null, ext
     case 'url':
       setCoopUrl(typeof arg === 'string' ? arg : null)
       return 'ps.coop: reload to use it'
-    case 'sa':
-      setCoopSaUrl(typeof arg === 'string' ? arg : null)
+    case 'relay': {
+      // A VPS relay's URL (`relay/node`), by the home its room codes name: ps.coop('relay', 'sa', 'http://localhost:8795').
+      const home = VPS_HOMES.find((h) => h === arg)
+      if (!home) return `ps.coop('relay', home, url): ${VPS_HOMES.join(', ')}`
+      setCoopVpsUrl(home, typeof extra === 'string' ? extra : null)
       return 'ps.coop: reload to use it'
+    }
     case 'wall': {
       // Read-only: the nearest solid's foot to this player, and whether the drawn or the confirmed sprite sits in one.
       const c = run?.coop
@@ -2989,7 +2993,7 @@ const devCoop = async (cmd?: string, arg?: string | number | boolean | null, ext
       return { ...client.connection(), queued: client.queued(), stats: r?.stats, tickMs: r?.tickMs, slot: r?.slot, errors: run?.coop?.prediction.errors }
     }
     default:
-      return 'ps.coop(): create, join, bots, surrender, pick, ready, start, leave, drop, fresh, desync, url, sa, net, wall, room, hub, beta, build, invite'
+      return 'ps.coop(): create, join, bots, surrender, pick, ready, start, leave, drop, fresh, desync, url, relay, net, wall, room, hub, beta, build, invite'
   }
 }
 
