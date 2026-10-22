@@ -100,6 +100,21 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
           },
         ],
       },
+      {
+        title: { pt: 'Golpes que travavam ou sumiam', en: 'Moves that got stuck or vanished', es: 'Movimientos que se trababan o desaparecían' },
+        notes: [
+          {
+            pt: 'Corrigido: um golpe gasto num golpe duplo e aprendido de novo por uma TM (como o Aurora Beam do Suicune depois do Freeze-Dry) ficava preso no Nv. 1, e os níveis só davam Oran Berry. Agora ele sobe de nível como qualquer outro.',
+            en: "Fixed: a move spent on a duo move and learned again from a TM (like Suicune's Aurora Beam after Freeze-Dry) got stuck at Lv 1, and level-ups only gave Oran Berries. Now it levels up like any other.",
+            es: 'Corregido: un movimiento gastado en un movimiento dúo y aprendido de nuevo con una MT (como el Aurora Beam de Suicune después de Freeze-Dry) se quedaba trabado en el Nv. 1, y los niveles solo daban Oran Berry. Ahora sube de nivel como cualquier otro.',
+          },
+          {
+            pt: 'Corrigido: o Drill Peck do Piplup no ramo que persegue os inimigos (Nv. 4), o Mud Shot no ramo bumerangue e o Psybeam no ramo que gira em volta de você (Nv. 7) continuavam acertando, mas ficavam invisíveis. Agora aparecem.',
+            en: "Fixed: Piplup's Drill Peck on its foe-seeking branch (Lv 4), Mud Shot on its boomerang branch and Psybeam on its ring branch (Lv 7) still hit, but were invisible. Now they show.",
+            es: 'Corregido: el Drill Peck de Piplup en la rama que persigue a los enemigos (Nv. 4), el Mud Shot en la rama bumerán y el Psybeam en la rama que gira a tu alrededor (Nv. 7) seguían golpeando, pero eran invisibles. Ahora se ven.',
+          },
+        ],
+      },
     ],
   },
   {
