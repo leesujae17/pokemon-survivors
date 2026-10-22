@@ -53,6 +53,73 @@ hashes reported at the diverged tick, seats with builds and user agents), `log`
 (`[tick, entries]` for every tick with inputs) and `hashes` (`[tick, {seat: hash}]`).
 Re-simulating `meta.run` with `log` reproduces the run.
 
+## São Paulo relay (`node/`)
+
+Cloudflare has no Durable Objects in South America, so a Brazilian room runs in the US
+(116–140 ms away). `node/` runs the same room (`src/room.ts`, `src/store.ts`, `src/auth.ts`,
+`src/codes.ts`) on Node 24 in São Paulo (AWS sa-east-1), for rooms whose host is in South America.
+A room's code says its relay (`RELAY_HOMES` in the protocol): Cloudflare makes codes starting
+with a letter, São Paulo with a digit. The game (`src/coop/relays.ts`) creates on São Paulo
+when it answers within 70 ms and falls back to Cloudflare; without `VITE_COOP_URL_SA` every
+room is Cloudflare's.
+
+- One process, every room: one SQLite file per room (`node:sqlite`, WAL), a 60 Hz timer per
+  running room, the Worker's routes, origin checks, Clerk tokens, rate limits, the dump vault.
+- A deploy or a crash loses only sockets: SIGTERM closes them with 1012 (clients reconnect at
+  once and resume), and rooms load back from disk. A room whose step throws starts over from
+  its file without touching the others.
+- One `t4g.micro` behind CloudFront (TLS and a `wss://<id>.cloudfront.net` address, no domain;
+  only CloudFront reaches the instance). systemd restarts it, a timer restarts it when
+  `/health` hangs, EC2 alarms recover or reboot the machine, logs go to CloudWatch
+  (`/ps-relay/<stage>`, the same JSON lines as the Workers logs, plus `relay.stats` a minute).
+
+```bash
+cd node && npm ci
+npm test && npm run typecheck   # the Node shell (a restart test included)
+npm run typecheck:sst           # sst.config.ts (`sst install` needs no AWS account)
+npm run dev                     # :8795, guests on; the game: ps.coop('sa', 'http://localhost:8795')
+node ../scripts/probe.mjs --url http://localhost:8795 --bots 3 --secs 40 --desync --rejoin
+```
+
+### One-time setup (Pedro)
+
+Never use the client profiles on this Mac: the relay goes in a personal account.
+
+1. Make the personal AWS account and a profile for it (`aws configure sso --profile ps-personal`,
+   region `sa-east-1`). Check it: `aws sts get-caller-identity --profile ps-personal` shows the
+   personal account. A budget alert at US$ 25 in Billing is a good idea.
+2. `cd relay/node && npm ci && npx sst install`.
+3. The admin token (for `/admin/dumps`):
+   `openssl rand -base64 32 > ~/.config/ps-coop/sa-admin-token && chmod 600 ~/.config/ps-coop/sa-admin-token`, then
+   `AWS_PROFILE=ps-personal npx sst secret set AdminToken "$(cat ~/.config/ps-coop/sa-admin-token)" --stage production`.
+4. Deploy: `AWS_PROFILE=ps-personal npx sst deploy --stage production`. The first one bootstraps
+   SST's state in the account and waits for CloudFront (10–15 min); it prints `url`. Every deploy
+   ends only when the instance answers `/health` with the new bundle's `version`.
+5. Ship the Cloudflare relay's code change (`npm run deploy:prod` here: its codes now always start
+   with a letter) and wait 6 h, a room's longest life, so no live Cloudflare room has a digit code.
+6. Vercel: `VITE_COOP_URL_SA=<url>` in Production (and Preview, pointing at a `--stage dev` deploy
+   if wanted: that stage seats guests and takes `*.vercel.app`), then redeploy the site.
+
+No DNS record, certificate or Clerk change is needed.
+
+### Running it
+
+```bash
+export AWS_PROFILE=ps-personal
+npx sst deploy --stage production                       # a new bundle: ~1 s of reconnect for live rooms
+aws logs tail /ps-relay/production --follow             # JSON lines
+aws ssm start-session --target <instance>               # a shell (no SSH)
+curl -s -H "Authorization: Bearer $(cat ~/.config/ps-coop/sa-admin-token)" <url>/admin/dumps
+```
+
+Rollback: deploy the older commit, or on the instance `ln -sfn /opt/ps-relay/relay-<old>.mjs
+/opt/ps-relay/relay.mjs && systemctl restart ps-relay` (the last 5 bundles stay).
+
+Costs a month in sa-east-1: the instance US$ 9.78, its public IPv4 US$ 3.65, 8 GB gp3 ~US$ 1.20,
+logs and alarms under US$ 1, CloudFront within its free tier (1 TB, 10M requests): **~US$ 16**.
+A 4-player room takes ~1.5% of a core; past ~8 busy rooms at once the burstable CPU spends credits
+(unlimited mode bills the surplus), and `t4g.small` (US$ 19.56) doubles the baseline.
+
 ## Limits and costs
 
 Storage writes per run: one row per frame that carries inputs (at most 60 a second),
