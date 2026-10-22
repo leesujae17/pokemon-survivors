@@ -786,7 +786,7 @@ export type Game = {
   /** Where the screen drawn sits: the first player's (`followPlayers`); a co-op shell aims it at its own player. */
   camera: { x: number; y: number }
   shake: number
-  /** Seconds the simulation stays frozen for impact (hit-stop). */
+  /** Seconds the simulation stays frozen for impact (hit-stop). Solo only: in co-op it counts down without freezing. */
   hitstop: number
   kills: number
   /** Poké Dollars collected this run (already multiplied by greed). */
