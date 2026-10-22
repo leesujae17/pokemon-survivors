@@ -161,7 +161,7 @@ import { suggestionsScreen } from './ui/suggestions'
 import { banner, clearToasts, tickToasts, toast } from './ui/toasts'
 import { bugReportForm, crashPrompt } from './ui/bugReport'
 import { localPlayer, phaseOf } from './game/players'
-import { addBots, bankCoopRun, botCount, buildRefusal, coopClient, coopEntry, coopEventFor, coopUrl, linkedRoom, linkRoom, markBuildReload, onCoopEntry, refreshCoopEntry, removeBots, reportHeal, setCoopBeta, setCoopUrl, surrenderBots } from './coopShell'
+import { addBots, bankCoopRun, botCount, buildRefusal, coopClient, coopEntry, coopEventFor, coopUrl, linkedRoom, linkRoom, markBuildReload, onCoopEntry, refreshCoopEntry, removeBots, reportHeal, setCoopBeta, setCoopSaUrl, setCoopUrl, surrenderBots } from './coopShell'
 import type { CloseWhy, CoopClient } from './coop/client'
 import { coopAccess, coopStarter, freshInvites } from './coop/lobby'
 import { REF_PARAM } from './game/referral'
@@ -2209,6 +2209,8 @@ const showCoopHub = (code: string | null = null) => {
   if (!client) return toast(ui, t().coop.off, 4000, 'coopOff')
   endRun()
   watchCoop(client)
+  // Where a room made from here would go (São Paulo or Cloudflare) is measured now, so "Criar sala" doesn't wait on it.
+  client.warm()
   // "Voltar" while a room is being made or joined: the hub is gone, so the room it got is left, never shown.
   const up = () => screen === hub
   const abandon = (code: string) => {
@@ -2233,7 +2235,7 @@ const showCoopHub = (code: string | null = null) => {
           return null
         }
         if (!res.ok) return closedText(res.why)
-        track('coop', { step: 'create' })
+        track('coop', { step: 'create', relay: made.home })
         client.setSettings({ difficulty: loadSave().difficulty })
         showRoom()
         return null
@@ -2896,7 +2898,7 @@ const devLandmark = (g: Game, id?: LandmarkId, dy = 60) => {
  * failure would, `('fresh')` rejoins as a new tab (the snapshot), `('desync')`
  * nudges this client's state off the team's (the relay heals it), `('pick', id)` another
  * Pokémon for the room, `('url', u)`
- * points at another relay (null: the default), `('net')` the connection numbers; `('room')` and
+ * points at another relay (null: the default), `('sa', u)` sets the São Paulo relay (South American hosts' rooms), `('net')` the connection numbers; `('room')` and
  * `('hub')` open those screens, `('beta', true|false|null)` forces the lobby's tile on this device,
  * `('build')` joins a room made for another build (the "update" refusal) and `('invite', code, name)`
  * stages a friend's invite banner without the API.
@@ -2965,6 +2967,9 @@ const devCoop = async (cmd?: string, arg?: string | number | boolean | null, ext
     case 'url':
       setCoopUrl(typeof arg === 'string' ? arg : null)
       return 'ps.coop: reload to use it'
+    case 'sa':
+      setCoopSaUrl(typeof arg === 'string' ? arg : null)
+      return 'ps.coop: reload to use it'
     case 'wall': {
       // Read-only: the nearest solid's foot to this player, and whether the drawn or the confirmed sprite sits in one.
       const c = run?.coop
@@ -2984,7 +2989,7 @@ const devCoop = async (cmd?: string, arg?: string | number | boolean | null, ext
       return { ...client.connection(), queued: client.queued(), stats: r?.stats, tickMs: r?.tickMs, slot: r?.slot, errors: run?.coop?.prediction.errors }
     }
     default:
-      return 'ps.coop(): create, join, bots, surrender, pick, ready, start, leave, drop, fresh, desync, url, net, wall, room, hub, beta, build, invite'
+      return 'ps.coop(): create, join, bots, surrender, pick, ready, start, leave, drop, fresh, desync, url, sa, net, wall, room, hub, beta, build, invite'
   }
 }
 

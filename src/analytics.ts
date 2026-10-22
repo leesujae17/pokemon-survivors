@@ -8,6 +8,7 @@ import type { BagItem } from './data/shop'
 import type { SurveyAnswer } from './data/survey'
 import type { Difficulty } from './game/difficulty'
 import type { RunMode } from './game/ranking'
+import type { RelayHome } from './net/protocol'
 import { isRecord } from './game/parse'
 import type { LobbyFocus } from './ui/title'
 
@@ -105,14 +106,15 @@ type AnalyticsEvents = {
   /** A co-op client diverged and was healed from the agreed snapshot: the room, the tick it was told at, and how long until it was back in step. */
   coop_heal: { room: string; tick: number; ms: number }
   /**
-   * Co-op's beta, one event per step: a room created, a room joined (by a typed code, a link or a friend's
-   * invite), a run started (by the host, once per run), a run ended for this player (how, how long, how many),
-   * a failure to create, join or stay (`why`: the client's `CloseWhy` or the create refusal), and a guest
+   * Co-op's beta, one event per step: a room created (on which relay: Cloudflare's `cf` or São Paulo's `sa`), a
+   * room joined (by a typed code, a link or a friend's invite), a run started (by the host, once per run), a run
+   * ended for this player (how, how long, how many), a failure to create, join or stay (`why`: the client's
+   * `CloseWhy` or the create refusal), and a guest
    * stopped at the door to sign in (`gate`: from the lobby's tile or a room's link).
    */
   coop:
     | { step: 'gate'; via: 'tile' | 'link' }
-    | { step: 'create' }
+    | { step: 'create'; relay: RelayHome }
     | { step: 'join'; via: 'code' | 'link' | 'invite' }
     | { step: 'start'; players: number; difficulty: Difficulty }
     | { step: 'end'; players: number; minute: number; outcome: 'victory' | 'wipe' | 'endless' | 'left'; difficulty: Difficulty }
