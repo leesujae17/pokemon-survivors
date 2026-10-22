@@ -100,6 +100,26 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
           },
         ],
       },
+      {
+        title: { pt: 'Controles e portais', en: 'Controls and portals', es: 'Controles y portales' },
+        notes: [
+          {
+            pt: 'Corrigido: a partida recomeçava sozinha quando você apertava Espaço logo depois de desmaiar, sem mostrar o resultado. Espaço é o especial e não escolhe mais nada na tela de resultado: use Enter, o toque ou o A do controle.',
+            en: 'Fixed: the run restarted on its own when you pressed Space right after fainting, without showing the results. Space is the special and no longer picks anything on the results screen: use Enter, a tap or the controller\'s A.',
+            es: 'Corregido: la partida volvía a empezar sola cuando apretabas Espacio justo después de desmayarte, sin mostrar el resultado. Espacio es el especial y ya no elige nada en la pantalla de resultado: usa Enter, el toque o la A del control.',
+          },
+          {
+            pt: 'Corrigido: um controle conectado com o analógico fora do centro (ou um volante, um pedal) fazia o Pokémon andar sozinho e travava o teclado. Agora o teclado sempre manda, e um analógico só conta depois de passar pelo centro.',
+            en: "Fixed: a connected controller with its stick off center (or a wheel, a pedal) made the Pokémon walk on its own and locked out the keyboard. The keyboard now always wins, and a stick only counts once it has been centered.",
+            es: 'Corregido: un control conectado con el stick fuera del centro (o un volante, un pedal) hacía que el Pokémon caminara solo y bloqueaba el teclado. Ahora el teclado siempre manda, y un stick solo cuenta después de pasar por el centro.',
+          },
+          {
+            pt: 'Portais das fendas e entradas dos lugares: sair de dentro esvazia a carga bem mais devagar, então golpes que te tiram do lugar sozinhos, como o Aqua Step, não impedem mais de entrar.',
+            en: 'Rift portals and place entrances: stepping out drains the charge much more slowly, so moves that hop you around on their own, like Aqua Step, no longer keep you from getting in.',
+            es: 'Portales de las grietas y entradas de los lugares: salir de adentro vacía la carga mucho más despacio, así que los movimientos que te sacan del lugar solos, como Aqua Step, ya no impiden entrar.',
+          },
+        ],
+      },
     ],
   },
   {
