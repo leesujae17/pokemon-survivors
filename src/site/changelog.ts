@@ -60,6 +60,18 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
         ],
       },
       {
+        title: { pt: 'Lendários shiny nas ondas', en: 'Shiny legendaries in the waves', es: 'Legendarios shiny en las oleadas', fr: 'Légendaires chromatiques dans les vagues', zh: '波次中的異色傳說寶可夢' },
+        notes: [
+          {
+            pt: 'Corrigido: as aves, os cães e os regis lendários, Mew, Celebi, Jirachi, Mewtwo e o Arceus do modo infinito nunca vinham shiny, então os shinies deles não dava para liberar no Modo Lendário. Agora cada um tem 1 chance em 8 de chegar shiny, como os lendários das fendas. Valeu, Lau, por perceber!',
+            en: "Fixed: the legendary birds, beasts and regis, Mew, Celebi, Jirachi, Mewtwo and endless mode's Arceus never came shiny, so their shinies couldn't be unlocked for Legend Mode. Now each has a 1 in 8 chance to arrive shiny, like the rift legendaries. Thanks, Lau, for spotting it!",
+            es: 'Corregido: las aves, los perros y los regis legendarios, Mew, Celebi, Jirachi, Mewtwo y el Arceus del modo infinito nunca aparecían shiny, así que sus shinies no se podían desbloquear para el Modo Legendario. Ahora cada uno tiene 1 probabilidad entre 8 de llegar shiny, como los legendarios de las grietas. ¡Gracias, Lau, por notarlo!',
+            fr: "Corrigé : les oiseaux, les chiens et les régis légendaires, Mew, Celebi, Jirachi, Mewtwo et l'Arceus du mode infini n'arrivaient jamais chromatiques, donc leurs chromatiques ne pouvaient pas être débloqués pour le Mode Légendaire. Désormais chacun a 1 chance sur 8 d'arriver chromatique, comme les légendaires des failles. Merci, Lau, de l'avoir remarqué !",
+            zh: '已修正：傳說中的三神鳥、三聖獸、三神柱，以及 Mew、Celebi、Jirachi、Mewtwo 和無盡模式的 Arceus 以前從不會以異色出現，所以無法在傳說模式解鎖牠們的異色。現在每一隻都有 1/8 的機率以異色登場，和裂縫中的傳說寶可夢一樣。謝謝 Lau 發現這個問題！',
+          },
+        ],
+      },
+      {
         title: { pt: 'Páginas dos Pokémon', en: 'Pokémon pages', es: 'Páginas de los Pokémon', fr: 'Pages des Pokémon', zh: '寶可夢頁面' },
         notes: [
           {
