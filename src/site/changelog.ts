@@ -33,6 +33,7 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
       { pt: 'Nova opção em Ajustes → Jogo: Opacidade dos golpes. Deixe seus golpes transparentes para enxergar seu Pokémon, os inimigos e os ataques deles mesmo com a build completa.', en: 'New option in Settings → Game: Move opacity. Make your moves see-through to spot your Pokémon, the foes and their attacks even with a full build.', es: 'Nueva opción en Ajustes → Juego: Opacidad de ataques. Haz tus ataques transparentes para ver a tu Pokémon, a los enemigos y sus ataques incluso con la build completa.' },
       { pt: 'Com os golpes transparentes, os ataques dos inimigos e dos chefes continuam opacos por cima de tudo: dá para desviar no fim da partida.', en: "With your moves see-through, foes' and bosses' attacks stay opaque on top of everything: you can dodge late in a run.", es: 'Con tus ataques transparentes, los ataques de los enemigos y de los jefes siguen opacos encima de todo: se puede esquivar al final de la partida.' },
       { pt: 'O arco-íris do Aurora Beam agora tem a largura de verdade do golpe.', en: "Aurora Beam's rainbow now matches the move's real width.", es: 'El arcoíris de Aurora Beam ahora tiene el ancho real del ataque.' },
+      { pt: 'Raios mais finos no fim da partida: Ice Beam, Aurora Beam, Solar Beam, Hyper Beam e outros engrossavam demais com itens de área e cobriam a tela inteira.', en: 'Slimmer beams late in a run: Ice Beam, Aurora Beam, Solar Beam, Hyper Beam and others grew far too thick with area items and covered the whole screen.', es: 'Rayos más finos al final de la partida: Ice Beam, Aurora Beam, Solar Beam, Hyper Beam y otros engordaban demasiado con objetos de área y cubrían toda la pantalla.' },
     ],
     changes: [
       {
@@ -47,6 +48,16 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
             pt: 'O arco-íris do Aurora Beam agora tem a largura de verdade do golpe: antes ele era desenhado mais largo do que acertava.',
             en: "Aurora Beam's rainbow is now as wide as the move really hits: it used to be drawn wider than its reach.",
             es: 'El arcoíris de Aurora Beam ahora tiene el ancho real del ataque: antes se dibujaba más ancho de lo que golpeaba.',
+          },
+        ],
+      },
+      {
+        title: { pt: 'Raios na grossura certa', en: 'Beams at the right thickness', es: 'Rayos con el grosor correcto' },
+        notes: [
+          {
+            pt: 'Corrigido: os itens e bônus de área (Wide Lens e outros) contavam duas vezes na grossura dos raios. Com Wide Lens no máximo, um raio ficava 50% mais grosso do que devia, e com outros bônus de área a diferença crescia ainda mais. Agora a área aumenta a grossura uma vez só, como aumenta o comprimento. Vale para Ice Beam, Aurora Beam, Solar Beam, Hyper Beam, Seed Flare, Charge Beam, Sacred Sword e Bitter Blade.',
+            en: 'Fixed: area items and bonuses (Wide Lens and others) counted twice on beam thickness. With Wide Lens maxed, a beam came out 50% thicker than it should, and other area bonuses widened the gap further. Area now thickens a beam once, as it lengthens it. This goes for Ice Beam, Aurora Beam, Solar Beam, Hyper Beam, Seed Flare, Charge Beam, Sacred Sword and Bitter Blade.',
+            es: 'Corregido: los objetos y bonos de área (Wide Lens y otros) contaban dos veces en el grosor de los rayos. Con Wide Lens al máximo, un rayo quedaba 50% más grueso de lo que debía, y con otros bonos de área la diferencia crecía aún más. Ahora el área engrosa el rayo una sola vez, igual que lo alarga. Vale para Ice Beam, Aurora Beam, Solar Beam, Hyper Beam, Seed Flare, Charge Beam, Sacred Sword y Bitter Blade.',
           },
         ],
       },
