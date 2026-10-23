@@ -27,6 +27,32 @@ export type ChangelogUpdate = {
  */
 export const CHANGELOG: readonly ChangelogUpdate[] = [
   {
+    date: '2026-10-23',
+    title: { pt: 'Dá para ver a tela de novo', en: 'You can see the screen again', es: 'Se puede ver la pantalla otra vez' },
+    highlights: [
+      { pt: 'Nova opção em Ajustes → Jogo: Opacidade dos golpes. Deixe seus golpes transparentes para enxergar seu Pokémon, os inimigos e os ataques deles mesmo com a build completa.', en: 'New option in Settings → Game: Move opacity. Make your moves see-through to spot your Pokémon, the foes and their attacks even with a full build.', es: 'Nueva opción en Ajustes → Juego: Opacidad de ataques. Haz tus ataques transparentes para ver a tu Pokémon, a los enemigos y sus ataques incluso con la build completa.' },
+      { pt: 'Com os golpes transparentes, os ataques dos inimigos e dos chefes continuam opacos por cima de tudo: dá para desviar no fim da partida.', en: "With your moves see-through, foes' and bosses' attacks stay opaque on top of everything: you can dodge late in a run.", es: 'Con tus ataques transparentes, los ataques de los enemigos y de los jefes siguen opacos encima de todo: se puede esquivar al final de la partida.' },
+      { pt: 'O arco-íris do Aurora Beam agora tem a largura de verdade do golpe.', en: "Aurora Beam's rainbow now matches the move's real width.", es: 'El arcoíris de Aurora Beam ahora tiene el ancho real del ataque.' },
+    ],
+    changes: [
+      {
+        title: { pt: 'Opacidade dos golpes', en: 'Move opacity', es: 'Opacidad de ataques' },
+        notes: [
+          {
+            pt: 'Em Ajustes → Jogo, Opacidade dos golpes vai de 10% a 100%. Abaixo de 100%, todos os seus golpes ficam transparentes juntos, como uma camada só: os raios que se cruzam não voltam a ficar opacos onde se sobrepõem. Os ataques dos inimigos e dos chefes continuam por cima e sem transparência.',
+            en: "In Settings → Game, Move opacity goes from 10% to 100%. Below 100%, all your moves turn see-through together, as one layer: crossing beams don't turn opaque again where they overlap. Foes' and bosses' attacks stay on top and fully opaque.",
+            es: 'En Ajustes → Juego, Opacidad de ataques va de 10% a 100%. Por debajo de 100%, todos tus ataques se vuelven transparentes juntos, como una sola capa: los rayos que se cruzan no vuelven a ser opacos donde se superponen. Los ataques de los enemigos y de los jefes siguen encima y sin transparencia.',
+          },
+          {
+            pt: 'O arco-íris do Aurora Beam agora tem a largura de verdade do golpe: antes ele era desenhado mais largo do que acertava.',
+            en: "Aurora Beam's rainbow is now as wide as the move really hits: it used to be drawn wider than its reach.",
+            es: 'El arcoíris de Aurora Beam ahora tiene el ancho real del ataque: antes se dibujaba más ancho de lo que golpeaba.',
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: '2026-10-22',
     title: { pt: 'A economia ganhou sentido', en: 'The economy gets a purpose', es: 'La economía cobra sentido' },
     highlights: [

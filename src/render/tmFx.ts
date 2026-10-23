@@ -267,9 +267,9 @@ const drawBeams = (ctx: Ctx, g: Game, t: number) => {
       const x1 = p.x + cx * (m.radius + half)
       const y1 = p.y - 8 + cy * (m.radius + half)
       if (!ice) {
-        // Aurora: six bands running along the beam, a white core over them.
+        // Aurora: six bands running along the beam, as wide as its hitbox, a white core over them.
         if (layer === 0) {
-          const band = Math.max(1, Math.round(w / 2.4))
+          const band = Math.max(1, Math.round(w / 3))
           RAINBOW.forEach((c, i) => {
             const off = (i - 2.5) * band
             thickLine(ctx, x0 - cy * off, y0 + cx * off, x1 - cy * off, y1 + cx * off, band + 1, c)
