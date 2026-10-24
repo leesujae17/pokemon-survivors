@@ -378,12 +378,7 @@ export const pt = {
     gateGuestNote: 'Como convidado, o progresso fica só neste aparelho e suas partidas não entram no ranking.',
   },
 
-  /** The game's official profiles (`SOCIALS`): the lobby's cards and Ajustes → Sobre. Network names stay as they are. */
-  socials: {
-    follow: (name: string) => `Siga no ${name}`,
-  },
-
-  /** The community Discord: its screen (the lobby's Discord button, the Trainer Card's row) and linking a Discord account. */
+  /** The community Discord: its screen (the Trainer Card's row) and linking a Discord account. */
   discord: {
     title: 'DISCORD',
     open: 'Discord',
@@ -392,8 +387,6 @@ export const pt = {
     guestPitch: 'Entrar com o Discord cria sua conta (ou abre a que você já tem) e já conecta os dois.',
     link: 'Conectar Discord',
     signIn: 'Entrar com Discord',
-    openServer: 'Abrir o servidor',
-    join: 'Entrar no servidor',
     connected: (name: string) => `Conectado como @${name}`,
     row: (name: string) => `Discord: @${name}`,
     failed: 'Não deu para conectar o Discord. Tente de novo.',
@@ -728,7 +721,7 @@ export const pt = {
     share: 'Compartilhar link',
     copy: 'Copiar link',
     copied: 'Link copiado! É só colar para seus amigos.',
-    shareText: 'Bora jogar Pokémon Survivors comigo? Entra pelo meu link e ganha um Ovo da Amizade:',
+    shareText: 'Bora jogar Pokémon World comigo? Entra pelo meu link e ganha um Ovo da Amizade:',
     rewards: 'Recompensas',
     /** What each milestone pays (`FRIEND_MILESTONES`). */
     reward: { 1: 'Ovo da Amizade', 3: 'Título e moldura Embaixador(a)', 5: 'Ovo ultra raro', 10: 'Dratini shiny' } satisfies Record<FriendMilestone['friends'], string>,

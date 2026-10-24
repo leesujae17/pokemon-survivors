@@ -746,7 +746,7 @@ export const siteEn: SiteMessages = {
       contact: 'Contact and takedown requests',
     },
     fanGame: [
-      'Pokémon World is an unofficial, non-commercial fan game made by fans for fans by Pedro Barretto.',
+      'Pokémon World is an unofficial, non-commercial fan game made by fans for fans by 이승환.',
       'It is not affiliated with, endorsed, sponsored or approved by Nintendo, The Pokémon Company, GAME FREAK inc., Creatures Inc. or Spike Chunsoft.',
       'Pokémon and Pokémon character names are trademarks of Nintendo. Pokémon © Nintendo, Creatures Inc. and GAME FREAK inc. All other trademarks belong to their respective owners.',
     ],

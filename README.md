@@ -10,9 +10,9 @@
 
 Pick one of 27 starters (or hatch eggs for 55 more Pokémon, 82 in all), survive 15 minutes of wild hordes, learn moves, evolve, and take down Mewtwo.
 
-[**▶ Play at pokemonsurvivors.com**](https://www.pokemonsurvivors.com)
+[**▶ Play at my-pokemon-world.netlify.app**](https://my-pokemon-world.netlify.app)
 
-[![CI](https://github.com/pedrobarretto/pokemon-survivors/actions/workflows/ci.yml/badge.svg)](https://github.com/pedrobarretto/pokemon-survivors/actions/workflows/ci.yml)
+[![CI](https://github.com/leesujae17/pokemon-survivors/actions/workflows/ci.yml/badge.svg)](https://github.com/leesujae17/pokemon-survivors/actions/workflows/ci.yml)
 [![License: MIT (code)](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
 [![Fan game](https://img.shields.io/badge/unofficial-fan%20game-ef5350)](#legal)
 
@@ -255,7 +255,7 @@ server/     accounts API (Hono + Postgres, Clerk tokens), deployed with Docker: 
 
 ## Contributing
 
-Bug reports and ideas are very welcome: [open an issue](https://github.com/pedrobarretto/pokemon-survivors/issues/new/choose). Pull requests are welcome too. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Bug reports and ideas are very welcome: [open an issue](https://github.com/leesujae17/pokemon-survivors/issues/new/choose). Pull requests are welcome too. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Credits
 
@@ -272,6 +272,6 @@ Pokémon and Pokémon character names are trademarks of Nintendo. Pokémon © Ni
 
 The [MIT license](LICENSE) covers only the original source code of this repository. It grants no rights to Pokémon characters, names, sounds or artwork. The sprites and portraits are distributed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/), so the game as a whole cannot be used commercially.
 
-If you hold rights to any material used here and have concerns, please [open an issue](https://github.com/pedrobarretto/pokemon-survivors/issues) or contact [@pedrobarretto](https://github.com/pedrobarretto). It will be addressed promptly.
+If you hold rights to any material used here and have concerns, please [open an issue](https://github.com/leesujae17/pokemon-survivors/issues) or contact [@leesujae17](https://github.com/leesujae17). It will be addressed promptly.
 
 <sub>🇧🇷 Pokémon World é um fan game não oficial e sem fins lucrativos. Não tem nenhum vínculo com a Nintendo, The Pokémon Company, GAME FREAK ou Creatures, nem é endossado por elas. Pokémon e os nomes dos personagens são marcas registradas da Nintendo.</sub>

@@ -3,16 +3,16 @@ import { parseAdminGift, parseAdminQuery } from '../../src/game/admin'
 import { hasAdminEmail } from './admin'
 
 describe('who is admin', () => {
-  const allow = ['pedro@barretto.com.br']
+  const allow = ['admin@example.com']
 
   it('takes a verified email on the list, whatever its case', () => {
-    expect(hasAdminEmail([{ address: 'other@x.com', verified: true }, { address: 'Pedro@Barretto.com.br', verified: true }], allow)).toBe(true)
+    expect(hasAdminEmail([{ address: 'other@x.com', verified: true }, { address: 'Admin@Example.com', verified: true }], allow)).toBe(true)
   })
 
   it('never takes an unverified email, an empty list or someone else', () => {
-    expect(hasAdminEmail([{ address: 'pedro@barretto.com.br', verified: false }], allow)).toBe(false)
-    expect(hasAdminEmail([{ address: 'pedro@barretto.com.br', verified: true }], [])).toBe(false)
-    expect(hasAdminEmail([{ address: 'pedro@barretto.com.br.evil.com', verified: true }], allow)).toBe(false)
+    expect(hasAdminEmail([{ address: 'admin@example.com', verified: false }], allow)).toBe(false)
+    expect(hasAdminEmail([{ address: 'admin@example.com', verified: true }], [])).toBe(false)
+    expect(hasAdminEmail([{ address: 'admin@example.com.evil.com', verified: true }], allow)).toBe(false)
     expect(hasAdminEmail([], allow)).toBe(false)
   })
 })

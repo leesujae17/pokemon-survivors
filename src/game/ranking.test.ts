@@ -86,7 +86,7 @@ describe('rankable', () => {
 
 describe('handles', () => {
   it('normalizes what the player typed', () => {
-    expect(parseHandle('  @Pedro_B ')).toBe('pedro_b')
+    expect(parseHandle('  @Seunghwan_L ')).toBe('seunghwan_l')
   })
 
   it('says what is wrong', () => {
@@ -101,7 +101,7 @@ describe('handles', () => {
     expect(suggestHandle('Zoë Müller')).toBe('zoemuller')
     expect(suggestHandle('李')).toBe('trainer')
     expect(suggestHandle('Al')).toBe('traineral')
-    for (const name of ['Pedro Barretto', 'X Æ A-12', 'Admin', 'Maximiliano Fernández de la Cruz']) expect(handleProblem(suggestHandle(name))).toBeNull()
+    for (const name of ['Lee Seunghwan', 'X Æ A-12', 'Admin', 'Maximiliano Fernández de la Cruz']) expect(handleProblem(suggestHandle(name))).toBeNull()
   })
 
   it('finds the first free handle, keeping it within the limit', () => {

@@ -1,6 +1,6 @@
 # Pokémon World
 
-> A free, unofficial Vampire Survivors-style Pokémon fan game (action roguelite / bullet heaven) that runs in the browser and on phones, with no download, no sign-up, no ads and no purchases. Available in English, Spanish and Brazilian Portuguese. Made by Pedro Barretto; open source on GitHub.
+> A free, unofficial Vampire Survivors-style Pokémon fan game (action roguelite / bullet heaven) that runs in the browser and on phones, with no download, no sign-up, no ads and no purchases. Available in English, Spanish and Brazilian Portuguese. Made by 이승환; open source on GitHub.
 
 Pick one of 27 starter Pokémon from every region (Kanto to Paldea), walk around and let it attack on its own. Survive 15 minutes of wild Pokémon hordes, collect experience, learn moves, equip held items and evolve mid-run, then face Mewtwo. After the victory you can keep going in an endless mode, where the horde keeps scaling and Arceus hunts you as the reaper. Beat the legendaries as bosses to catch them, then play as any of the 23 in Legend Mode.
 
@@ -48,18 +48,14 @@ Good fit for people looking for: a Pokémon version of Vampire Survivors, a Pok�
 
 ## Guides and reference
 
-- [Pokédex](https://www.pokemonsurvivors.com/en/pokedex/): every Pokémon in the game (580 species: the 27 starters and the 55 egg families, 82 playable lines in all, with their evolutions and branching forms, 415 wild species from every generation with their tier, bosses and legendaries, with how to catch each legendary for Legend Mode) with animated and shiny sprites, types, in-game stats, the moves each stage unlocks, Abilities, specials and when each one shows up. Portuguese: [Pokédex](https://www.pokemonsurvivors.com/pokedex/). Spanish: [Pokédex](https://www.pokemonsurvivors.com/es/pokedex/)
-- [How to play](https://www.pokemonsurvivors.com/en/guide/): controls (keyboard, gamepad, touch), how a run works, biomes and weather, the wild horde and its tiers, levels and moves (draft, forks, rare and shiny cards, Forget, TMs, Abilities and branching evolutions), move evolutions with held items, duo moves, cursed items, the special attack, types and status, boss timeline, special enemies, epic rifts and their domains, Legend Mode (how to catch each legendary, where it is beaten, wins needed, innate), shinies, map items, map events, the Poké Mart, missions and achievements, with the game's numbers. Portuguese: [Guia](https://www.pokemonsurvivors.com/guia/). Spanish: [Guía](https://www.pokemonsurvivors.com/es/guia/)
-- [Changelog](https://www.pokemonsurvivors.com/en/changelog/): every update, newest first. Portuguese: [Novidades](https://www.pokemonsurvivors.com/novidades/). Spanish: [Novedades](https://www.pokemonsurvivors.com/es/novedades/)
-- [Legal, privacy and credits](https://www.pokemonsurvivors.com/en/legal/): unofficial fan game, no ads or purchases, licenses, no personal data collected (localStorage only). Portuguese: [Legal](https://www.pokemonsurvivors.com/legal/). Spanish: [Legal](https://www.pokemonsurvivors.com/es/legal/)
+- [Pokédex](https://my-pokemon-world.netlify.app/en/pokedex/): every Pokémon in the game (580 species: the 27 starters and the 55 egg families, 82 playable lines in all, with their evolutions and branching forms, 415 wild species from every generation with their tier, bosses and legendaries, with how to catch each legendary for Legend Mode) with animated and shiny sprites, types, in-game stats, the moves each stage unlocks, Abilities, specials and when each one shows up. Portuguese: [Pokédex](https://my-pokemon-world.netlify.app/pokedex/). Spanish: [Pokédex](https://my-pokemon-world.netlify.app/es/pokedex/)
+- [How to play](https://my-pokemon-world.netlify.app/en/guide/): controls (keyboard, gamepad, touch), how a run works, biomes and weather, the wild horde and its tiers, levels and moves (draft, forks, rare and shiny cards, Forget, TMs, Abilities and branching evolutions), move evolutions with held items, duo moves, cursed items, the special attack, types and status, boss timeline, special enemies, epic rifts and their domains, Legend Mode (how to catch each legendary, where it is beaten, wins needed, innate), shinies, map items, map events, the Poké Mart, missions and achievements, with the game's numbers. Portuguese: [Guia](https://my-pokemon-world.netlify.app/guia/). Spanish: [Guía](https://my-pokemon-world.netlify.app/es/guia/)
+- [Changelog](https://my-pokemon-world.netlify.app/en/changelog/): every update, newest first. Portuguese: [Novidades](https://my-pokemon-world.netlify.app/novidades/). Spanish: [Novedades](https://my-pokemon-world.netlify.app/es/novedades/)
+- [Legal, privacy and credits](https://my-pokemon-world.netlify.app/en/legal/): unofficial fan game, no ads or purchases, licenses, no personal data collected (localStorage only). Portuguese: [Legal](https://my-pokemon-world.netlify.app/legal/). Spanish: [Legal](https://my-pokemon-world.netlify.app/es/legal/)
 
 ## More
 
-- [Community Discord server](https://discord.gg/Vx3RWFsjaD): English-speaking, with rooms for other languages; patch notes, the Daily Challenge podium and the daily outbreak are posted there. Players can link their game account to Discord to join, get their supporter role and a shiny Noibat as a Mystery Gift.
-- [Official TikTok](https://www.tiktok.com/@pokemonsurvivors): @pokemonsurvivors, short clips of the game (gameplay, Mega Evolutions, new features).
-- [Official YouTube channel](https://www.youtube.com/@PokemonSurvivors): @PokemonSurvivors, the trailer, update videos and daily Shorts of the game.
-- [Official Instagram](https://www.instagram.com/pokemonsurvivors/): @pokemonsurvivors, Reels and carousels of the game.
-- [Source code and screenshots (GitHub)](https://github.com/pedrobarretto/pokemon-survivors)
-- [Credits](https://github.com/pedrobarretto/pokemon-survivors/blob/main/CREDITS.md)
+- [Source code and screenshots (GitHub)](https://github.com/leesujae17/pokemon-survivors)
+- [Credits](https://github.com/leesujae17/pokemon-survivors/blob/main/CREDITS.md)
 
 Not affiliated with, endorsed, sponsored or approved by Nintendo, The Pokémon Company, GAME FREAK or Creatures.

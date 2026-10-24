@@ -53,7 +53,7 @@
             "@type": "VideoGame",
             "@id": "%VITE_SITE_URL%/#game",
             "name": "Pokémon World",
-            "alternateName": ["Pokemon Survivors", "Vampire Survivors com Pokémon"],
+            "alternateName": ["Pokemon World", "Vampire Survivors com Pokémon"],
             "url": "%VITE_SITE_URL%/",
             "description": "Fan game gratuito e não oficial estilo Vampire Survivors com Pokémon. Escolha um dos 27 iniciais ou choque ovos para liberar mais 55 Pokémon, sobreviva 15 minutos de hordas selvagens de todas as gerações, monte sua build entre 207 golpes, evolua e derrote Mewtwo. Vença os lendários para capturá-los e jogar com eles no Modo Lendário. Roda no navegador e no celular, sem download.",
             "image": "%VITE_SITE_URL%/og.png",
@@ -65,8 +65,8 @@
             "inLanguage": ["pt-BR", "en", "es"],
             "isAccessibleForFree": true,
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
-            "author": { "@type": "Person", "name": "Pedro Barretto", "url": "https://pedrobarretto.com.br" },
-            "sameAs": ["https://github.com/pedrobarretto/pokemon-survivors", "https://discord.gg/Vx3RWFsjaD", "https://www.tiktok.com/@pokemonsurvivors", "https://www.youtube.com/@PokemonSurvivors", "https://www.instagram.com/pokemonsurvivors/"],
+            "author": { "@type": "Person", "name": "이승환" },
+            "sameAs": ["https://github.com/leesujae17/pokemon-survivors"],
             "isPartOf": { "@id": "%VITE_SITE_URL%/#website" }
           },
           {
@@ -104,7 +104,6 @@
     </script>
     <!-- Cookieless analytics: Vercel Web Analytics (page views) and our self-hosted Umami (page views, UTMs and game events). PostHog (game events and error reports) loads from src/analytics.ts. All only count production domains. -->
     <script defer vite-ignore src="/_vercel/insights/script.js"></script>
-    <script defer vite-ignore src="https://metrics.pedrobarretto.com.br/script.js" data-website-id="61e8c0cb-d733-4e52-a994-5098d48c7b02" data-domains="www.pokemonsurvivors.com,www.pokemonsurvivors.com.br"></script>
   </head>
   <body>
     <canvas id="game" aria-label="Pokémon World"></canvas>
@@ -166,18 +165,14 @@
       <h3>É um jogo oficial da Pokémon?</h3>
       <p>
         Não. É um fan game não oficial e sem fins lucrativos, sem ligação com Nintendo, The Pokémon Company, GAME FREAK ou
-        Creatures. Feito por Pedro Barretto.
+        Creatures. Feito por 이승환.
       </p>
       <p>
         <a href="/pokedex/">Pokédex</a> · <a href="/guia/">Como jogar</a> · <a href="/novidades/">Novidades</a> ·
         <a href="/legal/">Legal e privacidade</a> ·
         <a href="%VITE_SITE_URL%/en/" hreflang="en">Play in English</a> ·
         <a href="%VITE_SITE_URL%/es/" hreflang="es">Jugar en español</a> ·
-        <a href="https://discord.gg/Vx3RWFsjaD">Servidor no Discord</a> ·
-        <a href="https://www.tiktok.com/@pokemonsurvivors" rel="me">Siga no TikTok</a> ·
-        <a href="https://www.youtube.com/@PokemonSurvivors" rel="me">Inscreva-se no YouTube</a> ·
-        <a href="https://www.instagram.com/pokemonsurvivors/" rel="me">Siga no Instagram</a> ·
-        <a href="https://github.com/pedrobarretto/pokemon-survivors">Código no GitHub</a>
+        <a href="https://github.com/leesujae17/pokemon-survivors">Código no GitHub</a>
       </p>
     </main>
     <script type="module" src="/src/main.ts"></script>

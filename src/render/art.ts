@@ -16,7 +16,6 @@ import { TM_ICONS } from './tmArt'
 import { VERB_EVOLVED_ICONS } from './verbEvolvedArt'
 import { cursedIcon, DUO_ICONS } from './duoArt'
 import type { CurseId } from '../data/curses'
-import type { SocialId } from '../site/routes'
 import { LEGENDARY_ICONS } from './legendaryArt'
 import { LEGENDARY_ICONS_2 } from './legendaryArt2'
 import * as TE from './typeEvolvedArt'
@@ -834,75 +833,6 @@ const DISCORD = [
 ]
 
 export const discordIcon = () => toIconUrl('discord', () => art(DISCORD, { 1: '#283070', 2: '#5865f2', 3: '#ffffff' }))
-
-/** TikTok's app icon: the white note on a black rounded square, with its cyan and red echoes. 1 outline, 2 black, 3 white, 4 cyan, 5 red. */
-const TIKTOK = [
-  '..111111111111..',
-  '.12222222222221.',
-  '1222222444222221',
-  '1222222433322221',
-  '1222222433332221',
-  '1222222433533221',
-  '1222222433523521',
-  '1222222433522521',
-  '1222444433522221',
-  '1224433333522221',
-  '1224333333522221',
-  '1222333335522221',
-  '1222233355222221',
-  '1222225552222221',
-  '.12222222222221.',
-  '..111111111111..',
-]
-
-/** YouTube's play button: a white triangle on a red rounded rectangle. 1 outline, 2 red, 3 white. */
-const YOUTUBE = [
-  '................',
-  '................',
-  '..111111111111..',
-  '.12222222222221.',
-  '1222222222222221',
-  '1222223222222221',
-  '1222223332222221',
-  '1222223333322221',
-  '1222223333322221',
-  '1222223332222221',
-  '1222223222222221',
-  '1222222222222221',
-  '.12222222222221.',
-  '..111111111111..',
-  '................',
-  '................',
-]
-
-/** Instagram's camera: a white outline, lens and flash on its purple-to-yellow gradient. 1 outline, 2 purple, 3 magenta, 4 pink, 5 orange, 6 yellow, 7 white. */
-const INSTAGRAM = [
-  '..111111111111..',
-  '.14333332222221.',
-  '1444333332222221',
-  '1444777777772221',
-  '1447443333327221',
-  '1547444333737221',
-  '1557444773337221',
-  '1557447447337321',
-  '1557547447337331',
-  '1557554774437331',
-  '1657555444447331',
-  '1667555544447331',
-  '1666777777774431',
-  '1666655555444441',
-  '.16666555554441.',
-  '..111111111111..',
-]
-
-const SOCIAL_ART = {
-  tiktok: () => art(TIKTOK, { 1: '#000000', 2: '#161823', 3: '#ffffff', 4: '#25f4ee', 5: '#fe2c55' }),
-  youtube: () => art(YOUTUBE, { 1: '#7a0012', 2: '#ff0033', 3: '#ffffff' }),
-  instagram: () => art(INSTAGRAM, { 1: '#4a1248', 2: '#833ab4', 3: '#c13584', 4: '#e1306c', 5: '#f77737', 6: '#fcaf45', 7: '#ffffff' }),
-} as const satisfies Record<SocialId, () => PixelSprite>
-
-/** Each official profile's icon (`SOCIALS` in `site/routes.ts`). */
-export const socialIcon = (id: SocialId) => toIconUrl(`social:${id}`, SOCIAL_ART[id])
 
 /** iOS's Share: an arrow leaving an open tray, in iOS blue (the install how-to, `ui/install.ts`). 1 outline, 2 blue. */
 const SHARE = [

@@ -11,22 +11,15 @@ import { h, later, rich } from './dom'
 import { contentLine } from './gifts'
 import { hint, menu, type Screen } from './screens'
 
-/** The community server's permanent invite (made by the bot, on #welcome). */
-export const DISCORD_INVITE = 'https://discord.gg/Vx3RWFsjaD'
-
-/** Opens the server in a new tab (or the Discord app). */
-export const openDiscordServer = () => window.open(DISCORD_INVITE, '_blank', 'noopener')
-
 type Action = { label: string; run: () => void; tone?: 'discord' }
 
 /**
- * The Discord screen (the lobby's Discord button, the Trainer Card's row):
- * what the community server is, and by where the player stands
- * (`discordStatus`) a way in: "Sign in with Discord" for a guest (it creates
- * the account and links both), "Link Discord" for an account (leaves for
- * Discord and comes back linked: `linkDiscord`), the linked username once it
- * is, and the server's invite for everyone. Until it's linked, the gift
- * linking brings (`DISCORD_GIFT`) shows above the buttons. It follows the account state.
+ * The Discord screen (the Trainer Card's row): what the community server is,
+ * and by where the player stands (`discordStatus`) a way in: "Sign in with
+ * Discord" for a guest (it creates the account and links both), "Link Discord"
+ * for an account (leaves for Discord and comes back linked: `linkDiscord`), and
+ * the linked username once it is. Until it's linked, the gift linking brings
+ * (`DISCORD_GIFT`) shows above the buttons. It follows the account state.
  * Back, Esc or Backspace call `onClose` after the key dispatch.
  */
 export const discordScreen = (root: HTMLElement, input: Input, onClose: () => void): Screen => {
@@ -36,16 +29,13 @@ export const discordScreen = (root: HTMLElement, input: Input, onClose: () => vo
   const build = (s: AccountState, opening: boolean) => {
     const m = t().discord
     const status = discordStatus(s, accountsEnabled)
-    const join: Action = { label: status.kind === 'linked' ? m.openServer : m.join, run: openDiscordServer }
     const back: Action = { label: m.back, run: close }
     const all: Action[] =
-      status.kind === 'busy'
-        ? [back]
-        : status.kind === 'guest'
-          ? [{ label: m.signIn, run: () => void linkDiscord(), tone: 'discord' }, join, back]
-          : status.kind === 'link'
-            ? [{ label: m.link, run: () => void linkDiscord(), tone: 'discord' }, join, back]
-            : [{ ...join, tone: 'discord' }, back]
+      status.kind === 'guest'
+        ? [{ label: m.signIn, run: () => void linkDiscord(), tone: 'discord' }, back]
+        : status.kind === 'link'
+          ? [{ label: m.link, run: () => void linkDiscord(), tone: 'discord' }, back]
+          : [back]
     const buttons = all.map((a) => h('button', { class: a.tone ? 'btn discord-btn' : 'btn' }, a.tone && h('img', { src: discordIcon(), alt: '' }), a.label))
     nav?.off()
     nav = menu(input, buttons, (i) => (playSfx('select'), later(all[i]!.run)))

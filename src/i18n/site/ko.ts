@@ -768,7 +768,7 @@ export const siteKo: SiteMessages = {
       contact: '연락처와 삭제 요청',
     },
     fanGame: [
-      'Pokémon World는 Pedro Barretto가 팬을 위해 만든 비공식, 비상업 팬 게임이에요.',
+      'Pokémon World는 이승환이 팬을 위해 만든 비공식, 비상업 팬 게임이에요.',
       'Nintendo, The Pokémon Company, GAME FREAK inc., Creatures Inc., Spike Chunsoft와 제휴하지 않았으며, 이들의 보증, 후원, 승인을 받지 않았어요.',
       '포켓몬과 포켓몬 캐릭터 이름은 Nintendo의 상표예요. Pokémon © Nintendo, Creatures Inc., GAME FREAK inc. 그 밖의 모든 상표는 각 소유자에게 있어요.',
     ],

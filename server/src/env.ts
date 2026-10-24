@@ -1,5 +1,5 @@
 /** Origins the game is served from. `CORS_ORIGINS` (comma separated) adds more, like a preview deploy. */
-const ORIGINS = ['https://www.pokemonsurvivors.com', 'https://pokemonsurvivors.com']
+const ORIGINS = ['https://my-pokemon-world.netlify.app']
 
 const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/
 

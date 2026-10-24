@@ -77,7 +77,7 @@ type Row = { label: string; run: () => void; icon?: string; wide?: boolean; tone
  * The Trainer Card (from the Trainer chip): avatar, name, @handle, title,
  * runs, wins, Pokédex and shinies, medals and ribbons, the linked Discord,
  * the sync state (a tap syncs), then rows to edit the profile, see it, share
- * the card image, Discord (link it, or the server once linked), Apoiadores
+ * the card image, Discord (link it, or see it linked), Apoiadores
  * (supporters), missions and achievements, the admin's gift desk and sign
  * out. Guests get the same card from the local save, with "Criar conta /
  * Entrar" and "Entrar com Discord" when accounts are on. It follows the account state.

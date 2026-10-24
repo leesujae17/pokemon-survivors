@@ -6,4 +6,4 @@ In short: be kind and respectful, assume good intent, and keep discussions about
 
 ## Enforcement
 
-Report unacceptable behavior to the maintainer, [@pedrobarretto](https://github.com/pedrobarretto). Reports are handled privately. The maintainer may edit or remove comments, lock threads and block contributors who don't follow this code.
+Report unacceptable behavior to the maintainer, [@leesujae17](https://github.com/leesujae17). Reports are handled privately. The maintainer may edit or remove comments, lock threads and block contributors who don't follow this code.

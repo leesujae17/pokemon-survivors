@@ -417,36 +417,6 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
         ],
       },
       {
-        title: { pt: 'TikTok oficial', en: 'Official TikTok', es: 'TikTok oficial' , ko: "공식 틱톡" },
-        notes: [
-          {
-            pt: 'O jogo tem um TikTok oficial, @pokemonsurvivors. Ele fica embaixo do Discord no lobby (no topo, com o celular deitado) e em Ajustes → Sobre.',
-            en: "The game has an official TikTok, @pokemonsurvivors. It sits under Discord in the lobby (at the top with your phone sideways) and in Settings → About.",
-            es: 'El juego tiene un TikTok oficial, @pokemonsurvivors. Está debajo de Discord en el lobby (arriba con el celular acostado) y en Ajustes → Acerca de.',
-          ko: "공식 TikTok 계정 @pokemonsurvivors를 추가했어요. 당시 로비의 Discord 아래, 가로 화면 상단과 설정의 정보 화면에 링크를 배치했어요." },
-        ],
-      },
-      {
-        title: { pt: 'YouTube oficial', en: 'Official YouTube', es: 'YouTube oficial' , ko: "공식 유튜브" },
-        notes: [
-          {
-            pt: 'O canal oficial do jogo no YouTube é o @PokemonSurvivors, com o trailer, Shorts todo dia e um vídeo para cada atualização. Ele fica ao lado do TikTok no lobby e em Ajustes → Sobre.',
-            en: "The game's official YouTube channel is @PokemonSurvivors, with the trailer, daily Shorts and a video for each update. It sits beside TikTok in the lobby and in Settings → About.",
-            es: 'El canal oficial del juego en YouTube es @PokemonSurvivors, con el tráiler, Shorts todos los días y un video por cada actualización. Está junto al TikTok en el lobby y en Ajustes → Acerca de.',
-          ko: "공식 YouTube 채널 @PokemonSurvivors에서 예고편·매일의 짧은 영상·업데이트별 영상을 공개해요. 당시 로비의 TikTok 옆과 설정의 정보 화면에 링크를 배치했어요." },
-        ],
-      },
-      {
-        title: { pt: 'Instagram oficial', en: 'Official Instagram', es: 'Instagram oficial' , ko: "공식 인스타그램" },
-        notes: [
-          {
-            pt: 'O jogo também está no Instagram, @pokemonsurvivors, com Reels e carrosséis do jogo. Ele fica ao lado do TikTok e do YouTube no lobby e em Ajustes → Sobre.',
-            en: 'The game is on Instagram too, @pokemonsurvivors, with Reels and carousels of the game. It sits beside TikTok and YouTube in the lobby and in Settings → About.',
-            es: 'El juego también está en Instagram, @pokemonsurvivors, con Reels y carruseles del juego. Está junto a TikTok y YouTube en el lobby y en Ajustes → Acerca de.',
-          ko: "Instagram의 @pokemonsurvivors 계정에서 게임 영상과 여러 장의 게시물을 공개해요. 당시 로비와 설정의 정보 화면에 링크를 배치했어요." },
-        ],
-      },
-      {
         title: { pt: 'Normal ou Shiny, você escolhe', en: 'Normal or Shiny, your call', es: 'Normal o Shiny, tú eliges' , ko: "일반과 이로치 모습을 직접 선택" },
         notes: [
           {
@@ -706,10 +676,10 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
         title: { pt: 'Mural de ideias', en: 'Ideas board', es: 'Muro de ideas' , ko: '아이디어 게시판' },
         notes: [
           {
-            pt: 'Agora você pode pedir o que quer ver no jogo! Toque em Ideias no menu principal (ou abra pokemonsurvivors.com/?ideias): dá para ler as ideias de todo mundo, votar a favor ou contra com uma conta e mandar as suas (até 3 por dia). As mais votadas entram na fila, e as que chegam ao jogo aparecem na aba Feitas.',
-            en: 'Now you can ask for what you want to see in the game! Tap Ideas in the main menu (or open pokemonsurvivors.com/?ideias): read everyone’s ideas, vote them up or down with an account and send your own (up to 3 a day). The most voted go in the queue, and the ones that make it into the game show up in the Shipped tab.',
-            es: '¡Ahora puedes pedir lo que quieres ver en el juego! Toca Ideas en el menú principal (o abre pokemonsurvivors.com/?ideias): lee las ideas de todos, vota a favor o en contra con una cuenta y envía las tuyas (hasta 3 por día). Las más votadas entran en la fila, y las que llegan al juego aparecen en la pestaña Hechas.',
-          ko: "메인 메뉴의 아이디어나 pokemonsurvivors.com/?ideias에서 다른 제안을 읽고 계정으로 찬반 투표하거나 하루 세 개까지 새 제안을 보낼 수 있어요. 표가 많은 제안은 작업 대기열에 오르고 구현되면 반영 완료 탭에 표시돼요." },
+            pt: 'Agora você pode pedir o que quer ver no jogo! Toque em Ideias no menu principal (ou abra my-pokemon-world.netlify.app/?ideias): dá para ler as ideias de todo mundo, votar a favor ou contra com uma conta e mandar as suas (até 3 por dia). As mais votadas entram na fila, e as que chegam ao jogo aparecem na aba Feitas.',
+            en: 'Now you can ask for what you want to see in the game! Tap Ideas in the main menu (or open my-pokemon-world.netlify.app/?ideias): read everyone’s ideas, vote them up or down with an account and send your own (up to 3 a day). The most voted go in the queue, and the ones that make it into the game show up in the Shipped tab.',
+            es: '¡Ahora puedes pedir lo que quieres ver en el juego! Toca Ideas en el menú principal (o abre my-pokemon-world.netlify.app/?ideias): lee las ideas de todos, vota a favor o en contra con una cuenta y envía las tuyas (hasta 3 por día). Las más votadas entran en la fila, y las que llegan al juego aparecen en la pestaña Hechas.',
+          ko: "메인 메뉴의 아이디어나 my-pokemon-world.netlify.app/?ideias에서 다른 제안을 읽고 계정으로 찬반 투표하거나 하루 세 개까지 새 제안을 보낼 수 있어요. 표가 많은 제안은 작업 대기열에 오르고 구현되면 반영 완료 탭에 표시돼요." },
         ],
       },
       {
@@ -984,10 +954,10 @@ export const CHANGELOG: readonly ChangelogUpdate[] = [
             es: 'El español (Latinoamérica) es el tercer idioma: todo el juego, la Pokédex, la guía y estas novedades. Si tu navegador está en español, el juego ya empieza así, y puedes cambiarlo en el título (PT | EN | ES, o la tecla I) y en Ajustes.',
           ko: '스페인어(라틴아메리카)가 세 번째 언어로 추가됐어요. 게임 전체, 도감, 가이드, 그리고 이 업데이트 내역까지요. 브라우저가 스페인어로 설정되어 있으면 스페인어로 시작하고, 타이틀 화면(PT | EN | ES 또는 I 키)과 설정에서 바꿀 수 있어요.' },
           {
-            pt: 'O jogo em espanhol tem o seu próprio endereço, pokemonsurvivors.com/es/, para compartilhar com os amigos.',
-            en: 'The Spanish game has its own address, pokemonsurvivors.com/es/, to share with friends.',
-            es: 'El juego en español tiene su propia dirección, pokemonsurvivors.com/es/, para compartir con tus amigos.',
-          ko: "스페인어판은 pokemonsurvivors.com/es/ 주소로 친구에게 공유할 수 있어요." },
+            pt: 'O jogo em espanhol tem o seu próprio endereço, my-pokemon-world.netlify.app/es/, para compartilhar com os amigos.',
+            en: 'The Spanish game has its own address, my-pokemon-world.netlify.app/es/, to share with friends.',
+            es: 'El juego en español tiene su propia dirección, my-pokemon-world.netlify.app/es/, para compartir con tus amigos.',
+          ko: "스페인어판은 my-pokemon-world.netlify.app/es/ 주소로 친구에게 공유할 수 있어요." },
         ],
       },
       {

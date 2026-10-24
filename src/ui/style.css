@@ -3886,91 +3886,6 @@ button.special-badge {
   }
 }
 
-/* Discord under Convide amigos, in Discord's blurple. */
-.lobby-discord-card {
-  border-color: #283070;
-  --frame: #5865f2;
-}
-
-.lobby-discord-card:hover,
-.lobby-discord-card.selected {
-  --frame: #e83838;
-}
-
-.lobby-discord-card .lobby-invites-text b {
-  color: #5865f2;
-}
-
-.lobby-discord-icon {
-  width: 36px;
-  height: 30px;
-  flex: none;
-}
-
-/* Discord and the official profiles (`SOCIALS`), stacked under the Hall; a row of Discord and icons on portrait phones. */
-.lobby-community {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-}
-
-.lobby-social-icon {
-  width: 32px;
-  height: 32px;
-  flex: none;
-}
-
-/* TikTok: black, with the logo's cyan and red echoes on its name. */
-.lobby-social.tiktok {
-  border-color: #161823;
-  --frame: #25f4ee;
-}
-
-.lobby-social.tiktok:hover,
-.lobby-social.tiktok.selected {
-  --frame: #e83838;
-}
-
-.lobby-social.tiktok .lobby-invites-text b {
-  color: #161823;
-  text-transform: uppercase;
-  text-shadow: -1px -1px 0 #25f4ee, 1px 1px 0 #fe2c55;
-}
-
-/* YouTube: its red on the name, its near-black on the frame (red there would hide the lobby's red selection). */
-.lobby-social.youtube {
-  border-color: #0f0f0f;
-  --frame: #282828;
-}
-
-.lobby-social.youtube:hover,
-.lobby-social.youtube.selected {
-  --frame: #e83838;
-}
-
-.lobby-social.youtube .lobby-invites-text b {
-  color: #ff0033;
-  text-transform: uppercase;
-}
-
-/* Instagram: its purple on the frame, its pink on the name with the gradient's orange as an echo. */
-.lobby-social.instagram {
-  border-color: #4a1248;
-  --frame: #833ab4;
-}
-
-.lobby-social.instagram:hover,
-.lobby-social.instagram.selected {
-  --frame: #e83838;
-}
-
-.lobby-social.instagram .lobby-invites-text b {
-  color: #c13584;
-  text-transform: uppercase;
-  text-shadow: 1px 1px 0 #fcaf45;
-}
-
 /* The partner on stage, over its name plate (canvas sized by `partnerStage`). */
 .lobby-partner {
   display: flex;
@@ -4327,24 +4242,6 @@ button.special-badge {
   }
   .lobby-side {
     padding: 0;
-  }
-  .lobby-community {
-    flex-direction: row;
-    gap: 6px;
-  }
-  .lobby-community .lobby-discord-card {
-    flex: 1;
-  }
-  /* Three profile icons leave Discord little room: its "Join the server" breaks onto a second line instead of losing its end. */
-  .lobby-community .lobby-discord-card .lobby-invites-row {
-    white-space: normal;
-  }
-  .lobby-social {
-    flex: none;
-    padding: 6px;
-  }
-  .lobby-social .lobby-invites-text {
-    display: none;
   }
   .lobby-stage {
     flex: 1 1 0;

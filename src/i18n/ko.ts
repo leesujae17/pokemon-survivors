@@ -318,10 +318,7 @@ export const ko: Messages = {
     playAsGuest: '게스트로 플레이',
     gateGuestNote: '게스트로 하면 진행 상황이 이 기기에만 저장되고, 판 기록이 랭킹에 반영되지 않아요.',
   },
-  socials: {
-    follow: (name: string) => `${name}에서 팔로우`,
-  },
-  discord: { title: '디스코드', open: 'Discord', pitch: '게임 소식과 오늘의 챌린지 순위, 다른 트레이너를 만나는 커뮤니티 서버예요. 기본 언어는 영어이며 다른 언어를 위한 채널도 있어요.', linkPitch: 'Discord 계정을 연결하면 서버에 바로 참여하고 후원자 역할을 받을 수 있어요.', guestPitch: 'Discord로 로그인하면 계정을 만들거나 기존 계정에 로그인하면서 두 계정을 연결해요.', link: 'Discord 연결', signIn: 'Discord로 로그인', openServer: '서버 열기', join: '서버 참여', connected: (name) => `@${name} 계정 연결됨`, row: (name) => `Discord: @${name}`, failed: 'Discord 계정을 연결하지 못했어요. 다시 시도하세요.', gift: (name) => `계정을 연결하고 서버에 참여하면 *이로치 ${name}*을 받아요!`, cardGift: (name) => `이로치 ${name} 받기`, busy: '연결 중…', back: '뒤로' },
+  discord: { title: '디스코드', open: 'Discord', pitch: '게임 소식과 오늘의 챌린지 순위, 다른 트레이너를 만나는 커뮤니티 서버예요. 기본 언어는 영어이며 다른 언어를 위한 채널도 있어요.', linkPitch: 'Discord 계정을 연결하면 서버에 바로 참여하고 후원자 역할을 받을 수 있어요.', guestPitch: 'Discord로 로그인하면 계정을 만들거나 기존 계정에 로그인하면서 두 계정을 연결해요.', link: 'Discord 연결', signIn: 'Discord로 로그인', connected: (name) => `@${name} 계정 연결됨`, row: (name) => `Discord: @${name}`, failed: 'Discord 계정을 연결하지 못했어요. 다시 시도하세요.', gift: (name) => `계정을 연결하고 서버에 참여하면 *이로치 ${name}*을 받아요!`, cardGift: (name) => `이로치 ${name} 받기`, busy: '연결 중…', back: '뒤로' },
   install: { title: '앱 설치', pitch: '홈 화면에 아이콘을 추가하면 전체 화면으로 바로 플레이할 수 있어요.', share: 'Safari 도구 막대나 더보기 메뉴에서 *공유*를 누르세요.', addHome: '*홈 화면에 추가*를 고른 뒤 *추가*를 누르세요.', iosStorage: '앱의 진행 상황은 Safari와 별도로 저장돼요. 계정에 로그인하면 진행 상황을 가져올 수 있어요.', ok: '확인' },
   ranking: {
     title: '랭킹',

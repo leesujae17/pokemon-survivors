@@ -750,7 +750,7 @@ export const siteEs: SiteMessages = {
       contact: 'Contacto y retiro de contenido',
     },
     fanGame: [
-      'Pokémon World es un fan game no oficial y sin fines de lucro, hecho por fans para fans por Pedro Barretto.',
+      'Pokémon World es un fan game no oficial y sin fines de lucro, hecho por fans para fans por 이승환.',
       'No tiene ningún vínculo con Nintendo, The Pokémon Company, GAME FREAK inc., Creatures Inc. ni Spike Chunsoft, ni está respaldado, patrocinado o aprobado por ellas.',
       'Pokémon y los nombres de los personajes son marcas registradas de Nintendo. Pokémon © Nintendo, Creatures Inc. y GAME FREAK inc. Las demás marcas pertenecen a sus respectivos dueños.',
     ],

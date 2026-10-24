@@ -14,7 +14,7 @@ import type { ChangelogUpdate } from '../../src/site/changelog'
  */
 
 /** The site (`SITE_URL` in `src/site/routes.ts`, which can't be imported here: it pulls the game's i18n in). */
-const SITE = 'https://www.pokemonsurvivors.com'
+const SITE = 'https://my-pokemon-world.netlify.app'
 export const PLAY_URL = `${SITE}/en/`
 const CHANGELOG_URL = `${SITE}/en/changelog/`
 

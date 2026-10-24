@@ -49,7 +49,7 @@ export const discordAccount = (accounts: readonly ExternalAccountInfo[]) => {
 
 /** Who a Discord OAuth token belongs to (`GET /users/@me`), or null when Discord won't say. */
 const discordMe = async (token: string) => {
-  const res = await fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'DiscordBot (https://www.pokemonsurvivors.com, 1)' } })
+  const res = await fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'DiscordBot (https://my-pokemon-world.netlify.app, 1)' } })
   const me: unknown = res.ok ? await res.json() : null
   return isRecord(me) && typeof me.id === 'string' ? { id: me.id, username: typeof me.username === 'string' ? me.username : '' } : null
 }

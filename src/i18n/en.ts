@@ -279,10 +279,6 @@ export const en: Messages = {
     gateGuestNote: "As a guest, your progress stays on this device only and your runs don't count for the ranking.",
   },
 
-  socials: {
-    follow: (name: string) => `Follow us on ${name}`,
-  },
-
   discord: {
     title: 'DISCORD',
     open: 'Discord',
@@ -291,8 +287,6 @@ export const en: Messages = {
     guestPitch: 'Signing in with Discord creates your account (or opens the one you have) and links both at once.',
     link: 'Link Discord',
     signIn: 'Sign in with Discord',
-    openServer: 'Open the server',
-    join: 'Join the server',
     connected: (name) => `Linked as @${name}`,
     row: (name) => `Discord: @${name}`,
     failed: 'Couldn’t link Discord. Try again.',
@@ -602,7 +596,7 @@ export const en: Messages = {
     share: 'Share link',
     copy: 'Copy link',
     copied: 'Link copied! Just paste it to your friends.',
-    shareText: 'Play Pokémon Survivors with me? Join through my link and get a Friendship Egg:',
+    shareText: 'Play Pokémon World with me? Join through my link and get a Friendship Egg:',
     rewards: 'Rewards',
     reward: { 1: 'Friendship Egg', 3: 'Ambassador title and frame', 5: 'Ultra rare egg', 10: 'Shiny Dratini' },
     milestone: (friends) => (friends === 1 ? '1 friend' : `${friends} friends`),

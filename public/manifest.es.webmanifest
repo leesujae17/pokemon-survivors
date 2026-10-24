@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Pokémon Survivors",
-  "short_name": "Survivors",
+  "name": "Pokémon World",
+  "short_name": "Pokémon World",
   "description": "Juego gratis estilo Vampire Survivors con Pokémon. Sobrevive a las hordas salvajes con tu Pokémon inicial.",
   "lang": "es-419",
   "start_url": "/es/",

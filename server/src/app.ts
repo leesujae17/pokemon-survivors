@@ -67,7 +67,7 @@ type Auth = { Variables: { userId: string } }
 type MaybeAuth = { Variables: { userId: string | null } }
 
 /** Where donors land when the site that sent them isn't one we know. */
-const SITE = 'https://www.pokemonsurvivors.com'
+const SITE = 'https://my-pokemon-world.netlify.app'
 
 /** A same-site path to come back to (`/apoie/`, `/en/support/`). */
 const SITE_PATH = /^\/[a-z0-9/-]{0,40}$/

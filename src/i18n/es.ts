@@ -279,10 +279,6 @@ export const es: Messages = {
     gateGuestNote: 'Como invitado, el progreso queda solo en este dispositivo y tus partidas no entran al ranking.',
   },
 
-  socials: {
-    follow: (name: string) => `Síguenos en ${name}`,
-  },
-
   discord: {
     title: 'DISCORD',
     open: 'Discord',
@@ -291,8 +287,6 @@ export const es: Messages = {
     guestPitch: 'Entrar con Discord crea tu cuenta (o abre la que ya tienes) y conecta las dos de una vez.',
     link: 'Conectar Discord',
     signIn: 'Entrar con Discord',
-    openServer: 'Abrir el servidor',
-    join: 'Entrar al servidor',
     connected: (name) => `Conectado como @${name}`,
     row: (name) => `Discord: @${name}`,
     failed: 'No se pudo conectar Discord. Inténtalo de nuevo.',
@@ -602,7 +596,7 @@ export const es: Messages = {
     share: 'Compartir link',
     copy: 'Copiar link',
     copied: '¡Link copiado! Solo pégalo para tus amigos.',
-    shareText: '¿Jugamos Pokémon Survivors? Entra por mi link y gana un Huevo de la Amistad:',
+    shareText: '¿Jugamos Pokémon World? Entra por mi link y gana un Huevo de la Amistad:',
     rewards: 'Recompensas',
     reward: { 1: 'Huevo de la Amistad', 3: 'Título y marco Embajador(a)', 5: 'Huevo ultra raro', 10: 'Dratini shiny' },
     milestone: (friends) => (friends === 1 ? '1 amigo' : `${friends} amigos`),

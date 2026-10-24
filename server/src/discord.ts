@@ -84,7 +84,7 @@ export const restClient =
     for (;;) {
       const res = await fetch(`${API}${path}`, {
         method,
-        headers: { Authorization: `Bot ${token}`, 'Content-Type': 'application/json', 'User-Agent': 'DiscordBot (https://www.pokemonsurvivors.com, 1)' },
+        headers: { Authorization: `Bot ${token}`, 'Content-Type': 'application/json', 'User-Agent': 'DiscordBot (https://my-pokemon-world.netlify.app, 1)' },
         body: body === undefined ? undefined : JSON.stringify(body),
       })
       if (res.status === 429) {
