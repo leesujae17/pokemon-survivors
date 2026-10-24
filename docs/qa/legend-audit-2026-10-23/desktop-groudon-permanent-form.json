@@ -1,0 +1,51 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 1.3000000000000003,
+  "starter": "groudon",
+  "awakening": 2,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 225,
+    "level": 28,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "scorchingSands",
+        "level": 1,
+        "cooldown": 1.7000000000000033,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "stealthRock",
+        "level": 1,
+        "cooldown": 6.900000000000004,
+        "path": 0,
+        "walkedAt": 0
+      }
+    ]
+  },
+  "ability": "solarPower",
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "swellow",
+      "x": -345.2657161461452,
+      "y": 199.34239294670292,
+      "hp": 21
+    },
+    {
+      "id": "swellow",
+      "x": -257.91973154540665,
+      "y": -4.38588606002271,
+      "hp": 21
+    }
+  ],
+  "menu": "Lv 28\n1\n1\nSPACE\n00:01\n0\n₽ 0\n원시그란돈\nLv28\nHP\n선파워\n225/225\n햇살이 강해졌다!\n불꽃 기술 강화, 물 기술 약화\n가뭄으로 날씨가 바뀌었어요!\n그란돈 각성! 힘이 더욱 강해졌어요."
+}

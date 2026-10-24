@@ -2,47 +2,52 @@ import { accountHandle, accountState } from '../account'
 import { track } from '../analytics'
 import { playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
-import { formatTime } from '../engine/math'
 import { ACHIEVEMENTS, MEDALS, type Medal, type TitleId } from '../data/achievements'
 import { ENEMIES } from '../data/enemies'
-import { isHatchling, PLAYABLE, type PlayableId } from '../data/hatchlings'
+import { PLAYABLE, type PlayableId } from '../data/hatchlings'
 import { TYPE_COLORS } from '../data/types'
+import { playerForm } from '../game/branch'
 import { dexCounts, dexNews, type Pokedex } from '../game/dex'
 import type { ChallengePlace } from '../game/ranking'
 import { ribbonCounts } from '../game/ribbons'
+import { playsShiny } from '../game/shinyPicks'
 import type { Save } from '../game/meta'
 import type { DamageSource, Game } from '../game/types'
 import { CARD, cardBlob, drawRunCard, drawTrainerCard, type CardMon, type CardTrainer, type RunCardData, type TrainerCardData } from '../render/card'
 import type { CardStyle } from '../render/cosmetics'
 import { logoScale } from '../render/logo'
-import { gameUrl } from '../ranking'
 import { pokedex } from '../site/pokedex'
 import { t } from '../i18n'
+import { localName } from '../i18n/names'
 import { h, later } from './dom'
 import { boxSpecies, caughtShinies } from './pcBox'
 import { loadSave } from './save'
 import { damageSource, hint, menu, type Screen } from './screens'
+import { uiDpr, uiViewport } from './uiScale'
 
 /**
  * Sharing a card: the data each card shows (built from the run or the save),
  * a preview with its buttons, and the way out of the game. On a phone the
- * share sheet takes the PNG and its text; on a computer the image goes to the
- * clipboard; anywhere else it downloads. Each share is counted (`share`).
+ * share sheet takes the PNG alone (no text, no link); on a computer the image
+ * goes to the clipboard; anywhere else it downloads. Each share is counted (`share`).
  */
 
 type ShareKind = 'run' | 'trainer'
 
 type ShareMethod = 'share' | 'copy' | 'download'
 
-/** A card ready to share: how to draw it, the text that goes along and the file name. */
-export type ShareCard = { kind: ShareKind; draw: () => Promise<HTMLCanvasElement>; text: string; file: string }
+/** A card ready to share: how to draw it and the file name. */
+export type ShareCard = { kind: ShareKind; draw: () => Promise<HTMLCanvasElement>; file: string }
 
 /* ---------------- Card data ---------------- */
 
 let names: Map<number, string> | null = null
 
-/** Every species' name by dex number (the Pokédex model knows them all). */
-const nameOf = (dex: number) => (names ??= new Map(pokedex().map((e) => [e.dex, e.name]))).get(dex) ?? `#${dex}`
+/** Every species' name by dex number (the Pokédex model knows them all), in the game's language. */
+const nameOf = (dex: number) => {
+  const name = (names ??= new Map(pokedex().map((e) => [e.dex, localName(e.name)]))).get(dex)
+  return name ? localName(name) : `#${dex}`
+}
 
 const mon = (dex: number, shiny: boolean): CardMon => ({ dex, name: nameOf(dex), shiny })
 
@@ -52,12 +57,8 @@ const wornStyle = (): CardStyle => {
   return { frame, background }
 }
 
-/** Who shares: the handle and title, and the game's link crediting the handle (shown without the scheme). */
-const trainerLine = (title: TitleId | null): CardTrainer & { url: string } => {
-  const handle = accountHandle()
-  const url = gameUrl(handle)
-  return { handle, title: title ? t().achievements.titles[title] : null, link: url.replace(/^https?:\/\/(www\.)?/, ''), url }
-}
+/** Who shares: the handle and title. */
+const trainerLine = (title: TitleId | null): CardTrainer => ({ handle: accountHandle(), title: title ? t().achievements.titles[title] : null })
 
 /** How long the card waits for the challenge's place before it's drawn without it (offline, a slow API). */
 const PLACE_WAIT_MS = 4000
@@ -73,7 +74,7 @@ const officialPlace = async (place: Promise<ChallengePlace | null>): Promise<Run
  * `place`: a Desafio do dia run's place, as the API answers it at the end of the run.
  */
 export const runShare = (g: Game, dexBase: Pokedex, place: Promise<ChallengePlace | null> | null = null): ShareCard => {
-  const form = PLAYABLE[g.starter].line[g.player.stage]!
+  const form = playerForm(g)
   const trainer = trainerLine(loadSave().title)
   const outcome = g.endless ? 'endless' : g.phase === 'victory' ? 'victory' : 'fainted'
   const moves = (Object.entries(g.damageByMove) as Array<[DamageSource, number]>)
@@ -81,12 +82,12 @@ export const runShare = (g: Game, dexBase: Pokedex, place: Promise<ChallengePlac
     .slice(0, 3)
     .map(([id, damage]) => {
       const src = damageSource(g, id)
-      return { name: src.name, icon: src.icon, damage, color: TYPE_COLORS[src.type] }
+      return { name: localName(src.name), icon: src.icon, damage, color: TYPE_COLORS[src.type] }
     })
   const shinies = [...g.dexLog.shinies]
   const card: RunCardData = {
     date: new Date(),
-    mon: { dex: form.dex, name: form.name, shiny: g.player.shiny },
+    mon: { dex: form.dex, name: localName(form.name), shiny: g.player.shiny },
     outcome,
     difficulty: g.difficulty,
     time: g.time,
@@ -103,8 +104,7 @@ export const runShare = (g: Game, dexBase: Pokedex, place: Promise<ChallengePlac
   return {
     kind: 'run',
     draw: async () => drawRunCard({ ...card, challenge: place ? await officialPlace(place) : null }, wornStyle()),
-    text: t().share.runText({ name: form.name, shiny: g.player.shiny, time: formatTime(g.time), outcome, shinies: shinies.length, link: trainer.url }),
-    file: `pokemon-survivors-${form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
+    file: `pokemon-world-${localName(form.name).toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
   }
 }
 
@@ -137,11 +137,10 @@ export const trainerShare = (partner: PlayableId): ShareCard => {
     .sort(showcaseOrder)
     .map((e) => mon(e.dex, true))
   const first = PLAYABLE[partner].line[0]
-  const partnerShiny = save.shinyStarters[partner] === true || (isHatchling(partner) && save.hatched[partner]?.shiny === true)
   const card: TrainerCardData = {
     date: new Date(),
     name: s.kind === 'signedIn' && s.name ? s.name : null,
-    partner: { dex: first.dex, name: first.name, shiny: partnerShiny },
+    partner: { dex: first.dex, name: localName(first.name), shiny: playsShiny(save, partner) },
     medals,
     shinies: shinies.length,
     ribbons: ribbonCounts(save.ribbons),
@@ -153,8 +152,7 @@ export const trainerShare = (partner: PlayableId): ShareCard => {
   return {
     kind: 'trainer',
     draw: () => drawTrainerCard(card, wornStyle()),
-    text: t().share.trainerText(shinies.length, counts.caught, trainer.url),
-    file: 'pokemon-survivors-trainer-card.png',
+    file: 'pokemon-world-trainer-card.png',
   }
 }
 
@@ -172,14 +170,8 @@ const download = (blob: Blob, file: string) => {
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
-/** The image (and its text, where the clipboard takes both) on the clipboard. */
-const copy = async (blob: Blob, text: string) => {
-  try {
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob, 'text/plain': new Blob([text], { type: 'text/plain' }) })])
-  } catch {
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-  }
-}
+/** The image alone on the clipboard. */
+const copy = (blob: Blob) => navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 
 const canCopy = () => typeof ClipboardItem !== 'undefined' && typeof navigator.clipboard?.write === 'function'
 
@@ -193,7 +185,7 @@ const primaryMethod = (file: File): ShareMethod => {
 
 /** Whole device px per card px that fit `maxW`×`maxH` CSS px, as the CSS width: the preview stays pixel-sharp. */
 const previewWidth = (maxW: number, maxH: number) => {
-  const dpr = window.devicePixelRatio || 1
+  const dpr = uiDpr()
   const k = logoScale(CARD.w, CARD.h, maxW, maxH, dpr)
   return Math.min((CARD.w * k) / dpr, maxW)
 }
@@ -222,8 +214,7 @@ export const sharePreview = (root: HTMLElement, input: Input, card: ShareCard, o
   }
 
   const fitImage = () => {
-    const vw = window.visualViewport?.width ?? window.innerWidth
-    const vh = window.visualViewport?.height ?? window.innerHeight
+    const { w: vw, h: vh } = uiViewport()
     const sideBySide = vh <= 500 && vw > vh
     const width = sideBySide ? previewWidth(vw * 0.5, vh - 32) : previewWidth(Math.min(vw - 72, 520), vh - 250)
     img.style.width = `${width}px`
@@ -232,9 +223,9 @@ export const sharePreview = (root: HTMLElement, input: Input, card: ShareCard, o
   const send = async (method: ShareMethod) => {
     if (!ready || closed) return
     try {
-      if (method === 'share') await navigator.share({ files: [ready.file], text: card.text })
+      if (method === 'share') await navigator.share({ files: [ready.file] })
       else if (method === 'copy') {
-        await copy(ready.blob, card.text)
+        await copy(ready.blob)
         say(m.copied)
       } else {
         download(ready.blob, card.file)

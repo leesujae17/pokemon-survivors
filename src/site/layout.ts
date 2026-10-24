@@ -1,11 +1,11 @@
-import { LOCALE_IDS, type Locale } from '../i18n'
+import { SITE_LOCALE_IDS, type SiteLocale } from '../i18n'
 import { SITE_MESSAGES } from '../i18n/site'
 import { html, jsonLd, raw, type Html } from './html'
-import { absolute, alternates, HREFLANG, REPO_URL, ROUTES, type PageId, type RouteId } from './routes'
+import { absolute, alternates, HREFLANG, ROUTES, type PageId, type RouteId } from './routes'
 
 export type PageMeta = {
   id: PageId
-  locale: Locale
+  locale: SiteLocale
   title: string
   description: string
   /** schema.org nodes for this page, merged into one `@graph` with the breadcrumbs. */
@@ -14,9 +14,9 @@ export type PageMeta = {
   css?: string
 }
 
-const NAV: readonly RouteId[] = ['play', 'pokedex', 'guide', 'changelog']
+const NAV: readonly RouteId[] = ['play', 'pokedex', 'guide']
 
-const others = (locale: Locale) => LOCALE_IDS.filter((l) => l !== locale)
+const others = (locale: SiteLocale) => SITE_LOCALE_IDS.filter((l) => l !== locale)
 
 const head = ({ id, locale, title, description, schema = [], css }: PageMeta) => {
   const m = SITE_MESSAGES[locale]
@@ -37,7 +37,7 @@ const head = ({ id, locale, title, description, schema = [], css }: PageMeta) =>
       '@type': 'BreadcrumbList',
       '@id': `${url}#breadcrumb`,
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Pokémon Survivors', item: absolute(ROUTES.play[locale]) },
+        { '@type': 'ListItem', position: 1, name: 'Pokémon World', item: absolute(ROUTES.play[locale]) },
         { '@type': 'ListItem', position: 2, name: m.nav[id], item: url },
       ],
     },
@@ -52,7 +52,7 @@ const head = ({ id, locale, title, description, schema = [], css }: PageMeta) =>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
     ${alternates(id).map((a) => html`<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />\n    `)}<meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Pokémon Survivors" />
+    <meta property="og:site_name" content="Pokémon World" />
     <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
@@ -67,23 +67,21 @@ const head = ({ id, locale, title, description, schema = [], css }: PageMeta) =>
     ${css && html`<style>${raw(css)}</style>`}
     <script type="application/ld+json">${jsonLd({ '@context': 'https://schema.org', '@graph': graph })}</script>
     <script type="module" src="/src/site/client.ts"></script>
-    <script defer vite-ignore src="/_vercel/insights/script.js"></script>
-    <script defer vite-ignore src="https://metrics.pedrobarretto.com.br/script.js" data-website-id="61e8c0cb-d733-4e52-a994-5098d48c7b02" data-domains="www.pokemonsurvivors.com,www.pokemonsurvivors.com.br"></script>
   </head>`
 }
 
-const header = (id: PageId, locale: Locale) => {
+const header = (id: PageId, locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   return html`<a class="skip" href="#content">${m.skip}</a>
   <header class="site-header">
-    <a class="brand" href="${ROUTES.play[locale]}"><img src="/assets/pokemon/4/portrait.png" width="40" height="40" alt="" /><span>Pokémon<br />Survivors</span></a>
+    <a class="brand" href="${ROUTES.play[locale]}"><img src="/assets/pokemon/4/portrait.png" width="40" height="40" alt="" /><span>Pokémon<br />World</span></a>
     <nav class="site-nav" aria-label="${m.nav.label}">
       ${NAV.map(
         (r) => html`<a href="${ROUTES[r][locale]}" class="${r === 'play' ? 'nav-play' : ''}"${r === id ? html` aria-current="page"` : ''}>${m.nav[r]}</a>`,
       )}
     </nav>
     <nav class="lang" aria-label="${m.nav.language}">
-      ${LOCALE_IDS.map(
+      ${SITE_LOCALE_IDS.map(
         (l) =>
           html`<a href="${ROUTES[id][l]}" hreflang="${HREFLANG[l]}" lang="${SITE_MESSAGES[l].lang.tag}" data-lang="${l}"${l === locale ? html` aria-current="true"` : html` title="${SITE_MESSAGES[l].lang.switchTo}"`}>${SITE_MESSAGES[l].lang.short}</a>`,
       )}
@@ -91,16 +89,10 @@ const header = (id: PageId, locale: Locale) => {
   </header>`
 }
 
-const footer = (locale: Locale) => {
+const footer = (locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   return html`<footer class="site-footer">
     <p>${m.footer.disclaimer}</p>
-    <p class="footer-links">
-      <a href="${ROUTES.legal[locale]}">${m.footer.legal}</a>
-      <a href="${REPO_URL}/blob/main/CREDITS.md">${m.footer.credits}</a>
-      <a href="${REPO_URL}">${m.footer.source}</a>
-      <a class="support-link" href="${ROUTES.support[locale]}">♥ ${m.footer.support}</a>
-    </p>
   </footer>`
 }
 

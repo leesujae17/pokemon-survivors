@@ -24,7 +24,7 @@ describe('partner', () => {
   it('survives a reload, and an unknown or missing one falls back to Charmander', () => {
     const load = (partner: unknown) => parseSave(JSON.stringify({ ...EMPTY_SAVE, version: SAVE_VERSION, partner })).partner
     expect(load('gible')).toBe('gible')
-    for (const bad of [undefined, 'mewtwo', 'toString', 7]) expect(load(bad)).toBe('charmander')
+    for (const bad of [undefined, 'missingno', 'toString', 7]) expect(load(bad)).toBe('charmander')
   })
 })
 
@@ -41,6 +41,7 @@ describe('hallPokemon', () => {
   it('shows a shiny picked with a ticket first, then the companion, then the partner', () => {
     const picked: Save = { ...supporter, shinyPicks: [{ id: 'a', pick: 'gible' }, { id: 'b', pick: null }], companion: { id: 'squirtle', shiny: false } }
     expect(hallPokemon(picked)).toEqual({ id: 'gible', shiny: true })
+    expect(hallPokemon({ ...picked, shinyStarters: { gible: false } })).toEqual({ id: 'gible', shiny: false })
     expect(hallPokemon({ ...picked, shinyPicks: [{ id: 'b', pick: null }] })).toEqual({ id: 'squirtle', shiny: false })
     expect(hallPokemon({ ...supporter, partner: 'bulbasaur', shinyStarters: { bulbasaur: true } })).toEqual({ id: 'bulbasaur', shiny: true })
   })

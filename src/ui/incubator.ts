@@ -6,8 +6,10 @@ import { EGG_TIERS, EGGS, isReady, stepsLeft, type Egg, type Hatch } from '../ga
 import { eggCrack, eggIcon, eggSprite, SPARKLE } from '../render/art'
 import { cryUrl, drawPokemon, loadedSprites, loadSpecies } from '../render/sprites'
 import { formatNumber, formatPokeDollars, t } from '../i18n'
+import { localName } from '../i18n/names'
 import { h, later, rich } from './dom'
 import { loadSave } from './save'
+import { settings } from './settings'
 import { hint, menu, type Screen } from './screens'
 
 /** One incubator slot: the egg, its tier, a progress bar and the steps left (or "Ready!"). */
@@ -99,7 +101,7 @@ export const hatchScene = (root: HTMLElement, input: Input, hatch: Hatch, action
   const m = t().eggs
   const def = HATCHLINGS[hatch.id]
   const dex = def.line[0].dex
-  const name = def.line[0].name
+  const name = localName(def.line[0].name)
   void loadSpecies(dex).catch(() => {})
   if (hatch.shiny) void loadSpecies(dex, true).catch(() => {})
 
@@ -178,9 +180,9 @@ export const hatchScene = (root: HTMLElement, input: Input, hatch: Hatch, action
     blitCentered(ctx, ellipse(14, 3, 'rgba(16,40,16,0.3)'), cx, floor)
     if (k < HATCH.burst) drawEgg(k)
     else drawNewborn(k)
-    // The burst: white flash in, then out over the newborn.
+    // The burst: white flash in, then out over the newborn (none with Flashes reduced).
     const flash = k < HATCH.burst - 0.2 ? 0 : k < HATCH.burst ? (k - HATCH.burst + 0.2) / 0.2 : Math.max(0, 1 - (k - HATCH.burst) / 0.5)
-    if (flash > 0) {
+    if (flash > 0 && settings().flashes === 'normal') {
       ctx.fillStyle = `rgba(255,255,255,${flash})`
       ctx.fillRect(0, 0, W, H)
     }

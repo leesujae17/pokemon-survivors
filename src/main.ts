@@ -1,26 +1,39 @@
+import { localName } from './i18n/names'
 import '@fontsource/press-start-2p'
 import '@fontsource/vt323'
+import './fonts/hangul.css'
 import './ui/style.css'
+// First, so its error listeners catch what goes wrong while the rest loads.
+import { bugReportsEnabled, describeWith, syncRunWatch, takeCrash } from './bugReport'
 
 import { playCry, playSfx, unlockAudio, type Sfx } from './engine/audio'
+import { castSound } from './ui/castSounds'
 import { createInput, type Stick } from './engine/input'
 import type { Vec } from './engine/math'
 import { currentTheme, duckMusic, playTheme, type ThemeId } from './engine/music'
+import { advancePacer, pacer, resetPacer } from './engine/pacing'
 import { context2d, resetCanvases } from './engine/pixelart'
 import { fitView } from './engine/viewport'
 import { createRng } from './engine/rng'
 import { BIOME_ORDER, BIOMES, type BiomeId, type WeatherId } from './data/biomes'
 import { bodyOf } from './data/bodies'
 import { MEGA_LINES, MEGAS, megasOf, type MegaId } from './data/megas'
-import { RIFT, RIFT_LEGENDS } from './data/rifts'
+import { isRiftLegend, RIFT, RIFT_LEGENDS } from './data/rifts'
+import { domainTheme } from './game/domain'
+import { partnerOf } from './data/domains'
+import { captureOutcome, setCaptureOutcome } from './render/capture'
+import { captureOutcome as savedCapture } from './game/capture'
+import { domainLines } from './ui/riftTitle'
+import { isWaveLegend, LEGEND_THEME } from './data/legendBosses'
 import { ENEMIES, type EnemyDef, type EnemyId } from './data/enemies'
 import { ITEMS } from './data/items'
 import type { AchievementId } from './data/achievements'
 import type { TraitId } from './data/traits'
 import { REGIONS, STARTERS } from './data/starters'
 import { challengeStart, nextIsOfficial, type Challenge } from './game/challenge'
-import { HATCHLING_IDS, HATCHLINGS, isHatchling, PLAYABLE, playableDex, type HatchlingId, type PlayableId } from './data/hatchlings'
-import { accountState, accountsEnabled, backFromSignIn, onAccountChange, onGifts, receiveGifts, startAccount, syncSave } from './account'
+import { HATCHLING_IDS, HATCHLINGS, PLAYABLE, type HatchlingId, type PlayableId } from './data/hatchlings'
+import { isLegend } from './data/legends'
+import { accountState, accountsEnabled, backFromSignIn, giftInbox, onAccountChange, stageGifts, startAccount, syncSave } from './account'
 import { track } from './analytics'
 import { BAG_ITEM_IDS, BAG_ITEMS, useArmed, type BagItem } from './game/bag'
 import { CONSUMABLES } from './game/consumables'
@@ -28,46 +41,79 @@ import { depositEggs, EGGS, grantEgg, hatchEgg, isReady, toSteps, type EggTier, 
 import { setBiome } from './game/biomes'
 import { brasiliaDay, previousDay, type DayKey } from './game/day'
 import { spawnEnemy } from './game/enemies'
+import { pickAlpha, spawnAlpha } from './game/alphas'
+import { stageIndexAt } from './data/waves'
 import { makeShiny } from './game/shiny'
 import { MAP_EVENT_KINDS, MAP_EVENTS, spawnMapEvent, type MapEventKind } from './game/mapEvents'
 import { MEOWTH_DEX } from './game/mapEventRules'
-import { chooseOffer, playerDex, rerollOffers, skipLevelUp, step } from './game/game'
-import { recomputeStats } from './game/leveling'
-import { dropMegaStones, grantStone, heldMega } from './game/mega'
+import { FIELD, FIELD_MISSION_KINDS, TOGEPI_DEX, type FieldMissionKind } from './game/fieldMissionRules'
+import { advancePhase, banishOffer, chooseOffer, offerAbilities, playerDex, rerollOffers, skipLevelUp, step, takeBerryLevelUps } from './game/game'
+import { formAt, playerForm } from './game/branch'
+import { unlockedAt } from './game/learnsets'
+import { ABILITIES, type AbilityEffect, type AbilityId } from './data/abilities'
+import { familyDex, MEGA_BRANCH, type BranchId } from './data/branches'
+import { abilityStacks, grantAbility } from './game/abilities'
+import { abilityIcon } from './render/abilityArt'
+import { recomputeStats, xpFor } from './game/leveling'
+import { dropMegaStones, grantStone, heldMega, megaBaseName } from './game/mega'
 import { ENDLESS, REAPER } from './game/endless'
 import { continueEndless } from './game/endlessSystem'
+import { levelUpDevTools } from './game/levelUpDev'
+import { legendDevTools } from './game/legendDev'
+import { bankCapture, captureDevTools, showCapture } from './ui/capture'
 import { riftDevTools } from './game/riftDev'
+import { placeDevTools } from './game/placeDev'
+import { placeFeedback } from './ui/places'
+import { landmarkFeedback } from './ui/landmarks'
+import { PLACES } from './data/places'
+import { placeSchedule } from './game/place'
+import { kitDevTools } from './game/kitDev'
+import { eggMoveDevTools } from './game/eggMovesDev'
+import { learnDevTools } from './game/learnDev'
+import { tmDevTools } from './game/tmDev'
+import { duoDevTools } from './game/duoDev'
+import { tensionDevTools } from './game/tensionDev'
+import { hazardDevTools } from './game/hazardDev'
+import { spitterDevTools } from './game/spitterDev'
+import { cursePick } from './ui/cursePick'
+import { pokeballPick } from './ui/pokeballPick'
+import { dropPickup } from './game/pickups'
+import { CURSES } from './data/curses'
+import { CAST_SFX } from './ui/castSfx'
 import { clearSpot, featureAt } from './game/terrain'
 import { TERRAIN, type SolidKind } from './data/terrain'
+import type { LandmarkId } from './data/landmarks'
 import { dexNews, dexStatus, mergeDex, recordRun, type Pokedex } from './game/dex'
 import { runEarnings, wonRun } from './game/meta'
 import { missionStatus, type MissionStatus } from './game/missions'
 import { summarizeRun, type RunSummary } from './game/tally'
-import { parseHandle, rankable, runResult } from './game/ranking'
+import { parseHandle, rankable, runMode, runResult } from './game/ranking'
 import { rosterSchedule, type Roster } from './game/roster'
-import { recordEvent, recordStep, runRoster, startGame, startRecording, TICK, type Recorder, type ReplayStart } from './game/replay'
+import { parseReplay, recordEvent, recordStep, resimulate, RULES_VERSION, rulesStanding, runRoster, startGame, startRecording, TICK, type Recorder, type ReplayStart } from './game/replay'
 import { gameSpecial } from './game/special'
 import { unlockShinyStarter } from './game/shinyStarters'
+import { playsShiny } from './game/shinyPicks'
 import { canWalkWith, isSupporter, SUPPORTER_TIERS, TIER_GIFTS, type SupporterTier } from './game/supporters'
 import { createCompanion, stepCompanion, type CompanionView } from './render/companion'
 import { MOVES } from './game/moves'
-import type { Game, GameEvent, Phase } from './game/types'
+import type { Game, GameEvent, Offer, Phase } from './game/types'
 import { setWeather } from './game/weather'
-import { render } from './render/draw'
+import { render, warmScenery } from './render/draw'
 import { drawJoystick } from './render/joystick'
 import { cryUrl, loadAll, loadSpecies, portraitUrl, preloadForms, preloadShinies, sprites, streamSpecies } from './render/sprites'
 import { setMarkerInsets } from './render/mapEvents'
 import { consumableIcon } from './render/props'
-import { bagIcon, eggIcon, ribbonIcon } from './render/art'
+import { bagIcon, berryIcon, curseIcon, eggIcon, moveIcon, ribbonIcon, warmIcon } from './render/art'
+import { TYPE_COLORS } from './data/types'
 import { megaStoneIcon } from './render/megaFx'
 import { createTitleScene, drawTitleScene, meetPartner, steerPartner, stepTitleScene } from './render/titleScene'
 import { weatherIcon } from './render/weather'
-import { formatDay, locale, LOCALES, t } from './i18n'
+import { formatDay, formatPokeDollars, locale, LOCALES, t } from './i18n'
 import { h, later, rich } from './ui/dom'
 import { setActivePad } from './ui/inputLabels'
-import { captureRef, flushRuns, PROFILE_PARAM, rankingEnabled, stageInvite, startRanked, type RankedRun, type RankOutcome } from './ranking'
-import { parseGiftContent, type GiftKind, type GiftReason } from './game/gifts'
-import { announceGifts } from './ui/gifts'
+import { captureRef, flushRuns, prefetchRanked, PROFILE_PARAM, rankingEnabled, stageInvite, startRanked, type RankedRun, type RankOutcome } from './ranking'
+import { DISCORD_GIFT, parseGiftContent, type GiftKind, type GiftReason } from './game/gifts'
+import { giftScreen } from './ui/gifts'
 import { playGate } from './ui/account'
 import { trainerCardScreen } from './ui/trainer'
 import { createHud, type Hud } from './ui/hud'
@@ -78,25 +124,32 @@ import { medalChips, missionReport, missionsScreen, progressToast, titleBadge } 
 import { martDevTools } from './ui/martDev'
 import { missionDevTools } from './ui/missionsDev'
 import { pcBoxScreen } from './ui/pcBox'
+import { newsScreen } from './ui/news'
 import { pokedexScreen } from './ui/pokedex'
 import { profileEditor, profileScreen } from './ui/profile'
 import { rankingScreen, rankPanel } from './ui/ranking'
 import { flashScreen, levelUp, pauseMenu, results, textBox, type Screen } from './ui/screens'
+import { abilityPick, branchPick } from './ui/abilityPick'
+import { tmPick } from './ui/tmPick'
 import { isSettingsOpen, openSettings, settings, toggleMute } from './ui/settings'
 import { mapEventFeedback } from './ui/mapEvents'
 import { runShare, sharePreview, trainerShare } from './ui/share'
 import { shop } from './ui/shop'
 import { starterSelect } from './ui/starterSelect'
+import { invitesScreen } from './ui/invites'
 import { titleScreen, type LobbyFocus, type Meadow } from './ui/title'
 import { creditsLine, supportersScreen } from './ui/supporters'
 import { suggestionsScreen } from './ui/suggestions'
 import { banner, clearToasts, tickToasts, toast } from './ui/toasts'
+import { bugReportForm, crashPrompt } from './ui/bugReport'
 
 /** Fixed simulation step: the replays the ranking re-simulates count on it. */
 const STEP = TICK
 
 const canvas = document.querySelector<HTMLCanvasElement>('#game')!
 const ui = document.querySelector<HTMLDivElement>('#ui')!
+// A capture scene's ball clicks shut once the save holds the legend captured (its win is banked the frame it falls).
+setCaptureOutcome((legend) => savedCapture(loadSave(), legend))
 const ctx = context2d(canvas)
 /** Invisible box CSS puts where the fixed joystick sits (corner, safe area); the stick is centered on it. */
 const stickAnchor = h('div', { class: 'stick-anchor', 'aria-hidden': 'true' })
@@ -128,6 +181,8 @@ let dirty = true
  */
 const resize = () => {
   stickCenter = null
+  // The HUD may have moved (a new viewport or UI size): re-measure it after layout (and after module init, so `run` exists by then).
+  requestAnimationFrame(() => run && syncMarkerInsets())
   const width = window.visualViewport?.width ?? window.innerWidth
   const height = window.visualViewport?.height ?? window.innerHeight
   const fit = fitView(width, height, window.devicePixelRatio || 1)
@@ -139,11 +194,10 @@ const resize = () => {
   canvas.height = view.h
   canvas.style.width = `${view.w * cssScale}px`
   canvas.style.height = `${view.h * cssScale}px`
-  document.documentElement.style.setProperty('--px', `${Math.max(2, Math.round(cssScale))}px`)
+  // One world pixel, for the UI's pixel frames (style.css turns it into #ui's zoomed px as `--px`).
+  document.documentElement.style.setProperty('--world-px', `${Math.max(2, Math.round(cssScale))}px`)
   context2d(canvas)
   dirty = true
-  // Runs after layout (and after module init, so `run` exists by then).
-  requestAnimationFrame(() => run && syncMarkerInsets())
 }
 // Rotation often reports stale sizes in the same tick, so re-measure on the next frame too.
 const scheduleResize = () => (resize(), requestAnimationFrame(resize))
@@ -230,7 +284,21 @@ const queueMega = () => {
 }
 
 /** The player's name right now: its stage's, or its Mega form's while that lasts. */
-const playerName = (g: Game) => (g.mega.active > 0 && heldMega(g)?.name) || PLAYABLE[g.starter].line[g.player.stage]!.name
+const playerName = (g: Game) => (g.mega.active > 0 && heldMega(g)?.name) || localName(playerForm(g).name)
+
+/** Classes every screen shares, which say nothing about which one it is. */
+const SCREEN_CLASSES = new Set(['screen', 'shell', 'dim', 'pop', 'hidden'])
+
+// A bug report says what's on screen: the screens stacked up (the form itself aside) and the run, as plain numbers.
+describeWith(() => {
+  const view = [...ui.querySelectorAll(':scope > .screen:not(.bug-screen)')].map((el) => [...el.classList].filter((c) => !SCREEN_CLASSES.has(c)).join('.')).join(' > ')
+  const g = run?.game
+  if (!g || g.phase === 'gameover' || g.phase === 'victory') return { view, run: null }
+  return {
+    view,
+    run: { partner: g.starter, form: playerName(g), difficulty: g.difficulty, time: Math.floor(g.time), level: g.player.level, phase: g.phase, biome: g.biome.id, enemies: g.enemies.length },
+  }
+})
 
 /** The player's cry right now: its Mega form's own while that lasts. */
 const playerCry = (g: Game) => cryUrl(playerDex(g), g.mega.active > 0 ? heldMega(g)?.form : undefined)
@@ -259,23 +327,31 @@ let pressedStart = false
  */
 const showTitle = (opts: { intro?: boolean; focus?: LobbyFocus } = {}) => {
   endRun()
+  // A newer build went live during the run (see `watchDeploys`): back in the lobby, with the run banked, ranked and its crash watch cleared, is the moment to load it.
+  if (reloadForDeploy) return location.reload()
+  // Every Play in the lobby (the partner select, the challenge, a hatch, a shiny pick) finds its ticket in hand.
+  prefetchRun()
+  prefetchRun(challengeToday().day)
   setScreen(
     titleScreen(ui, input, {
       play: () => (accountsEnabled && !playingAsGuest && accountState().kind === 'guest' ? showPlayGate() : showMenu()),
       challenge: () => showChallenge(),
       incubator: () => showIncubator(() => showTitle({ focus: 'eggs' })),
+      gifts: showGifts,
       missions: () => showMissions(),
       ready: () => (pressedStart = true),
       // The language may change inside Settings, so closing them rebuilds the title on the same entry.
       settings: (focus) => openSettings(ui, input, () => showTitle({ focus })),
+      news: (focus) => newsScreen(ui, input, () => showTitle({ focus })),
       pokedex: (focus) => pokedexScreen(ui, input, () => showTitle({ focus }), showPcBox),
       mart: (focus) => shop(ui, input, () => showTitle({ focus })),
       // Closing rebuilds the title, so a sign in's merged save shows up on the Trainer chip.
       trainer: (focus) =>
         trainerCardScreen(ui, input, { supporters: (back) => supportersScreen(ui, input, { play: (id) => void startRun(id), onClose: back }, null) }, () => showTitle({ focus })),
-      ranking: rankingEnabled ? (focus) => rankingScreen(ui, input, () => showTitle({ focus }), { difficulty: loadSave().difficulty }) : undefined,
+      ranking: rankingEnabled ? (focus) => rankingScreen(ui, input, () => showTitle({ focus }), { difficulty: loadSave().difficulty, mode: runMode(loadSave().partner) }) : undefined,
       ideas: rankingEnabled ? (focus) => suggestionsScreen(ui, input, () => showTitle({ focus })) : undefined,
       supporters: (focus, open) => supportersScreen(ui, input, { play: (id) => void startRun(id), onClose: () => showTitle({ focus }) }, open),
+      invites: (focus) => invitesScreen(ui, input, () => showTitle({ focus })),
       meadow,
     }, opts),
   )
@@ -297,6 +373,7 @@ const showPlayGate = () =>
 /** The partner select; its top bar leads back to the title, to the Poké Mart (the wallet) and to Settings, which come back to it on the same Pokémon. */
 const showMenu = (initial: PlayableId = loadSave().partner) => {
   endRun()
+  prefetchRun()
   const select = starterSelect(ui, input, {
     pick: (id) => setTimeout(() => void startRun(id), 250),
     back: () => showTitle({ focus: 'play' }),
@@ -328,6 +405,7 @@ const showMissions = () => setScreen(missionsScreen(ui, input, () => showTitle({
 /** The Desafio do dia's screen (from the title); its board opens over it and comes back to it. */
 const showChallenge = () => {
   endRun()
+  prefetchRun(challengeToday().day)
   setScreen(
     challengeScreen(ui, input, {
       play: (c, official) => setTimeout(() => void startRun(c.starter, { challenge: c, official }), 250),
@@ -364,35 +442,34 @@ const hatchAt = (index: number, then: () => void) => {
 const showHatch = (hatch: Hatch, then: () => void, holdAt?: number, after = () => {}) =>
   setScreen(hatchScene(ui, input, hatch, { play: () => (void startRun(hatch.id), after()), done: () => (then(), after()) }, holdAt))
 
-/** Leaves the run; every egg it made ready hatches first ("Oh? The Egg is hatching!"), then the gifts' hatches, then `then`. */
+/** Leaves the run; every egg it made ready hatches first ("Oh? The Egg is hatching!"), then `then`. */
 const afterRun = (then: () => void) => {
   endRun()
   const ready = loadSave().eggs.findIndex(isReady)
-  if (ready < 0) return playGiftHatches(then)
+  if (ready < 0) return then()
   hatchAt(ready, () => afterRun(then))
 }
 
-/** Shiny hatches a Mystery Gift brought (already in the save), waiting to play out of a run. */
-const giftHatches: Hatch[] = []
-
-/** Plays each waiting gift hatch's scene (recording it in the missions and medals), then `then`. */
-const playGiftHatches = (then: () => void) => {
-  const hatch = giftHatches.shift()
-  if (!hatch) return then()
-  const record = saveHatch(loadSave(), hatch.shiny)
-  void syncSave()
-  showHatch(hatch, () => playGiftHatches(then), undefined, () => later(() => progressToast(ui, record)))
-}
-
 /**
- * Mystery Gifts that landed in the save (a sync, or a dev helper): a banner
- * each, and a shiny hatch plays right away on the title, else after the run.
+ * The lobby's gift box: opens the waiting Mystery Gifts one by one. A shiny
+ * hatch plays its scene (recorded in the missions and medals) and a shiny
+ * ticket goes to the Hall's picker, each coming back to the next gift, or
+ * to the lobby once none waits.
  */
-onGifts((arrived, waiting) => {
-  announceGifts(ui, arrived, waiting)
-  giftHatches.push(...arrived.flatMap((a) => (a.hatch ? [a.hatch] : [])))
-  if (giftHatches.length > 0 && !run && screen?.el.classList.contains('title-home')) playGiftHatches(() => showTitle())
-})
+const showGifts = () => {
+  const back = () => (giftInbox().length > 0 ? showGifts() : showTitle({ focus: 'gifts' }))
+  setScreen(
+    giftScreen(ui, input, {
+      hatch: (hatch) => {
+        const record = saveHatch(loadSave(), hatch.shiny)
+        void syncSave()
+        showHatch(hatch, back, undefined, () => later(() => progressToast(ui, record)))
+      },
+      pick: () => setScreen(supportersScreen(ui, input, { play: (id) => void startRun(id), onClose: back }, 'pick')),
+      close: () => showTitle({ focus: 'gifts' }),
+    }),
+  )
+}
 
 /** Moves the run's steps and new eggs into the incubator, once each (a victory banks, then endless banks again). */
 const bankHatchery = (r: Run) => {
@@ -452,14 +529,36 @@ const rankRun = (r: Run) => {
   }
 }
 
-/** Reports how the run ended, once. */
-const reportRun = (r: Run) => {
+/** Reports how the run ended, once, with the build it ended on and, for a faint, what landed the last hit. */
+const reportRun = (r: Run, faint: Extract<GameEvent, { kind: 'gameover' }> | null = null) => {
   if (r.reported) return
   r.reported = true
   const g = r.game
-  const outcome = g.endless ? 'endless' : g.phase === 'victory' || g.phase === 'gameover' ? g.phase : 'quit'
-  track('run_end', { starter: g.starter, difficulty: g.difficulty, outcome, minute: Math.floor(g.time / 60), level: g.player.level, kills: g.kills })
+  const p = g.player
+  track('run_end', {
+    starter: g.starter,
+    difficulty: g.difficulty,
+    mode: runMode(g.starter),
+    outcome: g.endless ? 'endless' : g.phase === 'victory' || g.phase === 'gameover' ? g.phase : 'quit',
+    minute: Math.floor(g.time / 60),
+    level: p.level,
+    kills: g.kills,
+    stage: p.stage,
+    branch: g.branch,
+    ability: g.ability.id,
+    mega: g.mega.stone,
+    megas: g.mega.count,
+    moves: p.moves.map((m) => `${m.id}:${m.level}`),
+    items: p.items.map((i) => `${i.id}:${i.level}`),
+    bosses: g.tally.bossKills,
+    foe: faint?.foe ?? null,
+    hit: faint?.hit ?? null,
+    ...challengeKind(r.challenge),
+  })
 }
+
+/** The `challenge` field of a run's events: a Desafio do dia run says whether it started as the official attempt. */
+const challengeKind = (c: { official: boolean } | null) => (c ? { challenge: c.official ? ('official' as const) : ('practice' as const) } : {})
 
 const endRun = () => {
   if (!run) return
@@ -476,31 +575,44 @@ const endRun = () => {
   run.hud.dispose()
   clearToasts(ui)
   run = null
+  syncRunWatch()
 }
 
 const loadingScreen = () => h('div', { class: 'screen' }, h('p', { class: 'loading blink' }, t().loading))
 
 /** The next run's seed, the day's outbreak and the wild cast, drawn ahead so the menus can warm up its first stage. */
-type RunPlan = { seed: number; outbreak: EnemyId; roster: Roster }
+type RunPlan = { seed: number; outbreak: EnemyId; legend: boolean; roster: Roster }
 
 /** A Desafio do dia run, as `startRun` takes it: the challenge, and whether the screen called it official. */
 type ChallengeRun = { challenge: Challenge; official: boolean }
 
-const planRun = (): RunPlan => {
-  const seed = Date.now()
-  const outbreak = outbreakToday()
-  return { seed, outbreak, roster: runRoster(seed, outbreak) }
-}
+/** A run's plan from `seed` and `outbreak`: the API's for a ranked run, else the game's own and the device's day. */
+const planRun = (seed = Date.now(), outbreak = outbreakToday(), legend = false): RunPlan => ({ seed, outbreak, legend, roster: runRoster(seed, outbreak, legend) })
 
 let upcoming = planRun()
 
 /**
+ * Asks ahead for the next ranked run's ticket (`day`: a Desafio do dia's), so
+ * Play never waits on it. Only between runs: a new token replaces the one a
+ * run in progress plays. A regular ticket's seed and outbreak become the next
+ * plan, so the menus warm up the cast it draws.
+ */
+const prefetchRun = (day: DayKey | null = null) =>
+  void prefetchRanked(day).then((ticket) => {
+    if (!ticket || ticket.seed === null || day) return
+    const outbreak = outbreakToday(ticket.outbreak)
+    if (upcoming.seed !== ticket.seed || upcoming.outbreak !== outbreak) upcoming = planRun(ticket.seed, outbreak, upcoming.legend)
+  })
+
+/**
  * Species a run may need outside its drawn cast, with when they can first show
- * up: the fleeing Meowth, the rift legendaries and the endless mode's reaper.
+ * up: the fleeing Meowth, the escort mission's Togepi, the rift legendaries and the endless mode's reaper
+ * (the places' dwellers come from `placeSchedule`).
  */
 const EXTRAS = [
   { dex: MEOWTH_DEX, at: MAP_EVENTS.meowth.spawn.from },
-  ...RIFT_LEGENDS.map((id) => ({ dex: ENEMIES[id].dex, at: RIFT.firstAt })),
+  { dex: TOGEPI_DEX, at: FIELD.first },
+  ...RIFT_LEGENDS.map((id) => ({ dex: ENEMIES[id].dex, at: RIFT.slots[0] - RIFT.omenTime })),
   { dex: ENEMIES[REAPER].dex, at: ENDLESS.reaperAt },
 ]
 
@@ -523,12 +635,18 @@ const startRun = async (starter: PlayableId, daily: ChallengeRun | null = null) 
   if (!c) updateSave((s) => ({ ...s, partner: starter }))
   const loading = loadingScreen()
   ui.append(loading)
-  // The start token's clock starts now, while the sprites load.
+  // The ticket asked for ahead: its clock restarts now, while the sprites load. Without one the run is unranked.
   const ranked = startRanked(c?.day ?? null)
+  // A ranked run plays the seed the API dealt (a challenge's is the day's); the replay starts from it and the cast is drawn from it.
+  const seed = c ? c.seed : (ranked?.seed ?? upcoming.seed)
+  // And the outbreak it dealt with the ticket (the API checks it by its own clock); without one, the device's day.
+  const outbreak = outbreakToday(ranked?.outbreak ?? null)
   // A plan from another day (the menus stayed open past midnight) would play yesterday's outbreak.
-  const plan = c ? { seed: c.seed, outbreak: c.outbreak, roster: runRoster(c.seed, c.outbreak) } : upcoming.outbreak === outbreakToday() ? upcoming : planRun()
-  if (!c) upcoming = planRun()
-  await loadAll([...playableDex(starter), ...openingDex(plan)])
+  const legend = !c && isLegend(starter)
+  const plan = c ? planRun(seed, c.outbreak) : upcoming.seed === seed && upcoming.outbreak === outbreak && upcoming.legend === legend ? upcoming : planRun(seed, outbreak, legend)
+  if (!c) upcoming = planRun(undefined, undefined, legend)
+  // The whole family, branches included: the evolution scene can land on any of them.
+  await loadAll([...familyDex(starter), ...openingDex(plan)])
   // The outbreak's shiny can show up in the first minute.
   void preloadShinies([ENEMIES[plan.outbreak].dex])
   // Armed bag items are used up as the run starts (the challenge leaves them in the Bag).
@@ -540,8 +658,8 @@ const startRun = async (starter: PlayableId, daily: ChallengeRun | null = null) 
     starter,
     difficulty: save.difficulty,
     ranks: save.ranks,
-    // A shiny hatch is shiny for good; a starter rolled shiny once plays shiny when picked so.
-    shiny: (isHatchling(starter) && save.hatched[starter]?.shiny === true) || save.shinyStarters[starter] === true,
+    // An owned shiny (rolled once, a ticket or a shiny hatch) plays shiny unless switched to Normal.
+    shiny: playsShiny(save, starter),
     luckyEgg: save.eggs.length === 0 && HATCHLING_IDS.every((id) => !save.hatched[id]),
     outbreak: plan.outbreak,
     lure: used.lure,
@@ -553,9 +671,9 @@ const startRun = async (starter: PlayableId, daily: ChallengeRun | null = null) 
   // The 1/64 roll unlocks this Pokémon's shiny for good (Normal/Shiny on the select screen).
   if (game.player.luckyShiny) updateSave((s) => ({ ...s, shinyStarters: unlockShinyStarter(s.shinyStarters, starter) }))
   // A shiny run must not start in normal colors.
-  if (game.player.shiny) await preloadShinies(playableDex(starter))
+  if (game.player.shiny) await preloadShinies(familyDex(starter))
   // Alternate forms (Aegislash's Blade Forme) stream in behind; until then the normal form stands in.
-  void preloadForms(playableDex(starter), game.player.shiny)
+  void preloadForms(familyDex(starter), game.player.shiny)
   loading.remove()
   run = {
     game,
@@ -574,15 +692,19 @@ const startRun = async (starter: PlayableId, daily: ChallengeRun | null = null) 
     hatchery: { steps: 0, eggs: 0, refund: 0 },
     dexBase: save.dex,
     recorder: startRecording(start),
-    ranked,
+    ranked: ranked?.ranked ?? null,
     rank: null,
     bestBefore: save.achievements.lifetime.bestTime,
     challenge: daily ? { day: daily.challenge.day, official: daily.official, attempt: false } : null,
     companion: runCompanion(game.player),
   }
-  track('run_start', { starter, difficulty: game.difficulty, ...(daily ? { challenge: daily.official ? 'official' : 'practice' } : {}) })
+  // The crash watch holds the run from now on (`bugReport.ts`).
+  syncRunWatch()
+  track('run_start', { starter, difficulty: game.difficulty, mode: runMode(starter), ...challengeKind(run.challenge) })
   announceRun(start, run.challenge)
-  const later = [...rosterSchedule(plan.roster).filter((s) => s.at > 0), ...EXTRAS].sort((a, b) => a.at - b.at)
+  const flies = PLAYABLE[game.starter].line.some((s) => s.types.includes('flying'))
+  // The run's own roster: a legend's (`avoidLegend`) may have swapped a boss.
+  const later = [...rosterSchedule(game.roster).filter((s) => s.at > 0), ...EXTRAS, ...placeSchedule(flies)].sort((a, b) => a.at - b.at)
   void streamSpecies([...later.map((s) => s.dex), ...openingDex(upcoming)], () => run?.game === game)
 }
 
@@ -592,12 +714,12 @@ const announceRun = (start: ReplayStart, challenge: Run['challenge']) => {
     const m = t().challenge
     toast(ui, h('span', { class: 'item-toast' }, h('img', { src: ribbonIcon('gold'), alt: '' }), h('span', {}, rich(m.started(formatDay(challenge.day))), h('small', {}, challenge.official ? m.startedOfficial : m.startedPractice))), 4200, 'challenge')
   }
-  if (start.outbreak) {
+  if (start.outbreak && !isLegend(start.starter)) {
     const def = ENEMIES[start.outbreak]
-    toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), h('span', {}, rich(t().outbreak.started(def.name)), h('small', {}, t().outbreak.hint))), 4200, 'outbreak')
+    toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), h('span', {}, rich(t().outbreak.started(localName(def.name))), h('small', {}, t().outbreak.hint))), 4200, 'outbreak')
   }
   for (const id of BAG_ITEM_IDS) {
-    if (start[id]) toast(ui, h('span', { class: 'item-toast' }, h('img', { src: bagIcon(id), alt: '' }), h('b', {}, BAG_ITEMS[id].name), t().bag.active[id]), 3200, id)
+    if (start[id]) toast(ui, h('span', { class: 'item-toast' }, h('img', { src: bagIcon(id), alt: '' }), h('b', {}, localName(BAG_ITEMS[id].name)), t().bag.active[id]), 3200, id)
   }
 }
 
@@ -650,13 +772,40 @@ const syncOverlay = (r: Run) => {
       r.overlay = levelUp(ui, input, g, (offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer)), {
         reroll: () => (recordEvent(r.recorder, ['reroll']), rerollOffers(g)),
         skip: () => (recordEvent(r.recorder, ['skip']), skipLevelUp(g)),
+        banish: (i) => (recordEvent(r.recorder, ['banish', i]), banishOffer(g, i)),
       })
       break
+    case 'branch':
+      r.overlay = branchPick(ui, input, g, (offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer)))
+      break
+    case 'ability':
+      r.overlay = abilityPick(ui, input, g, (offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer)))
+      break
+    case 'tm': {
+      const choose = (offer: Offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer))
+      // A TM raising an owned move to a fork shows the fork's two branches, as a level-up would.
+      r.overlay = g.offers.some((o) => o.kind === 'branch') ? levelUp(ui, input, g, choose) : tmPick(ui, input, g, choose)
+      break
+    }
+    case 'curse':
+      r.overlay = cursePick(ui, input, g, (offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer)))
+      break
+    case 'pokeball':
+      r.overlay = pokeballPick(ui, input, g, (offer) => (recordEvent(r.recorder, ['offer', g.offers.indexOf(offer)]), chooseOffer(g, offer)))
+      break
     case 'paused':
-      r.overlay = pauseMenu(ui, input, g, { resume: () => (g.phase = 'playing'), quit: () => afterRun(() => showMenu()), settings: (back) => runSettings(r, back) })
+      r.overlay = pauseMenu(ui, input, g, {
+        // Only from the pause: a late press must never flip a level-up to playing (unrecorded) or end the run under it.
+        resume: () => g.phase === 'paused' && (g.phase = 'playing'),
+        quit: () => g.phase === 'paused' && afterRun(() => showMenu()),
+        settings: (back) => runSettings(r, back),
+        report: bugReportsEnabled ? (back) => bugReportForm(ui, input, back) : null,
+      })
       break
     case 'gameover':
     case 'victory':
+      // For Play again: the run is over (endless mode goes on with the token it reported on).
+      prefetchRun(r.challenge ? challengeToday().day : null)
       r.overlay = results(
         ui,
         input,
@@ -671,7 +820,7 @@ const syncOverlay = (r: Run) => {
           eggs: { refund: r.hatchery.refund, ready: loadSave().eggs.filter(isReady).length },
           news: dexNews(r.dexBase, g.dexLog),
           ranking: rankingEnabled
-            ? { panel: rankPanel(r.rank, r.challenge !== null), open: (back) => rankingScreen(ui, input, back, { difficulty: g.difficulty, challenge: r.challenge !== null }) }
+            ? { panel: rankPanel(r.rank, r.challenge !== null, runMode(g.starter)), open: (back) => rankingScreen(ui, input, back, { difficulty: g.difficulty, mode: runMode(g.starter), challenge: r.challenge !== null }) }
             : null,
           share: {
             open: (back) => sharePreview(ui, input, runShare(g, r.dexBase, r.challenge && r.rank ? r.rank.then((o) => (o.kind === 'ranked' ? o.challenge : null)) : null), back),
@@ -684,13 +833,81 @@ const syncOverlay = (r: Run) => {
   }
 }
 
+/** Level-ups that took the Oran Berry on their own (`takeBerryLevelUps`): the level reached and how many at once. */
+const berryToast = (g: Game, count: number) =>
+  toast(ui, h('span', { class: 'item-toast' }, h('img', { src: berryIcon(), alt: '' }), rich(t().levelUp.autoBerry(g.player.level, count))), 2200, 'autoBerry')
+
+/** After an evolution: what the new form can learn now (`unlockedAt`), each move with its icon. */
+const learnsToast = (g: Game) => {
+  const moves = unlockedAt(g.starter, g.branch, g.player.stage)
+  if (moves.length === 0) return
+  const chips = moves.map((id) => h('span', { class: 'learn-move', style: `--type:${TYPE_COLORS[MOVES[id].type]}` }, h('img', { src: moveIcon(id), alt: '' }), localName(MOVES[id].name)))
+  toast(ui, h('span', { class: 'learn-toast' }, h('span', {}, t().toast.learns(localName(playerForm(g).name))), h('span', { class: 'learn-moves' }, ...chips)), 5000, 'learns')
+}
+
+/** The ability's word: the pick, and the moments worth a toast (Sturdy holding, a weather called, a milestone, Moody's draw). */
+const abilityFeedback = (g: Game, id: AbilityId, moment: 'picked' | 'proc') => {
+  const m = t().ability
+  const name = localName(ABILITIES[id].name)
+  const icon = (text: string) => h('span', { class: 'item-toast ability-toast' }, h('img', { src: abilityIcon(id), alt: '' }), rich(text))
+  if (moment === 'picked') {
+    playSfx('unlock')
+    return toast(ui, icon(m.picked(localName(playerForm(g).name), name)), 3200, 'ability')
+  }
+  const effects: readonly AbilityEffect[] = ABILITIES[id].effects
+  const kind = effects.find((e) => e.kind !== 'immune' && e.kind !== 'stats')?.kind
+  if (kind === 'sturdy') {
+    playSfx('stance', 0)
+    flashScreen(ui)
+    return toast(ui, icon(m.sturdy(name)), 2600, 'ability')
+  }
+  if (kind === 'guard') return playSfx('stance', 0)
+  if (kind === 'summon') return toast(ui, icon(m.summon(name)), 2200, 'ability')
+  if (kind === 'onKill') {
+    playSfx('shiny')
+    return toast(ui, icon(m.stack(name, abilityStacks(g))), 2200, 'ability')
+  }
+  if (kind === 'moody') {
+    const mood = m.moods[g.ability.mood]
+    return mood && toast(ui, icon(m.mood(name, mood)), 1800, 'ability')
+  }
+  if (kind === 'timer') playSfx('item')
+}
+
+/** The move or item a Poké Ball held, by its official name. */
+const offerName = (offer: Offer) => (offer.kind === 'move' ? MOVES[offer.id].name : offer.kind === 'item' ? localName(ITEMS[offer.id].name) : '')
+
 const offerLabel = (offer: Extract<GameEvent, { kind: 'pokeball' }>['offer']) => {
   const m = t().toast
   if (!offer) return m.pokeballEmpty
-  if (offer.kind === 'move') return m.pokeballLevel(MOVES[offer.id].name, offer.level)
-  if (offer.kind === 'item') return m.pokeballLevel(ITEMS[offer.id].name, offer.level)
-  if (offer.kind === 'evolution') return m.pokeballEvolution(MOVES[offer.to].name)
+  if (offer.kind === 'move') return m.pokeballLevel(localName(MOVES[offer.id].name), offer.level)
+  if (offer.kind === 'item') return m.pokeballLevel(localName(ITEMS[offer.id].name), offer.level)
+  if (offer.kind === 'evolution') return m.pokeballEvolution(localName(MOVES[offer.to].name))
   return m.pokeballBerry
+}
+
+/** An Alpha's moments: a roar and a toast when it comes, cues for its charge and rage, a toast when it falls. */
+const alphaEvent = (e: Extract<GameEvent, { kind: 'alpha' }>) => {
+  const def = ENEMIES[e.enemy]
+  switch (e.moment) {
+    case 'spawn':
+      playSfx('boss')
+      playCry(sprites(def.dex).cry, 0.8)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), rich(t().alphas.appeared(localName(def.name)))), 3600)
+    case 'aim':
+      return playSfx('growl', 200)
+    case 'charge':
+      return playSfx('charge', 150)
+    case 'shock':
+      return playSfx('quake', 150)
+    case 'enrage':
+      playSfx('boss')
+      playCry(sprites(def.dex).cry, 0.8)
+      return flashScreen(ui)
+    case 'down':
+      playSfx('evolve')
+      return toast(ui, rich(t().alphas.defeated(localName(def.name))), 3200)
+  }
 }
 
 /** Sounds of enemy traits: the warning (fuse lit, beam aimed, leap) and the moment it goes off. */
@@ -701,6 +918,7 @@ const TRAIT_SFX: Record<TraitId, Record<'warn' | 'fire', Sfx | null>> = {
   kamikaze: { warn: 'selfDestruct', fire: 'blast' },
   beam: { warn: 'beamCharge', fire: 'beam' },
   leaper: { warn: 'leap', fire: 'quake' },
+  spitter: { warn: null, fire: 'spit' },
 }
 
 const handleEvent = (r: Run, e: GameEvent) => {
@@ -712,18 +930,25 @@ const handleEvent = (r: Run, e: GameEvent) => {
     case 'coin': return playSfx('coin', 60)
     case 'heal': return playSfx('heal')
     case 'hurt': return playSfx('hurt', 120)
+    case 'shatter': return playSfx('break', 60)
+    case 'guard': return playSfx('stance', 0)
+    case 'cast': {
+      const sound = castSound(e.move) ?? CAST_SFX[e.move]
+      return sound && playSfx(sound[0], sound[1])
+    }
     case 'levelup': return playSfx('levelUp')
     case 'thunder': return playSfx('thunder', 150)
     case 'quake': return playSfx('quake', 150)
+    case 'moveSound': return playSfx(e.sound, 90)
     case 'special': {
       // A chain dash "releases" on every landing: a cut, not an explosion.
       if (e.phase === 'release') return playSfx(gameSpecial(g).def.kind === 'chain' ? 'slash' : 'specialBlast', 0)
       playSfx('specialCharge', 0)
       playCry(playerCry(g), 0.5)
-      return toast(ui, rich(t().toast.used(playerName(g), e.name)), 1600, 'special')
+      return toast(ui, rich(t().toast.used(playerName(g), localName(e.name))), 1600, 'special')
     }
     case 'megaChoice': {
-      const [a, b] = megasOf(g.starter).map((id) => MEGAS[id].stone)
+      const [a, b] = megasOf(g.starter).map((id) => localName(MEGAS[id].stone))
       playSfx('unlock')
       return a && b && toast(ui, rich(t().mega.choose(a, b)), 4200, 'mega')
     }
@@ -735,7 +960,7 @@ const handleEvent = (r: Run, e: GameEvent) => {
       playSfx('unlock')
       return toast(
         ui,
-        h('span', { class: 'item-toast mega-toast' }, h('img', { src: megaStoneIcon(def), alt: '' }), h('span', {}, rich(t().mega.stone(def.stone)), h('small', {}, rich(final ? t().mega.stoneReady : t().mega.stoneLocked(line.at(-1)!.name))))),
+        h('span', { class: 'item-toast mega-toast' }, h('img', { src: megaStoneIcon(def), alt: '' }), h('span', {}, rich(t().mega.stone(def.stone)), h('small', {}, rich(final ? t().mega.stoneReady : t().mega.stoneLocked(megaBaseName(g)))))),
         4200,
         'mega',
       )
@@ -744,12 +969,12 @@ const handleEvent = (r: Run, e: GameEvent) => {
       const def = heldMega(g)
       playSfx('megaCharge', 0)
       playCry(sprites(playerDex(g)).cry, 0.6)
-      return def && toast(ui, rich(t().mega.reacting(def.stone)), 1400, 'mega')
+      return def && toast(ui, rich(t().mega.reacting(localName(def.stone))), 1400, 'mega')
     }
     case 'mega': {
       playSfx('megaBurst', 0)
       playCry(playerCry(g), 0.9)
-      return banner(ui, rich(t().mega.evolved(PLAYABLE[g.starter].line[g.player.stage]!.name, e.name)), 2400)
+      return banner(ui, rich(t().mega.evolved(localName(playerForm(g).name), localName(e.name))), 2400)
     }
     case 'megaEnd':
       playSfx('stance', 0)
@@ -759,25 +984,28 @@ const handleEvent = (r: Run, e: GameEvent) => {
       return toast(ui, rich(t().mega.ready), 2400, 'mega')
     case 'stance': {
       playSfx('stance', 0)
-      const who = PLAYABLE[g.starter].line[g.player.stage]!.name
+      const who = localName(playerForm(g).name)
       return toast(ui, rich(t().toast.stance(who, t().hud.stances[e.stance])), 1200, 'special')
     }
     case 'boss': {
       const def: EnemyDef = ENEMIES[e.enemy]
+      // A wave legendary's cry and title card come with its entrance (`legendTitle`).
+      if (isWaveLegend(e.enemy)) return
       if (def.legendary) {
         playSfx('legendary')
         playCry(sprites(def.dex).cry, 0.7)
         flashScreen(ui)
-        return banner(ui, rich(t().toast.legendary(def.name)))
+        // A legend meets its dark Clone (`isClone`), never itself.
+        return banner(ui, rich(t().toast.legendary(g.legend?.id === e.enemy ? t().legend.clone(localName(def.name)) : localName(def.name))))
       }
       playSfx('boss')
       playCry(sprites(def.dex).cry, 0.5)
-      return toast(ui, rich(t().toast.boss(def.name)), 3200)
+      return toast(ui, rich(t().toast.boss(localName(def.name))), 3200)
     }
     case 'bossFled': {
       const def = ENEMIES[e.enemy]
       playCry(sprites(def.dex).cry, 0.3)
-      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), rich(t().toast.bossFled(def.name))), 3200)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), rich(t().toast.bossFled(localName(def.name)))), 3200)
     }
     case 'enrage': {
       // No toast: the cry, the flash and the boss's red outline carry it.
@@ -789,55 +1017,123 @@ const handleEvent = (r: Run, e: GameEvent) => {
       const def = ENEMIES[e.enemy]
       playSfx('shiny')
       playCry(sprites(def.dex).cry, 0.4)
-      return toast(ui, rich(t().toast.shiny(def.name)), 3200)
+      return toast(ui, rich(t().toast.shiny(localName(def.name))), 3200)
     }
     case 'caught': {
       const def = ENEMIES[e.enemy]
       if (dexStatus(r.dexBase, def.dex).shiny) return
       playSfx('shiny')
-      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex, true), alt: '' }), rich(t().toast.caught(def.name))), 3600)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex, true), alt: '' }), rich(t().toast.caught(localName(def.name)))), 3600)
     }
     case 'shinyPlayer': {
       playSfx('shiny')
-      return toast(ui, rich(t().toast.shinyPlayer(PLAYABLE[g.starter].name)), 3600)
+      return toast(ui, rich(t().toast.shinyPlayer(localName(PLAYABLE[g.starter].name))), 3600)
     }
+    case 'branchChoice':
+      playCry(playerCry(g), 0.6)
+      return
+    case 'ability':
+      return abilityFeedback(g, e.id, e.moment)
+    case 'awaken': {
+      playCry(playerCry(g))
+      r.closeText?.()
+      r.closeText = textBox(ui, t().legend.awakening(localName(playerForm(g).name)))
+      return
+    }
+    case 'awakened': {
+      playSfx('evolve')
+      playCry(cryUrl(playerDex(g), e.form ?? undefined))
+      r.closeText?.()
+      r.closeText = null
+      const name = localName(PLAYABLE[g.starter].name)
+      return toast(ui, rich(e.form ? t().legend.awakenedForm(name, localName(playerForm(g).name)) : t().legend.awakened(name)), 3500)
+    }
+    // Banked toward capturing it right away (`ui/capture.ts`), so the capture scene reads it.
+    case 'legendBeaten':
+      return bankCapture(e.legend, e.shiny, g.endless !== null)
     case 'evolve': {
       playCry(sprites(e.from).cry)
       r.closeText?.()
-      r.closeText = textBox(ui, t().toast.evolving(PLAYABLE[g.starter].line[g.player.stage]!.name))
+      r.closeText = textBox(ui, t().toast.evolving(localName(playerForm(g).name)))
       return
     }
     case 'evolved': {
-      const line = PLAYABLE[g.starter].line
       playSfx('evolve')
       playCry(sprites(e.to).cry)
       r.closeText?.()
       r.closeText = null
-      return toast(ui, t().toast.evolved(line[g.player.stage - 1]!.name, line[g.player.stage]!.name), 3500)
+      // The Trainer Card wears the branch this family took last.
+      const branch = g.branch
+      if (branch) updateSave((s) => ({ ...s, branches: { ...s.branches, [g.starter]: branch } }))
+      toast(ui, t().toast.evolved(localName(formAt(g.starter, g.branch, g.player.stage - 1).name), localName(playerForm(g).name)), 3500)
+      return learnsToast(g)
     }
     case 'moveEvolved':
       playSfx('evolve')
       playCry(playerCry(g), 0.3)
       return toast(ui, rich(t().toast.moveEvolved(MOVES[e.from].name, MOVES[e.to].name), { class: 'toast-evo' }), 3500)
+    case 'duoFused':
+      playSfx('duoFuse')
+      playCry(playerCry(g), 0.3)
+      return toast(
+        ui,
+        h('span', { class: 'item-toast toast-duo' }, h('img', { src: moveIcon(e.to), alt: '' }), rich(t().duo.fused(MOVES[e.from[0]].name, MOVES[e.from[1]].name, MOVES[e.to].name))),
+        3800,
+      )
+    case 'curse': {
+      // The chest's choice has its own screen; Life Orb and Flame Orb bite quietly (the purple number says it).
+      if (e.moment === 'found' || e.moment === 'recoil') return
+      const line = e.moment === 'taken' ? t().curse.taken(CURSES[e.id].name) : t().curse.left(CURSES[e.id].name)
+      return toast(ui, h('span', { class: 'item-toast toast-curse' }, h('img', { src: curseIcon(e.id), alt: '' }), rich(line)), 3000)
+    }
     case 'pokeball':
-      playSfx('levelUp')
+      // A new move or item opens its own screen; taking it already sounded there.
+      if (e.moment === 'found') return playSfx('pokeballOpen')
+      if (e.moment === 'left') return e.offer && toast(ui, rich(t().pokeballPick.left(offerName(e.offer))), 2200)
+      if (e.moment === 'auto') {
+        playSfx('pokeballOpen')
+        playSfx('levelUp')
+      }
       return toast(ui, t().toast.pokeball(offerLabel(e.offer)))
+    case 'shinyOffer':
+      // The fresh cards on screen say the rest.
+      return playSfx('shiny')
+    case 'tm':
+      return
+    case 'tmLearned': {
+      const m = t().tm
+      const name = MOVES[e.move].name
+      playSfx('levelUp')
+      playCry(playerCry(g), 0.35)
+      const text = e.forgot ? m.learnedInstead(MOVES[e.forgot].name, name) : e.level > 1 ? m.raised(name, e.level) : m.learned(name)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: moveIcon(e.move), alt: '' }), rich(text)), 3200, 'tm')
+    }
+    case 'tmMastered':
+      playSfx('coin')
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: moveIcon(e.move), alt: '' }), rich(t().tm.mastered(MOVES[e.move].name, formatPokeDollars(e.coins)))), 3000)
+    case 'banish':
+      // The level-up screen plays the toss itself.
+      return
     case 'consumable': {
       const def = CONSUMABLES[e.item]
       playSfx(def.sfx)
-      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: consumableIcon(e.item), alt: '' }), h('b', {}, def.name), t().consumables[e.item]), 2200, e.item)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: consumableIcon(e.item), alt: '' }), h('b', {}, localName(def.name)), t().consumables[e.item]), 2200, e.item)
     }
     case 'propBreak':
       return playSfx('break', 60)
     case 'mapEvent':
       return mapEventFeedback(ui, e.notice)
+    case 'place':
+      return placeFeedback(ui, e.place, e.notice)
+    case 'landmark':
+      return landmarkFeedback(ui, e.landmark, e.moment)
     case 'revive':
       playSfx('evolve')
       return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: consumableIcon('revive'), alt: '' }), rich(t().toast.revive)), 3000)
     case 'gameover':
       bankRun(r, true)
       recordProgress(r)
-      reportRun(r)
+      reportRun(r, e)
       rankRun(r)
       playSfx('gameOver')
       return playCry(playerCry(g))
@@ -865,27 +1161,107 @@ const handleEvent = (r: Run, e: GameEvent) => {
     case 'traitIntro': {
       const def = ENEMIES[e.enemy]
       playCry(sprites(def.dex).cry, 0.35)
-      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), rich(t().traits[e.trait](def.name))), 3400)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: portraitUrl(def.dex), alt: '' }), rich(t().traits[e.trait](localName(def.name)))), 3400)
     }
+    case 'hazardIntro':
+      return toast(ui, rich(t().hazards.intro), 3400)
     case 'riftOpen':
       playSfx('shiny')
       return toast(ui, rich(t().rifts.open), 3200)
     case 'riftClosed':
       return toast(ui, t().rifts.closed, 2000)
+    case 'riftOmen': {
+      const lines = domainLines(e.enemy)
+      playSfx('thunder')
+      // Rayquaza's Air Lock ends what Kyogre or Groudon stirred up earlier in the run.
+      const calmed = e.enemy === 'rayquaza' ? g.rift.met.find((l) => l === 'kyogre' || l === 'groudon') : undefined
+      const nod = calmed ? ` ${t().rifts.calms(ENEMIES[calmed].name)}` : ''
+      return toast(ui, rich(lines ? `${lines.omen}${nod} ${t().rifts.omen(ENEMIES[e.enemy].name)}` : t().rifts.omenFaint), 4200)
+    }
     case 'riftEnter': {
       const def = ENEMIES[e.enemy]
       playSfx('legendary')
-      playCry(sprites(def.dex).cry, 0.7)
       flashScreen(ui)
-      return banner(ui, rich(e.shiny ? t().rifts.enterShiny(def.name) : t().rifts.enter(def.name)))
+      const lines = domainLines(e.enemy)
+      // A domain's legendary shows itself later, in its own forms: have them ready.
+      if (lines) {
+        const partner = partnerOf(e.enemy)
+        void preloadForms(partner ? [def.dex, ENEMIES[partner].dex] : [def.dex], e.shiny)
+        toast(ui, rich(lines.crossing), 3600)
+        return banner(ui, rich(t().rifts.enterDomain(lines.place)))
+      }
+      playCry(sprites(def.dex).cry, 0.7)
+      return banner(ui, rich(e.shiny ? t().rifts.enterShiny(localName(def.name)) : t().rifts.enter(localName(def.name))))
     }
-    case 'riftCleared':
+    case 'riftTitle':
+      playSfx('legendary')
+      playCry(sprites(ENEMIES[e.enemy].dex).cry, 0.9)
+      return flashScreen(ui)
+    case 'bossPhase': {
+      const def = ENEMIES[e.enemy]
+      playSfx('quake')
+      playCry(sprites(def.dex).cry, 0.7)
+      const line = isRiftLegend(e.enemy) ? domainLines(e.enemy)?.phases[e.phase - 1] : isWaveLegend(e.enemy) ? t().legends.phases[e.enemy][e.phase - 1] : undefined
+      return line ? toast(ui, rich(line), 3600) : undefined
+    }
+    case 'bossUltimate':
+      playSfx('legendary')
+      return toast(ui, h('span', { class: 'toast-ultimate' }, `${e.move}!`), 2400, 'ultimate')
+    case 'riftCapture': {
+      // A pair's capture throws a ball at each: the toast follows the one this event is for.
+      const both = g.rift.arena?.domain?.capture
+      const capture = both?.kind === e.enemy ? both : both?.partner?.kind === e.enemy ? both.partner : null
+      const name = ENEMIES[e.enemy].name
+      if (showCapture(ui, e.enemy)) return
+      if (capture && captureOutcome(capture) === 'caught') {
+        playSfx('unlock')
+        return toast(ui, rich(t().rifts.caught(name), { class: 'toast-evo' }), 3600)
+      }
+      playSfx('break')
+      playCry(sprites(ENEMIES[e.enemy].dex).cry, 0.6)
+      return toast(ui, rich(t().rifts.escaped(name)), 3200)
+    }
+    case 'domainCue': {
+      const line = domainLines(e.enemy)?.cues?.[e.cue]
+      return line ? toast(ui, rich(line), 1600) : undefined
+    }
+    case 'pairDown':
+      playSfx('quake')
+      playCry(sprites(ENEMIES[e.partner].dex).cry, 0.9)
+      return toast(ui, rich(t().rifts.pairDown(ENEMIES[e.enemy].name, ENEMIES[e.partner].name)), 3600)
+    case 'pairRevive':
       playSfx('evolve')
-      return toast(ui, rich(t().rifts.cleared(ENEMIES[e.enemy].name), { class: 'toast-evo' }), 3500)
+      playCry(sprites(ENEMIES[e.partner].dex).cry, 0.8)
+      return toast(ui, rich(t().rifts.pairRevive(ENEMIES[e.enemy].name, ENEMIES[e.partner].name)), 3200)
+    case 'bossGuard':
+      playSfx(e.up ? 'legendary' : 'break')
+      return toast(ui, rich(e.up ? t().rifts.guardUp(ENEMIES[e.enemy].name) : t().rifts.guardDown), e.up ? 3400 : 2200)
+    case 'legendTitle':
+      playSfx('legendary')
+      playCry(sprites(ENEMIES[e.enemy].dex, e.shiny).cry, 0.9)
+      return flashScreen(ui)
+    case 'bossCapture': {
+      const capture = g.legendScene?.capture
+      const name = ENEMIES[e.enemy].name
+      if (showCapture(ui, e.enemy)) return
+      if (capture && captureOutcome(capture) === 'caught') {
+        playSfx('unlock')
+        return toast(ui, rich(t().rifts.caught(name), { class: 'toast-evo' }), 3200)
+      }
+      playSfx('break')
+      playCry(sprites(ENEMIES[e.enemy].dex).cry, 0.6)
+      return toast(ui, rich(t().rifts.escaped(name)), 2800)
+    }
+    case 'riftCleared': {
+      playSfx('evolve')
+      const partner = partnerOf(e.enemy)
+      const text = partner ? t().rifts.pairCleared(ENEMIES[e.enemy].name, ENEMIES[partner].name) : t().rifts.cleared(ENEMIES[e.enemy].name)
+      return toast(ui, rich(text, { class: 'toast-evo' }), 3500)
+    }
     case 'riftFall':
       playSfx('riftFall')
       playCry(playerCry(g))
-      return toast(ui, rich(t().rifts.fall(ENEMIES[e.enemy].name)), 2800)
+      return toast(ui, rich(t().rifts.fall(localName(ENEMIES[e.enemy].name))), 2800)
     case 'riftExit':
       if (e.outcome === 'collapse') {
         playSfx('quake')
@@ -905,6 +1281,10 @@ const handleEvent = (r: Run, e: GameEvent) => {
       playSfx('evolve')
       flashScreen(ui)
       return banner(ui, rich(t().rifts.reaperDown))
+    case 'alpha':
+      return alphaEvent(e)
+    case 'alphaPrize':
+      return toast(ui, rich(t().alphas.prize), 2600)
     case 'egg': {
       const m = t().eggs
       playSfx('unlock')
@@ -935,8 +1315,15 @@ const weatherToast = (next: WeatherId, prev: WeatherId) => {
 const themeFor = (r: Run | null): ThemeId | null => {
   if (!pressedStart) return null
   if (!r || r.game.phase === 'gameover' || r.game.phase === 'victory') return 'menu'
-  // A rift arena keeps the boss theme until the player is back, loot window included.
-  return r.game.bossId !== null || r.game.rift.arena !== null ? 'boss' : BIOMES[r.game.biome.id].theme
+  // A legendary's domain plays its crossing's theme, then its own from the moment it shows itself.
+  const domain = r.game.rift.arena?.domain
+  if (domain) return domainTheme(domain)
+  // A rift arena keeps the boss theme until the player is back, loot window included; a place plays its own.
+  const inside = r.game.place.inside
+  // A wave legendary plays its own theme from its entrance on.
+  const boss = r.game.bossId === null ? undefined : r.game.enemies.find((e) => e.id === r.game.bossId)
+  if (boss && isWaveLegend(boss.kind)) return LEGEND_THEME[boss.kind]
+  return r.game.bossId !== null || r.game.rift.arena !== null ? 'boss' : inside ? PLACES[inside.id].theme : BIOMES[r.game.biome.id].theme
 }
 
 /* ---------------- Global keys ---------------- */
@@ -989,9 +1376,16 @@ window.addEventListener('beforeunload', (e) => {
 /* ---------------- Loop ---------------- */
 
 let last = performance.now()
-let acc = 0
+/** The simulation's tick accumulator, snapped to the display's cadence (`engine/pacing.ts`). */
+const pace = pacer()
 
-const frame = (now: number) => {
+/** Dev automation takes over the clock after calling advanceTime; reload to return to real time. */
+let manualTime = false
+const frame = (now: number, schedule = true) => {
+  if (import.meta.env.DEV && manualTime && schedule) {
+    requestAnimationFrame(frame)
+    return
+  }
   const dt = Math.min(0.1, (now - last) / 1000)
   last = now
   const t = now / 1000
@@ -1004,9 +1398,9 @@ const frame = (now: number) => {
     const g = r.game
     let steps = 0
     if (g.phase === 'playing' || g.phase === 'evolving') {
-      acc += dt
+      advancePacer(pace, dt, STEP)
       // A level-up or a faint ends the frame's steps: the ones left over would go into the replay as ticks the run never played.
-      while (acc >= STEP && (g.phase === 'playing' || g.phase === 'evolving')) {
+      while (pace.acc >= STEP && (g.phase === 'playing' || g.phase === 'evolving')) {
         // The simulation gets the stick as the replay stores it (`moveCode`), so a re-simulation sees the same run.
         if (specialQueued) recordEvent(r.recorder, ['special'])
         if (megaQueued) recordEvent(r.recorder, ['mega'])
@@ -1015,16 +1409,19 @@ const frame = (now: number) => {
         specialQueued = false
         megaQueued = false
         lungeQueued = false
-        acc -= STEP
+        pace.acc -= STEP
         steps++
       }
     } else {
-      acc = 0
+      resetPacer(pace)
       specialQueued = false
       megaQueued = false
       lungeQueued = false
     }
+    // A level-up with only the Oran Berry to pick takes it without a screen, recorded like a tap.
+    const berries = takeBerryLevelUps(g, (i) => recordEvent(r.recorder, ['offer', i]))
     for (const e of g.events.splice(0)) handleEvent(r, e)
+    if (berries > 0) berryToast(g, berries)
     if (run === r) {
       syncOverlay(r)
       // Toasts and banners wait out menus, level-ups and evolutions with their clocks stopped.
@@ -1057,8 +1454,36 @@ const frame = (now: number) => {
   playTheme(themeFor(run))
   // Ducked under the pause menu, but at full level while the player tunes the volume.
   duckMusic(run?.game.phase === 'paused' && !isSettingsOpen())
-  requestAnimationFrame(frame)
+  if (schedule) requestAnimationFrame(frame)
 }
+
+/* ---------------- Idle warm-up ---------------- */
+
+/** Frame slack (ms) a warm-up step waits for, so it fits before the next frame. */
+const IDLE_SLACK = 6
+const hasIdle = 'requestIdleCallback' in window
+
+/**
+ * Sculpts terrain sprites (`warmScenery`) and makes the level-up icons (`warmIcon`)
+ * in the browser's idle time, as many as the frame's slack allows, so neither
+ * stalls a frame the first time it shows. Once all are made it checks again
+ * every second (the run moves on to new biomes). Without `requestIdleCallback`
+ * (Safari), one per timer.
+ */
+const pumpWarmUp = (deadline: { didTimeout: boolean; timeRemaining: () => number }) => {
+  // Menus and level-ups are calm (an evolution isn't: it plays on the canvas): what no frame waits on yet (other biomes) is built there.
+  const calm = !run || (run.game.phase !== 'playing' && run.game.phase !== 'evolving')
+  const warm = () => warmScenery(run?.game ?? null, calm) || warmIcon()
+  let made = false
+  if (deadline.didTimeout) made = warm()
+  else while (deadline.timeRemaining() > IDLE_SLACK && warm()) made = true
+  scheduleWarmUp(made ? (hasIdle ? 0 : 50) : 1000)
+}
+const scheduleWarmUp = (ms: number) =>
+  setTimeout(() => {
+    if (hasIdle) requestIdleCallback(pumpWarmUp, { timeout: 2000 })
+    else pumpWarmUp({ didTimeout: true, timeRemaining: () => 0 })
+  }, ms)
 
 /* ---------------- Boot ---------------- */
 
@@ -1105,7 +1530,40 @@ const promptProfile = () => {
   })
 }
 
+/** Set when a newer build is live and a run held off the reload: the next trip to the lobby reloads. */
+let reloadForDeploy = false
+
+/** Whether the site now serves another build: the page's HTML, fetched fresh, misses one of this page's scripts. False offline. */
+const newerBuild = async () => {
+  const scripts = [...document.querySelectorAll<HTMLScriptElement>('script[type="module"][src]')].map((s) => new URL(s.src).pathname)
+  const html = await fetch(location.pathname, { cache: 'no-store' }).then((r) => (r.ok ? r.text() : null), () => null)
+  return html !== null && scripts.some((path) => !html.includes(path))
+}
+
+/**
+ * Each deploy renames the chunks loaded on demand (Novidades, Clerk) and drops
+ * the old ones, so a game opened before it can't load them anymore. When a
+ * chunk fails and a newer build is live, reload into it: right away in the
+ * menus (the save is local), or once the run is over.
+ */
+const watchDeploys = () =>
+  addEventListener('vite:preloadError', () =>
+    void newerBuild().then((newer) => {
+      if (!newer) return
+      if (run) reloadForDeploy = true
+      else location.reload()
+    }),
+  )
+
+/** The game closed mid-run last time (`takeCrash`): the title asks, once, whether to report it. */
+const askAboutCrash = () => {
+  const crash = takeCrash()
+  if (!crash || !bugReportsEnabled || !screen?.el.classList.contains('title-home')) return
+  crashPrompt(screen.el, () => setScreen(bugReportForm(ui, input, () => showTitle(), crash)))
+}
+
 const boot = () => {
+  watchDeploys()
   document.documentElement.lang = LOCALES[locale()].tag
   // Someone's link (`?ref=`, a profile): remember who brought this device, before anything reads the URL.
   captureRef()
@@ -1114,7 +1572,9 @@ const boot = () => {
   else if (rankingEnabled && new URLSearchParams(location.search).has(IDEAS_PARAM)) showIdeasLink()
   // Back from signing in, the player already pressed start before leaving: straight to the menu.
   else showTitle({ intro: !backFromSignIn() })
+  askAboutCrash()
   requestAnimationFrame(frame)
+  scheduleWarmUp(1000)
   void preloadInBackground()
   promptProfile()
   startAccount()
@@ -1129,6 +1589,13 @@ const devEvent = (kind: MapEventKind, dx = 70, dy = 0) => {
   if (!run || !MAP_EVENT_KINDS.includes(kind)) return `Kinds: ${MAP_EVENT_KINDS.join(', ')}`
   const p = run.game.player
   return spawnMapEvent(run.game, kind, Math.round(p.x + dx), Math.round(p.y + dy))
+}
+
+/** Dev: starts a field mission of `kind` about `dx` px to the right of the player, e.g. `ps.field('defense')`. */
+const devField = (kind: FieldMissionKind = 'defense', dx = 120) => {
+  if (!run || !FIELD_MISSION_KINDS.includes(kind)) return `Kinds: ${FIELD_MISSION_KINDS.join(', ')}`
+  const p = run.game.player
+  return spawnMapEvent(run.game, kind, Math.round(p.x + dx), Math.round(p.y))
 }
 
 // Dev-only handle for poking at the running game from the console.
@@ -1148,6 +1615,16 @@ const devSpawn = (kind: EnemyId, count = 1, shiny = false) => {
   }
 }
 
+/** Dev: an Alpha 120 px ahead (`ps.alpha('golem')`; the stage's own pick without an argument). */
+const devAlpha = (kind?: EnemyId) => {
+  const g = run?.game
+  if (!g) return 'ps: start a run first'
+  const id = kind ?? pickAlpha(g.rng, g.roster.stages[stageIndexAt(g.time)] ?? [])
+  if (!id) return 'ps: no species for an Alpha in this stage'
+  const p = g.player
+  return spawnAlpha(g, id, p.x + p.facing.x * 120, p.y + p.facing.y * 120)
+}
+
 /**
  * Dev: stages the run's Mega Evolution. `now` (default) jumps to the final stage with
  * the stone of `mega` (the line's first Mega by default) and presses the Mega button;
@@ -1160,14 +1637,43 @@ const devMega = (mode: 'now' | 'ready' | 'stone' = 'now', mega?: MegaId) => {
   if (!g || !ids[0]) return `Start a run with a Mega line: ${MEGA_LINES.join(', ')}`
   const p = g.player
   if (mode === 'stone') return dropMegaStones(g, p.x + 40, p.y)
-  if (mega && !ids.includes(mega)) return `${PLAYABLE[g.starter].name}'s Megas: ${ids.join(', ')}`
+  if (mega && !ids.includes(mega)) return `${localName(PLAYABLE[g.starter].name)}'s Megas: ${ids.join(', ')}`
+  const pick = mega ?? ids[0]
+  // A branch's Mega (Gallade's) needs its branch.
+  g.branch = MEGA_BRANCH[pick] ?? g.branch
   p.stage = PLAYABLE[g.starter].line.length - 1
   p.radius = Math.max(6, Math.round(bodyOf(playerDex(g)).bodyW * 0.3))
   recomputeStats(g)
   g.mega.stone = null
-  grantStone(g, mega ?? ids[0])
+  grantStone(g, pick)
   g.mega.charge = 0
   if (mode === 'now') queueMega()
+}
+
+/**
+ * Dev: the evolution picks. `ps.evolve()` levels up to the next evolution, asking
+ * where a branching one goes; `ps.evolve('vaporeon')` takes that branch straight away.
+ */
+const devEvolve = (branch?: BranchId) => {
+  const g = run?.game
+  if (!g || g.phase !== 'playing') return 'Start a run (and close menus) first'
+  const stage = formAt(g.starter, g.branch, g.player.stage)
+  if (stage.evolveAt === undefined) return 'Already at the final stage'
+  if (branch) g.branch = branch
+  g.player.level = Math.max(g.player.level, stage.evolveAt)
+  g.player.xp = 0
+  g.player.xpNext = xpFor(g.player.level)
+  advancePhase(g)
+}
+
+/** Dev: `ps.ability()` opens the ability pick now; `ps.ability('blaze')` takes that one. */
+const devAbility = (id?: AbilityId) => {
+  const g = run?.game
+  if (!g) return
+  if (!id) return offerAbilities(g)
+  grantAbility(g, id)
+  recomputeStats(g)
+  return g.ability
 }
 
 /** Dev: eggs and hatching, to stage the incubator and the hatching scene. */
@@ -1208,10 +1714,10 @@ const devEggs = {
   save: loadSave,
 }
 
-/** Dev: Mystery Gifts and invites, to stage the gift banners, the Ambassador's rewards and the title's invite banner. */
+/** Dev: Mystery Gifts and invites, to stage the lobby's gift box, the Ambassador's rewards and the title's invite banner. */
 const devGifts = {
   /**
-   * Lands a Mystery Gift as if the account brought it: `ps.gift('egg', 'friend')`, `ps.gift('coins', '500')`,
+   * Puts a Mystery Gift in the lobby's gift box as if a sync listed it: `ps.gift('egg', 'friend')`, `ps.gift('coins', '500')`,
    * `ps.gift('title')`, `ps.gift('style', 'ambassador')` (a frame), `ps.gift('shinyHatch', 'munchlax')`,
    * `ps.gift('ribbon', 'gold')` (yesterday's challenge, #12 of 340), `ps.gift('shinyPick')` (a shiny of one's choice).
    * `why`: an inviter's handle (welcome) or a count of friends brought.
@@ -1221,14 +1727,16 @@ const devGifts = {
     const content = parseGiftContent({ kind, ...raw })
     if (!content) return 'Kinds: egg (tier), coins (amount), title, style (frame id), shinyHatch (family), ribbon (tier), shinyPick'
     const reason: GiftReason | null = typeof why === 'number' ? { kind: 'friends', count: why } : why ? { kind: 'welcome', from: why } : null
-    return receiveGifts([{ id: `dev-${Date.now()}`, content, reason }])
+    return stageGifts([{ id: `dev-${Date.now()}`, content, reason }])
   },
+  /** Puts the thank-you for joining the Discord (`DISCORD_GIFT`) in the gift box, as if linking brought it. */
+  discordGift: () => stageGifts([{ id: `dev-discord-${Date.now()}`, content: DISCORD_GIFT, reason: { kind: 'discord' } }]),
   /**
-   * Lands a supporter's thank-you as Mystery Gifts in one sync, as if a donation was credited: `supporter`
+   * Puts a supporter's thank-you in the gift box as Mystery Gifts in one sync, as if a donation was credited: `supporter`
    * brings the title, the frame and a shiny ticket; `gold` every tier up to gold (a first donation of R$ 50).
    */
   supporter: (tier: SupporterTier = 'supporter') =>
-    receiveGifts(
+    stageGifts(
       SUPPORTER_TIERS.slice(0, SUPPORTER_TIERS.indexOf(tier) + 1).flatMap((t) =>
         TIER_GIFTS[t].map((content, i) => ({ id: `dev-support-${t}-${i}-${Date.now()}`, content, reason: { kind: 'support', tier: t } as const })),
       ),
@@ -1281,10 +1789,47 @@ const devTerrain = (g: Game, kind: SolidKind | 'lake' = 'cliff', dy = 70) => {
   return null
 }
 
+/** Walks the player to the nearest landmark of a kind (any without one), `dy` px south of its anchor. */
+const devLandmark = (g: Game, id?: LandmarkId, dy = 60) => {
+  const C = TERRAIN.cell
+  const pcx = Math.floor(g.player.x / C)
+  const pcy = Math.floor(g.player.y / C)
+  for (let r = 0; r < 40; r++) {
+    for (let cy = pcy - r; cy <= pcy + r; cy++) {
+      for (let cx = pcx - r; cx <= pcx + r; cx++) {
+        if (Math.max(Math.abs(cx - pcx), Math.abs(cy - pcy)) !== r) continue
+        const lm = featureAt(g.terrain.seed, cx, cy)?.landmark
+        if (!lm || (id && lm.id !== id)) continue
+        const at = clearSpot(g, { x: lm.x, y: lm.y + dy }, g.player.radius + 2)
+        g.player.x = at.x
+        g.player.y = at.y
+        return lm
+      }
+    }
+  }
+  return null
+}
+
 // `ps.biome('cave')` and `ps.weather('rain')` stage a run for screenshots (they hold until the next scheduled change).
 if (import.meta.env.DEV) {
   const withRun = (fn: (g: Game) => void) => (run ? fn(run.game) : console.warn('ps: start a run first'))
   Object.assign(window, {
+    render_game_to_text: () => {
+      const g = run?.game
+      return JSON.stringify(g ? {
+        coordinates: 'world pixels; x right, y down; view centered on player',
+        phase: g.phase, mode: g.legend ? 'legend' : 'normal', time: g.time,
+        starter: g.starter, awakening: g.legend?.awakened ?? null, biome: g.biome.id,
+        player: { x: g.player.x, y: g.player.y, hp: g.player.hp, level: g.player.level, stage: g.player.stage, moves: g.player.moves },
+        ability: g.ability.id, stance: g.special.stance, specialCooldown: g.special.cooldown,
+        kills: g.kills, enemies: g.enemies.slice(0, 15).map(e => ({ id: e.kind, x: e.x, y: e.y, hp: e.hp })),
+        menu: ui.innerText.slice(0, 2400),
+      } : { phase: 'menu', menu: ui.innerText.slice(0, 3000), captured: loadSave().legends })
+    },
+    advanceTime: (ms: number) => {
+      manualTime = true
+      for (let i = 0; i < Math.max(1, Math.round(ms / (STEP * 1000))); i++) frame(last + STEP * 1000, false)
+    },
     ps: {
       run: () => run,
       startRun,
@@ -1292,10 +1837,22 @@ if (import.meta.env.DEV) {
       showMenu,
       theme: currentTheme,
       spawn: devSpawn,
+      alpha: devAlpha,
       mega: devMega,
+      evolve: devEvolve,
+      ability: devAbility,
       event: devEvent,
+      field: devField,
       challenge: devChallenge,
       dex: () => loadSave().dex,
+      /** Plays an error report's `replay` (the JSON string from PostHog) again: a simulation error throws here at the same tick. */
+      replay: (json: string) => {
+        const replay = parseReplay(JSON.parse(json))
+        if (!replay) return 'Not a replay'
+        // The report's `version` is the commit to check out when the rules differ.
+        if (rulesStanding(replay.rules) !== 'same') console.warn(`ps: the replay plays by rules ${replay.rules}, this build by ${RULES_VERSION}: it may end elsewhere`)
+        return resimulate(replay)
+      },
       /** The lobby's meadow: its wanderers, the partner and the camera, to stage greetings (`ps.meadow().partner`). */
       meadow: () => scene,
       /** The Caixa do PC over the title; `ps.card()` opens the Trainer Card's share preview. */
@@ -1303,8 +1860,29 @@ if (import.meta.env.DEV) {
       card: (partner: PlayableId = loadSave().partner) => (endRun(), setScreen(sharePreview(ui, input, trainerShare(partner), () => showTitle()))),
       biome: (id: BiomeId) => withRun((g) => setBiome(g, id)),
       terrain: (kind?: SolidKind | 'lake', dy?: number) => (run ? devTerrain(run.game, kind, dy) : console.warn('ps: start a run first')),
+      /** `ps.landmark('maze')` walks you to the nearest maze (`cottage`, `tunnel`, `ruins`, `camp`; any without an argument), 60 px south of it. */
+      landmark: (id?: LandmarkId, dy?: number) => (run ? devLandmark(run.game, id, dy) : console.warn('ps: start a run first')),
       weather: (id: WeatherId) => withRun((g) => setWeather(g, id)),
+      /** `ps.ball(3)` drops Poké Balls 20 px to the right of the player (inside the magnet), side by side. */
+      ball: (n = 1) => withRun((g) => Array.from({ length: n }, (_, i) => dropPickup(g, g.player.x + 20 + i * 6, g.player.y, 'pokeball'))),
       ...riftDevTools(() => run?.game),
+      ...placeDevTools(() => run?.game),
+      ...levelUpDevTools(() => run?.game),
+      ...kitDevTools(() => run?.game),
+      ...eggMoveDevTools(() => run?.game),
+      ...learnDevTools(() => run?.game),
+      ...tmDevTools(() => run?.game),
+      ...duoDevTools(() => run?.game),
+      ...tensionDevTools(() => run?.game),
+      ...hazardDevTools(() => run?.game),
+      // A Legend-mode run leaves the save's partner as it was.
+      ...legendDevTools(() => run?.game, (id) => {
+        const partner = loadSave().partner
+        void startRun(id)
+        updateSave((s) => ({ ...s, partner }))
+      }),
+      ...captureDevTools(ui, () => Boolean(run?.game.endless)),
+      ...spitterDevTools(() => run?.game, (dex) => void loadSpecies(dex).catch(() => {})),
       // Rebuilds the missions screen or the title so changes show up right away.
       ...missionDevTools(() => (screen?.el.classList.contains('title-home') ? showTitle() : screen?.el.querySelector('.missions') ? showMissions() : undefined)),
       ...devEggs,

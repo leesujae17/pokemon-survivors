@@ -2,7 +2,8 @@ import { playSfx } from '../engine/audio'
 import { ACTION_IDS, DEFAULT_BINDINGS, rebind, RESERVED_KEYS, type Action, type Device } from '../engine/bindings'
 import { padFamily, padName } from '../engine/gamepad'
 import type { Input, RawPress } from '../engine/input'
-import { t } from '../i18n'
+import { locale, t } from '../i18n'
+import { TOUCH_CONTROLS } from '../i18n/touch'
 import { h, later, rich, setText } from './dom'
 import { keyLabel, padLabel, setGlyphText } from './inputLabels'
 import { hint, menu, type Screen } from './screens'
@@ -21,6 +22,8 @@ import { settings, updateSettings } from './settings'
  */
 export const openControls = (root: HTMLElement, input: Input, onClose: () => void): Screen => {
   const m = t().controls
+  const touch = TOUCH_CONTROLS[locale()]
+  let mobile = matchMedia('(any-pointer: coarse), (max-width: 700px)').matches
   // Opened with the pad: its column first.
   let col: Device = input.activePad() === null ? 'key' : 'pad'
   let waiting: { action: Action; device: Device; stop: () => void } | null = null
@@ -77,7 +80,7 @@ export const openControls = (root: HTMLElement, input: Input, onClose: () => voi
       setGlyphText(line.cells.pad, p === null ? m.unbound : label(p))
       for (const device of ['key', 'pad'] as const) {
         const cell = line.cells[device]
-        cell.classList.toggle('focus', nav?.index === lines.indexOf(line) && col === device)
+        cell.classList.toggle('focus', !mobile && nav?.index === lines.indexOf(line) + 2 && col === device)
         cell.classList.toggle('listening', waiting?.action === line.action && waiting.device === device)
       }
     }
@@ -137,8 +140,14 @@ export const openControls = (root: HTMLElement, input: Input, onClose: () => voi
     dispose()
     later(onClose)
   }
+  // Closing must work immediately, including just after changing the guide tab.
+  back.addEventListener('click', close)
 
-  nav = menu(input, items, (i) => {
+  const activate = (i: number) => {
+    if (i === 0) return later(() => setMode(true))
+    if (i === 1) return later(() => setMode(false))
+    if (mobile) return close()
+    i -= 2
     const line = lines[i]
     if (line) return wait(line.action, col)
     if (items[i] === restore) {
@@ -147,16 +156,48 @@ export const openControls = (root: HTMLElement, input: Input, onClose: () => voi
       return stopWaiting(m.restored)
     }
     close()
-  })
+  }
+
+  const mobileTab = h('button', { class: 'tab', type: 'button', role: 'tab', onclick: () => setMode(true) }, touch.title)
+  const bindingsTab = h('button', { class: 'tab', type: 'button', role: 'tab', onclick: () => setMode(false) }, `${m.keyboard} · ${m.gamepad}`)
+  const mobilePanel = h('div', { class: 'controls-touch', role: 'tabpanel' },
+    h('p', { class: 'controls-note' }, touch.intro),
+    h('div', { class: 'controls-touch-list' }, ...[touch.move, m.actions.special, m.actions.mega, m.actions.lunge, m.actions.pause, m.actions.confirm, m.actions.back].map((label, i) =>
+      h('div', { class: 'controls-touch-row' }, h('b', {}, label), h('span', {}, touch.rows[i])),
+    )),
+    h('p', { class: 'controls-note' }, touch.note),
+  )
+  const bindingsPanel = h('div', { class: 'controls-bindings', role: 'tabpanel' },
+    padLine,
+    h('div', { class: 'control-row control-head', 'aria-hidden': 'true' }, h('span'), h('span', {}, m.keyboard), h('span', {}, m.gamepad)),
+    h('div', { class: 'controls-list' }, ...lines.map((l) => l.el)), status,
+  )
+  const footerHint = hint(m.hintKeys, touch.hint)
+
+  function setMode(next: boolean) {
+    mobile = next
+    stopWaiting(m.fixed)
+    mobilePanel.classList.toggle('hidden', !mobile)
+    bindingsPanel.classList.toggle('hidden', mobile)
+    restore.classList.toggle('hidden', mobile)
+    for (const [tab, on] of [[mobileTab, mobile], [bindingsTab, !mobile]] as const) {
+      tab.classList.toggle('on', on)
+      tab.setAttribute('aria-selected', String(on))
+    }
+    nav?.off()
+    nav = menu(input, mobile ? [mobileTab, bindingsTab, back] : [mobileTab, bindingsTab, ...items], activate, { initial: mobile ? 0 : 1 })
+    sync()
+  }
 
   const offKeys = input.onKey((key) => {
     if (key === 'ArrowLeft' || key === 'KeyA' || key === 'ArrowRight' || key === 'KeyD') {
+      if (mobile || (nav?.index ?? 0) < 2) return later(() => setMode(key === 'ArrowLeft' || key === 'KeyA'))
       col = col === 'key' ? 'pad' : 'key'
       playSfx('move')
     } else if (key === 'Escape' || key === 'Backspace') close()
     // `menu` moved the cursor first (it listens first): redraw the focused cell and keep it in view.
     sync()
-    if (nav) items[nav.index]?.scrollIntoView({ block: 'nearest' })
+    if (!mobile && nav) items[nav.index - 2]?.scrollIntoView({ block: 'nearest' })
   })
   items.forEach((el) => el.addEventListener('pointerenter', () => later(sync)))
 
@@ -167,13 +208,10 @@ export const openControls = (root: HTMLElement, input: Input, onClose: () => voi
       'div',
       { class: 'dialog box pop settings controls' },
       h('div', { class: 'dialog-title' }, m.title),
-      h('p', { class: 'controls-note touch-only' }, m.touchNote),
-      padLine,
-      h('div', { class: 'control-row control-head', 'aria-hidden': 'true' }, h('span'), h('span', {}, m.keyboard), h('span', {}, m.gamepad)),
-      h('div', { class: 'controls-list' }, ...lines.map((l) => l.el)),
-      status,
+      h('div', { class: 'tabs controls-tabs', role: 'tablist' }, mobileTab, bindingsTab),
+      h('div', { class: 'controls-content' }, mobilePanel, bindingsPanel),
       h('div', { class: 'buttons' }, restore, back),
-      hint(m.hintKeys, m.hintTouch),
+      footerHint,
     ),
   )
 
@@ -186,6 +224,7 @@ export const openControls = (root: HTMLElement, input: Input, onClose: () => voi
   }
 
   say(m.fixed)
+  setMode(mobile)
   watchPads()
   sync()
   root.append(el)

@@ -1,0 +1,67 @@
+{
+  "origin": "http://127.0.0.1:5179",
+  "isolatedStorage": true,
+  "stagedFinalBossPhases": true,
+  "results": [
+    {
+      "name": "legacy save, remembered locked partner, Z/Enter/double-click blocked, tab cursor remembered",
+      "status": "passed"
+    },
+    {
+      "name": "real boss defeat event banks 1/3, 2/3, capture+shiny; immediate reload and normal-form choice persist",
+      "status": "passed"
+    },
+    {
+      "name": "captured legend starts from real UI, moves/attacks, Lv12 ability pick and Lv28 awakening work",
+      "status": "passed"
+    },
+    {
+      "name": "pause quit, re-entry resets awakening, damage failure and Retry all preserve capture",
+      "status": "passed"
+    },
+    {
+      "name": "actual Mewtwo final defeat reaches victory and the UI continues in Legend endless mode",
+      "status": "passed"
+    },
+    {
+      "name": "brand-new save keeps all 23 legends locked",
+      "status": "passed"
+    },
+    {
+      "name": "all 23 legends start from the UI; permanent Primal/Mega forms, Deoxys stances and Arceus Multitype",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "missingAssets": [],
+  "navigations": [
+    {
+      "name": "legacy-lock",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "legacy-lock",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "capture-play",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "capture-play",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "capture-play",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "fresh-save",
+      "url": "http://127.0.0.1:5179/ko/"
+    },
+    {
+      "name": "roster-and-forms",
+      "url": "http://127.0.0.1:5179/ko/"
+    }
+  ]
+}

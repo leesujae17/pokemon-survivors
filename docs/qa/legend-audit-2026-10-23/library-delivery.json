@@ -1,0 +1,9 @@
+{
+  "library_file_id": "libfile_061a158411a48191bc409780e41b3226",
+  "file_id": "file_00000000340c81f8b95d7a2f7318a8cc",
+  "file_name": "production-mobile-select.png",
+  "library_path": "/production-mobile-select.png",
+  "upload_status": "succeeded",
+  "local_metadata_status": "not_supported",
+  "local_metadata_reason": "The supplied metadata helper uses os.setxattr, which this Windows Python does not implement."
+}

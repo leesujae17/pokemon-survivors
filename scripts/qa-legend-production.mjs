@@ -1,0 +1,62 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import assert from 'node:assert/strict'
+import { pathToFileURL } from 'node:url'
+
+const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href)
+const origin = process.env.LEGEND_PRODUCTION_URL ?? 'http://127.0.0.1:4180'
+if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin)) throw new Error('Local preview required')
+const out = path.resolve('docs/qa/legend-audit-2026-10-23')
+const browser = await chromium.launch({ headless: true })
+const errors = [], missingAssets = []
+try {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'ko-KR' })
+  const page = await context.newPage()
+  page.on('pageerror', error => errors.push(error.message))
+  page.on('response', response => { if (response.status() >= 400 && response.url().includes('/assets/')) missingAssets.push(response.url()) })
+  await context.route('**/*', route => route.request().url().startsWith(origin + '/') || /^(data|blob):/.test(route.request().url()) ? route.continue() : route.abort())
+  await page.addInitScript(() => {
+    localStorage.setItem('ps:save', JSON.stringify({ version: 1, partner: 'articuno', legends: { articuno: 3 } }))
+    localStorage.setItem('ps:lang', 'ko')
+  })
+  await page.goto(origin + '/ko/')
+  await page.waitForTimeout(800)
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: /플레이/ }).first().waitFor()
+  await page.getByRole('button', { name: /플레이/ }).first().tap()
+  await page.locator('.partner-go').waitFor()
+  assert.equal(await page.locator('.partner-go').isDisabled(), false)
+  assert.equal(await page.locator('.partner-legend-grid .partner-cell').count(), 23)
+  await page.waitForTimeout(1000)
+  await page.screenshot({ path: path.join(out, 'production-mobile-select.png') })
+  await page.locator('.partner-go').tap()
+  await page.locator('.offer').first().waitFor()
+  await page.waitForTimeout(900)
+  await page.locator('.offer').first().tap()
+  await page.waitForTimeout(1000)
+  assert.equal(await page.locator('.offer').count(), 0)
+  assert.match(await page.locator('.status-name').innerText(), /프리져/)
+  const cdp = await context.newCDPSession(page)
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 90, y: 560 }] })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 190, y: 500 }] })
+  await page.waitForTimeout(750)
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await page.locator('.special-button:not(.mega)').tap()
+  await page.waitForTimeout(250)
+  await page.screenshot({ path: path.join(out, 'production-mobile-game.png') })
+  await page.locator('.pause-btn').tap()
+  await page.locator('.pause').waitFor()
+  await page.waitForTimeout(600)
+  await page.screenshot({ path: path.join(out, 'production-mobile-pause.png') })
+  await page.waitForTimeout(450)
+  await page.locator('.pause .buttons button').first().tap()
+  await page.locator('.pause').waitFor({ state: 'hidden' })
+  assert.equal(await page.evaluate(() => typeof window.ps), 'undefined')
+  assert.equal(await page.evaluate(() => typeof window.advanceTime), 'undefined')
+  assert.deepEqual(errors, [])
+  assert.deepEqual(missingAssets, [])
+  fs.writeFileSync(path.join(out, 'production-results.json'), JSON.stringify({ origin, status: 'passed', isolatedStorage: true, touchStartAndDraft: true, touchDragAndSpecialDispatched: true, pauseResume: true, devHooksAbsent: true, errors, missingAssets }, null, 2))
+  console.log('PASS production: mobile UI start, touch draft/drag/special, pause/resume; no dev hooks, exceptions or missing assets')
+} finally {
+  await browser.close()
+}

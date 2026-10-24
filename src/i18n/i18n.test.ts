@@ -9,11 +9,13 @@ describe('detectLocale', () => {
   it('picks the first supported browser language, any region', () => {
     expect(detectLocale(null, ['pt-PT', 'en-US'])).toBe('pt')
     expect(detectLocale(null, ['es-MX', 'en-US'])).toBe('es')
+    expect(detectLocale(null, ['ko-KR', 'en-US'])).toBe('ko')
     expect(detectLocale(null, ['fr-FR', 'en-GB', 'pt-BR'])).toBe('en')
   })
 
-  it('falls back to English for unknown saves and languages', () => {
-    expect(detectLocale('klingon', ['ja-JP'])).toBe('en')
+  it('falls back to Korean for unknown saves and languages', () => {
+    expect(detectLocale('klingon', ['ja-JP'])).toBe('ko')
+    expect(detectLocale(null, [])).toBe('ko')
   })
 })
 

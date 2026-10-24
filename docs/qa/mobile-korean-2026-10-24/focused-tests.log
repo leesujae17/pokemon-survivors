@@ -1,0 +1,14 @@
+
+> pokemon-world@0.1.0 test
+> vitest run --exclude .sites/** --reporter=dot src/site/korean-pages.test.ts src/i18n/partner.ko.test.ts
+
+
+ RUN  v5.0.4 D:/Dev_Project/pokesurvivor-2
+
+······
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  09:43:13
+   Duration  1.06s (transform 46%, import 45%, tests 9%, worker 1%)
+

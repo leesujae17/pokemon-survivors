@@ -1,8 +1,9 @@
 import { PLAYABLE } from '../data/hatchlings'
 import { MEGA } from '../data/megas'
-import { isFinalStage, megaPhase } from '../game/mega'
+import { heldMega, isFinalStage, megaBaseName, megaPhase } from '../game/mega'
 import type { Game } from '../game/types'
 import { t } from '../i18n'
+import { localName } from '../i18n/names'
 import { megaIcon } from '../render/megaFx'
 import { boundLabel, setGlyphText } from './inputLabels'
 import { h, setStyle, setText } from './dom'
@@ -18,23 +19,25 @@ export const createMegaControls = (onPress: () => void) => {
   const badgeTag = h('span', { class: 'special-tag mega-tag hidden' })
   const keyLabel = h('span', { class: 'special-key' })
   const buttonTag = h('span', { class: 'special-tag mega-tag hidden' })
-  const badge = h('div', { class: 'special mega special-badge hidden' }, h('img', { src: megaIcon(), alt: '' }), keyLabel, badgeTag)
+  const badge = h('button', { class: 'special mega special-badge hidden', type: 'button', 'aria-label': t().controls.actions.mega }, h('img', { src: megaIcon(), alt: '' }), keyLabel, badgeTag)
   const button = h(
     'button',
     { class: 'special mega mega-button hidden', type: 'button', 'aria-label': t().mega.section },
     h('img', { src: megaIcon(), alt: '' }),
     buttonTag,
+    h('span', { class: 'touch-action-label', 'aria-hidden': 'true' }, t().controls.actions.mega),
   )
   // Claim the touch so the floating joystick (pointerdown anywhere) never sees it.
-  button.addEventListener('pointerdown', (e) => {
+  for (const el of [badge, button]) el.addEventListener('pointerdown', (e) => {
     e.preventDefault()
     e.stopPropagation()
     onPress()
   })
-  button.addEventListener('contextmenu', (e) => e.preventDefault())
+  for (const el of [badge, button]) el.addEventListener('contextmenu', (e) => e.preventDefault())
 
   const update = (g: Game) => {
-    const phase = megaPhase(g.mega, isFinalStage(g.starter, g.player.stage))
+    // A stone of the branch the run didn't take (Glalitite on a Froslass) leaves the button off.
+    const phase = heldMega(g) ? megaPhase(g.mega, isFinalStage(g.starter, g.player.stage)) : 'none'
     const line = PLAYABLE[g.starter].line
     const before = line[line.length - 2]
     const tag = phase === 'locked' && before && 'evolveAt' in before ? t().levelShort(before.evolveAt) : phase === 'ready' ? t().mega.button : ''
@@ -51,7 +54,7 @@ export const createMegaControls = (onPress: () => void) => {
       setText(el, tag)
       el.classList.toggle('hidden', tag === '')
     }
-    badge.title = phase === 'locked' ? t().mega.locked(line[line.length - 1]!.name) : t().mega.title
+    badge.title = phase === 'locked' ? t().mega.locked(localName(megaBaseName(g))) : t().mega.title
   }
 
   return { badge, button, update }

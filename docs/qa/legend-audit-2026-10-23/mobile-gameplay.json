@@ -1,0 +1,38 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 0.5666666666666668,
+  "starter": "articuno",
+  "awakening": 0,
+  "biome": "meadow",
+  "player": {
+    "x": 36,
+    "y": 0,
+    "hp": 135,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 2.833333333333334,
+        "path": 0,
+        "walkedAt": 26.39999999999999
+      },
+      {
+        "id": "roost",
+        "level": 1,
+        "cooldown": 0.13333333333333347,
+        "path": 0,
+        "walkedAt": 29.99999999999999
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [],
+  "menu": "Lv 1\n1\n1\n00:00\n0\n₽ 0\n프리져\nLv1\nHP\n눈숨기\n135/135\n필살기"
+}

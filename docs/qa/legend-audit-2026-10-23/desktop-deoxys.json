@@ -1,0 +1,50 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 1.266666666666667,
+  "starter": "deoxys",
+  "awakening": 0,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 130,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "psychoBoost",
+        "level": 1,
+        "cooldown": 2.0133333333333363,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "uTurn",
+        "level": 1,
+        "cooldown": 0,
+        "path": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": "normal",
+  "specialCooldown": 1.9000000000000004,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "vigoroth",
+      "x": 224.74150965960015,
+      "y": 69.78440896699851,
+      "hp": 27
+    },
+    {
+      "id": "vigoroth",
+      "x": -159.89287269824698,
+      "y": -205.47150027944696,
+      "hp": 28
+    }
+  ],
+  "menu": "Lv 1\n1\n1\nSPACE\n노말폼\nSHIFT\n00:01\n0\n₽ 0\n테오키스\nLv1\nHP\n프레셔\n130/130\n테오키스는 노말폼폼으로 폼체인지했다!"
+}

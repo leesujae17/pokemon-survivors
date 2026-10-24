@@ -1,15 +1,24 @@
-import { BOSS_PATTERNS, type BossPattern } from '../../data/bosses'
-import { ENEMIES, type EnemyDef } from '../../data/enemies'
+import { BOSS_PATTERNS, BOSS_PHASES, bossKit, type BossPattern } from '../../data/bosses'
+import { ENEMIES, type EnemyDef, type EnemyId } from '../../data/enemies'
+import { RIFT, RIFT_LEGENDS } from '../../data/rifts'
 import { TIERS } from '../../data/roster'
 import { isSummoner, SUMMONS, TRAITS, type TraitId } from '../../data/traits'
+import { SPIT_FLAVORS } from '../../game/spitters'
 import { HATCHLINGS, isHatchling, PLAYABLE } from '../../data/hatchlings'
 import { REGIONS, type PlayableDef } from '../../data/starters'
 import { POKE_TYPES, TYPE_COLORS, type PokeType } from '../../data/types'
 import { RUN_LENGTH } from '../../data/waves'
+import { isLegend, LEGENDS, type LegendId, type LegendUnlock } from '../../data/legends'
+import { BRANCHES, branchesAt, branchStage, familyDex } from '../../data/branches'
+import { ABILITIES, isHidden, type AbilitySet } from '../../data/abilities'
+import { abilitySet } from '../../game/abilities'
+import { formLine } from '../../game/branch'
+import { unlockedAt } from '../../game/learnsets'
 import { starterStats } from '../../game/leveling'
 import { MOVES, type MoveId } from '../../game/moves'
 import { resolveSpecial } from '../../game/special'
-import { LOCALES, type Locale } from '../../i18n'
+import { LOCALES, type SiteLocale } from '../../i18n'
+import { nameIn } from '../../i18n/names'
 import { SITE_MESSAGES, type SiteMessages } from '../../i18n/site'
 import { STAT_BARS, statRatio } from '../../ui/statBars'
 import { html, type Html } from '../html'
@@ -36,23 +45,23 @@ const sheetsOf = (dex: number) => {
 }
 
 /** Species drawn at the same zoom: a whole evolution line, so Charmeleon never looks smaller than Charmander. */
-const family = (entry: DexEntry) => (entry.source.kind === 'starter' ? PLAYABLE[entry.source.id].line.map((s) => s.dex) : [entry.dex])
+const family = (entry: DexEntry) => (entry.source.kind === 'starter' ? familyDex(entry.source.id) : [entry.dex])
 
 /**
  * Up to four stacked sheets (idle/walk × normal/shiny); CSS shows one at a time.
  * Hidden sheets aren't fetched until shown, so walk and shiny cost nothing until asked for.
  */
-const stage = (entry: DexEntry, css: SpriteCss, m: SiteMessages) => {
+const stage = (entry: DexEntry, css: SpriteCss, m: SiteMessages, locale: SiteLocale) => {
   const { normal, shiny } = entry.sprites
   const sets: Array<readonly [SpriteSet, boolean]> = [[normal, false], ...(shiny ? [[shiny, true] as const] : [])]
   const scale = spriteScale(family(entry).flatMap(sheetsOf))
   const layer = (set: SpriteSet, isShiny: boolean, anim: 'idle' | 'walk') =>
     html`<span class="sp sp-${isShiny ? 's' : ''}${anim === 'idle' ? 'i' : 'w'} ${css.classFor(set[anim], scale)}" style="background-image:url(${asset(entry.dex, anim === 'idle' ? 'Idle.png' : 'Walk.png', isShiny)})"></span>`
-  return html`<div class="stage" role="img" aria-label="${m.pokedex.sprite(entry.name)}">${sets.map(([set, isShiny]) => [layer(set, isShiny, 'idle'), layer(set, isShiny, 'walk')])}</div>`
+  return html`<div class="stage" role="img" aria-label="${m.pokedex.sprite(nameIn(locale, entry.name))}">${sets.map(([set, isShiny]) => [layer(set, isShiny, 'idle'), layer(set, isShiny, 'walk')])}</div>`
 }
 
-const statBars = (entry: DexEntry & { source: { kind: 'starter' } }, locale: Locale) => {
-  const stats = starterStats(entry.source.id, entry.source.stage)
+const statBars = (entry: DexEntry & { source: { kind: 'starter' } }, locale: SiteLocale) => {
+  const stats = starterStats(entry.source.id, entry.source.stage, entry.source.branch ?? null)
   const labels = LOCALES[locale].messages.stats
   return html`<dl class="bars">${STAT_BARS.map(
     (b) =>
@@ -60,20 +69,56 @@ const statBars = (entry: DexEntry & { source: { kind: 'starter' } }, locale: Loc
   )}</dl>`
 }
 
-const moveChip = (id: MoveId, m: SiteMessages) => html`<li style="--type:${TYPE_COLORS[MOVES[id].type]}" title="${m.types[MOVES[id].type]}">${MOVES[id].name}</li>`
+const moveChip = (id: MoveId, m: SiteMessages, locale: SiteLocale) =>
+  html`<li style="--type:${TYPE_COLORS[MOVES[id].type]}" title="${m.types[MOVES[id].type]}">${nameIn(locale, MOVES[id].name)}</li>`
 
-const starterBody = (entry: DexEntry & { source: { kind: 'starter' } }, locale: Locale) => {
+/**
+ * The learnset by stage: what the family starts with, then what each
+ * evolution unlocks. At a branching stage the branch taken shows its own
+ * moves; before one is taken, every branch gets a row.
+ */
+const learnRows = (source: DexEntry['source'] & { kind: 'starter' }, locale: SiteLocale) => {
+  const m = SITE_MESSAGES[locale]
+  const s: PlayableDef = PLAYABLE[source.id]
+  const branch = source.branch ?? null
+  const row = (name: string, when: string, moves: readonly MoveId[]) =>
+    moves.length > 0 && html`<dt>${name} <small>${when}</small></dt><dd><ul class="chips">${moves.map((mv) => moveChip(mv, m, locale))}</ul></dd>`
+  return html`<dl class="learn">${formLine(source.id, branch).map((st, k) => {
+    const when = k === 0 ? m.pokedex.learnStart : m.pokedex.evolvesAt(s.line[k - 1]!.evolveAt ?? 0)
+    const options = branch === null ? branchesAt(source.id, k) : []
+    if (options.length === 0) return row(st.name, when, unlockedAt(source.id, branch, k))
+    const shared = unlockedAt(source.id, null, k)
+    return [
+      row(options.length > 2 ? LOCALES[locale].messages.branch.choose(options.length) : options.map((b) => BRANCHES[b].name).join(' / '), when, shared),
+      options.map((b) => row(BRANCHES[b].name, when, unlockedAt(source.id, b, k).filter((mv) => !shared.includes(mv)))),
+    ]
+  })}</dl>`
+}
+
+/** A family's (or branch's) abilities, the Hidden one marked, with what each does in a run. */
+const abilityList = (set: AbilitySet, locale: SiteLocale) => {
+  const a = LOCALES[locale].messages
+  return html`<ul class="list">${set.map((id, i) => html`<li><b>${ABILITIES[id].name}</b>${isHidden(set, i) && html` <small>(${a.ability.hiddenLong})</small>`}: ${a.abilities[id]}</li>`)}</ul>
+    <p class="note">${a.ability.note}</p>`
+}
+
+const starterBody = (entry: DexEntry & { source: { kind: 'starter' } }, locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   const game = LOCALES[locale].messages
-  const { id, stage: i, wild } = entry.source
+  const { id, stage: i, wild, branch = null } = entry.source
   const s: PlayableDef = PLAYABLE[id]
   const signature = MOVES[s.signature]
-  const special = resolveSpecial(id, i)
+  const special = resolveSpecial(id, i, null, branch)
   const final = special.final
-  const last = resolveSpecial(id, s.line.length - 1)
-  const line = s.line.map(
-    (st, k) => html`${k > 0 && html`<li class="evo-arrow">${m.pokedex.evolvesAt(s.line[k - 1]!.evolveAt ?? 0)}<br /><span aria-hidden="true">▶</span></li>`}<li><a href="#${slugOf(st.name)}"${k === i ? html` aria-current="true"` : ''}><img src="${asset(st.dex, 'portrait.png')}" width="40" height="40" loading="lazy" alt="" />${st.name}</a></li>`,
-  )
+  const last = resolveSpecial(id, s.line.length - 1, null, branch)
+  // A stage a branching evolution decides shows every branch it can take.
+  const line = formLine(id, branch).map((st, k) => {
+    const options = branchesAt(id, k)
+    const forms = options.length > 0 ? options.map(branchStage) : [st]
+    return html`${k > 0 && html`<li class="evo-arrow">${m.pokedex.evolvesAt(s.line[k - 1]!.evolveAt ?? 0)}<br /><span aria-hidden="true">▶</span></li>`}<li>${forms.map(
+      (f) => html`<a href="#${slugOf(f.name)}"${f.dex === entry.dex ? html` aria-current="true"` : ''}><img src="${asset(f.dex, 'portrait.png')}" width="40" height="40" loading="lazy" alt="" />${f.name}</a>`,
+    )}</li>`
+  })
   // A 2-stage line's second stage is already the final one.
   const stageName = m.pokedex.stageOf(i > 0 && i === s.line.length - 1 ? 2 : i)
   return html`<p class="blurb">${stageName} · ${game.blurbs[id]}</p>
@@ -83,15 +128,17 @@ const starterBody = (entry: DexEntry & { source: { kind: 'starter' } }, locale: 
     <h3>${m.pokedex.evolution}</h3>
     <ol class="evo">${line}</ol>
     <h3>${m.pokedex.signature}</h3>
-    <p class="move"><b>${signature.name}</b> ${typeBadge(signature.type, m)}<br />${game.moves[s.signature].description}</p>
+    <p class="move"><b>${nameIn(locale, signature.name)}</b> ${typeBadge(signature.type, m)}<br />${game.moves[s.signature].description}</p>
     <h3>${m.pokedex.special}</h3>
-    <p class="move"><b>${special.tier.name}</b> ${typeBadge(special.def.type, m)}${!final && html` <small>(${m.pokedex.specialFinal}: ${last.tier.name})</small>`}<br />${game.specials[special.id]}</p>
+    <p class="move"><b>${nameIn(locale, special.tier.name)}</b> ${typeBadge(special.def.type, m)}${!final && html` <small>(${m.pokedex.specialFinal}: ${nameIn(locale, last.tier.name)})</small>`}<br />${game.specials[special.id]}</p>
     <h3>${m.pokedex.learnset}</h3>
-    <ul class="chips">${s.learnset.map((mv) => moveChip(mv, m))}</ul>
-    ${wild && html`<h3>${m.pokedex.appears}</h3><ul class="list">${appearances(wild).map((a) => html`<li>${appearance(a, m)}</li>`)}</ul>`}`
+    ${learnRows(entry.source, locale)}
+    <h3>${game.ability.section}</h3>
+    ${abilityList(abilitySet(id, branch), locale)}
+    ${wild && html`<h3>${m.pokedex.appears}</h3><ul class="list">${appearances(wild).map((a) => html`<li>${appearance(a, m, locale)}</li>`)}</ul>`}`
 }
 
-const appearance = (a: Appearance, m: SiteMessages) => {
+const appearance = (a: Appearance, m: SiteMessages, locale: SiteLocale) => {
   switch (a.kind) {
     case 'horde':
       return a.until >= RUN_LENGTH ? m.pokedex.hordeEnd(clock(a.from)) : m.pokedex.horde(clock(a.from), clock(a.until))
@@ -107,13 +154,17 @@ const appearance = (a: Appearance, m: SiteMessages) => {
       return m.pokedex.rift(clock(a.from))
     case 'reaper':
       return m.pokedex.reaper(clock(a.at))
+    case 'place':
+      return a.boss ? m.pokedex.placeBoss(m.pokedex.places[a.place], clock(a.from)) : m.pokedex.place(m.pokedex.places[a.place], clock(a.from))
     case 'summoned':
-      return m.pokedex.summoned(ENEMIES[a.by].name)
+      return m.pokedex.summoned(nameIn(locale, ENEMIES[a.by].name))
+    case 'retinue':
+      return m.pokedex.retinue(ENEMIES[a.by].name)
   }
 }
 
 /** What a trait does, with its numbers from `data/traits.ts`. `id` picks the summoner's summons. */
-export const traitText = (trait: TraitId, id: keyof typeof ENEMIES, m: SiteMessages) => {
+export const traitText = (trait: TraitId, id: keyof typeof ENEMIES, m: SiteMessages, locale: SiteLocale) => {
   const e = m.traits.effects
   switch (trait) {
     case 'healer':
@@ -121,7 +172,7 @@ export const traitText = (trait: TraitId, id: keyof typeof ENEMIES, m: SiteMessa
     case 'shield':
       return e.shield(TRAITS.shield.every, TRAITS.shield.ward * 100, TRAITS.shield.duration)
     case 'summoner': {
-      const names = isSummoner(id) ? [...new Set(SUMMONS[id].map((s) => ENEMIES[s].name))] : []
+      const names = isSummoner(id) ? [...new Set(SUMMONS[id].map((s) => nameIn(locale, ENEMIES[s].name)))] : []
       return e.summoner(TRAITS.summoner.every, TRAITS.summoner.perCast, TRAITS.summoner.max, names)
     }
     case 'kamikaze':
@@ -130,27 +181,103 @@ export const traitText = (trait: TraitId, id: keyof typeof ENEMIES, m: SiteMessa
       return e.beam(TRAITS.beam.aim, TRAITS.beam.damage)
     case 'leaper':
       return e.leaper(TRAITS.leaper.crouch + TRAITS.leaper.air, TRAITS.leaper.damage)
+    case 'spitter':
+      return e.spitter(SPIT_FLAVORS.orb.charge, TRAITS.spitter.damage)
   }
 }
 
 const attackText = (p: BossPattern, m: SiteMessages) => {
   switch (p.kind) {
     case 'strikes':
-      return p.target === 'player' ? m.patterns.strikesPlayer(p.count, p.every, p.damage) : m.patterns.strikesSelf(p.every, p.damage)
+      if (p.target === 'self') return m.patterns.strikesSelf(p.every, p.damage)
+      if (p.leap) return m.patterns.leap(p.every, p.damage)
+      return p.lead !== undefined ? m.patterns.path(p.count, p.every, p.damage) : m.patterns.strikesPlayer(p.count, p.every, p.damage)
     case 'ring':
-      return m.patterns.ring(p.count, p.every, p.damage)
+      return p.around !== undefined ? m.patterns.closing(p.count, p.every, p.damage) : m.patterns.ring(p.count, p.every, p.damage)
     case 'trail':
       return m.patterns.trail(p.ttl, p.damage)
+    case 'volley':
+      return m.patterns.volley(p.count, p.every, p.damage)
+    case 'beam':
+      return p.source === 'edge' ? m.patterns.lances(p.count, p.every, p.damage) : m.patterns.beam(p.count, p.every, p.damage)
+    case 'dash':
+      return m.patterns.dash(p.count, p.every, p.damage)
+    case 'dive':
+      return m.patterns.dive(p.every, p.damage)
+    case 'teleport':
+      return m.patterns.teleport(p.every, p.damage)
+    case 'blast':
+      return m.patterns.blast(p.safe, p.damage)
+    case 'cage':
+      return m.patterns.cage(p.every, p.damage)
+    case 'summon':
+      return m.patterns.summon(p.every)
+    case 'swoop':
+      return m.patterns.swoop(p.count, p.every, p.damage)
+    case 'whirlpool':
+      return m.patterns.whirlpool(p.count, p.every, p.damage)
+    case 'gust':
+      return m.patterns.gust(p.count, p.every, p.damage)
+    case 'timeStop':
+      return m.patterns.timeStop(p.every, p.duration)
+    case 'phantoms':
+      return m.patterns.phantoms(p.count, p.every, p.damage)
+    case 'guard':
+      return m.patterns.guard(new Intl.ListFormat(m.lang.tag, { type: 'conjunction' }).format(p.enemies.map((id) => nameIn(m.lang.tag === 'ko' ? 'ko' : 'en', ENEMIES[id].name))), p.every)
   }
 }
 
-/** One boss attack, led by its stance when it only fires in one (`BossStance`). */
-export const patternText = (p: BossPattern, m: SiteMessages) => (p.stance ? `${m.patterns.stance[p.stance]}: ${attackText(p, m)}` : attackText(p, m))
+/**
+ * A boss's attacks for the guide and the Pokédex: a flat list, or for a boss
+ * with phases (`BOSS_PHASES`) one list per phase with its ultimate's steps
+ * (which come back with the ultimate, so they show its `every`).
+ */
+export const bossAttacks = (id: EnemyId, m: SiteMessages) => {
+  const phases = BOSS_PHASES[id]
+  if (!phases) return html`<ul class="list">${(BOSS_PATTERNS[id] ?? []).map((p) => html`<li>${patternText(p, m)}</li>`)}</ul>`
+  return html`<ul class="list">${phases.map(
+    (ph, i) => html`<li><b>${ph.rebirth !== undefined ? m.patterns.reborn(i, Math.round(ph.rebirth * 100)) : m.patterns.phase(i, Math.round(ph.below * 100))}</b><ul class="list">
+      ${ph.patterns.map((p) => html`<li>${patternText(p, m)}</li>`)}
+      ${ph.ultimate && html`<li>${m.patterns.ultimate(ph.ultimate.move.split(' + ').map((move) => nameIn(m.lang.tag === 'ko' ? 'ko' : 'en', move)).join(' + '), ph.ultimate.every)} ${ph.ultimate.steps.map((s) => patternText({ ...s.pattern, every: ph.ultimate!.every }, m)).join('; ')}</li>`}
+    </ul></li>`,
+  )}</ul>`
+}
 
-const wildBody = (entry: DexEntry & { source: { kind: 'wild' } }, m: SiteMessages) => {
+/** When a gated attack fires (`PatternGate`): keeping away, under some HP, on harder difficulties. */
+const gateText = (p: BossPattern, m: SiteMessages) =>
+  [p.far !== undefined && m.patterns.far, p.below !== undefined && m.patterns.below(Math.round(p.below * 100)), p.from !== undefined && m.patterns.from[p.from]].filter((s) => s !== false)
+
+/** One boss attack, led by its stance when it only fires in one (`BossStance`) and followed by its gates. */
+export const patternText = (p: BossPattern, m: SiteMessages) => {
+  const gates = gateText(p, m)
+  const text = gates.length > 0 ? `${attackText(p, m)}, ${gates.join(', ')}` : attackText(p, m)
+  return p.stance ? `${m.patterns.stance[p.stance]}: ${text}` : text
+}
+
+/** A legendary's card: how it's captured for the Legend mode, its innate and the move it opens with (`data/legends.ts`). */
+const legendSection = (id: LegendId, m: SiteMessages, locale: SiteLocale) => {
+  const def = LEGENDS[id]
+  const game = LOCALES[locale].messages
+  const unlock: LegendUnlock = def.unlock
+  const opener = MOVES[def.learnset[0][0]!]
+  return html`<h3>${m.pokedex.legendMode}</h3>
+    <ul class="list">
+      <li>${unlock.last ? m.pokedex.captureLast : m.pokedex.capture(unlock.wins)}</li>
+      <li>${m.pokedex.innate(nameIn(locale, ABILITIES[def.innate.ability].name))}: ${game.abilities[def.innate.ability]}</li>
+      <li>${m.pokedex.opens(nameIn(locale, opener.name))} ${typeBadge(opener.type, m)}</li>
+    </ul>
+    <p>${game.moves[def.signature].description}</p>
+    <p>${game.legend.selectNote.replace(/\*/g, '')}</p>
+    <h3>${m.pokedex.learnset}</h3>
+    <ul class="chips">${def.learnset[0].map(id => moveChip(id, m, locale))}</ul>
+    <p class="note">★ ${m.pokedex.captureShiny}</p>`
+}
+
+const wildBody = (entry: DexEntry & { source: { kind: 'wild' } }, m: SiteMessages, locale: SiteLocale) => {
   const e: EnemyDef = ENEMIES[entry.source.id]
-  const patterns = BOSS_PATTERNS[entry.source.id] ?? []
+  const kit = bossKit(entry.source.id)
   const s = m.pokedex.wildStats
+  const shiny = entry.sprites.shiny ? shinyNote(entry.source.id, kit.length > 0, m) : null
   return html`<dl class="facts">
       ${e.tier !== undefined && html`<div><dt>${m.roster.tier}</dt><dd>${e.tier}</dd></div>`}
       <div><dt>${s.hp}</dt><dd>${e.hp}</dd></div>
@@ -159,12 +286,17 @@ const wildBody = (entry: DexEntry & { source: { kind: 'wild' } }, m: SiteMessage
       <div><dt>${s.xp}</dt><dd>${e.xp}</dd></div>
     </dl>
     <p class="note">${m.pokedex.wildNote}</p>
-    ${e.trait && html`<h3>${m.pokedex.behavior}</h3><p><b>${m.traits.names[e.trait]}.</b> ${traitText(e.trait, entry.source.id, m)}</p>`}
+    ${e.trait && html`<h3>${m.pokedex.behavior}</h3><p><b>${m.traits.names[e.trait]}.</b> ${traitText(e.trait, entry.source.id, m, locale)}</p>`}
     <h3>${m.pokedex.appears}</h3>
-    <ul class="list">${appearances(entry.source.id).map((a) => html`<li>${appearance(a, m)}</li>`)}</ul>
-    ${patterns.length > 0 && html`<h3>${m.pokedex.attacks}</h3><ul class="list">${patterns.map((p) => html`<li>${patternText(p, m)}</li>`)}</ul>`}
-    ${entry.sprites.shiny && html`<p class="note">★ ${m.pokedex.shinyNote}</p>`}`
+    <ul class="list">${appearances(entry.source.id).map((a) => html`<li>${appearance(a, m, locale)}</li>`)}</ul>
+    ${kit.length > 0 && html`<h3>${m.pokedex.attacks}</h3>${bossAttacks(entry.source.id, m)}`}
+    ${isLegend(entry.source.id) && legendSection(entry.source.id, m, locale)}
+    ${shiny && html`<p class="note">★ ${shiny}</p>`}`
 }
+
+/** How a wild card's shiny shows up: a rift legendary by the rift's odds, the map's bosses never, the horde at the wild odds. */
+const shinyNote = (id: EnemyId, boss: boolean, m: SiteMessages) =>
+  (RIFT_LEGENDS as readonly EnemyId[]).includes(id) ? m.pokedex.riftShinyNote(Math.round(1 / RIFT.shinyOdds)) : boss ? null : m.pokedex.shinyNote
 
 /** Horde tier of a wild card, for the tier filter. */
 const tierOf = (entry: DexEntry) => {
@@ -173,34 +305,35 @@ const tierOf = (entry: DexEntry) => {
   return def.tier
 }
 
-const card = (entry: DexEntry, locale: Locale, css: SpriteCss) => {
+const card = (entry: DexEntry, locale: SiteLocale, css: SpriteCss) => {
   const m = SITE_MESSAGES[locale]
   const { dex, name, slug, sprites, types, role, region } = entry
+  const shown = nameIn(locale, name)
   const tier = tierOf(entry)
-  return html`<article class="dex-card box role-${role}" id="${slug}" data-region="${region.name.toLowerCase()}" data-types="${types.join(' ')}" data-roles="${filterRoles(role).join(' ')}"${tier !== undefined ? html` data-tier="${tier}"` : ''} data-search="${slug} ${dex} ${String(dex).padStart(3, '0')}">
+  return html`<article class="dex-card box role-${role}" id="${slug}" data-region="${region.name.toLowerCase()}" data-types="${types.join(' ')}" data-roles="${filterRoles(role).join(' ')}"${tier !== undefined ? html` data-tier="${tier}"` : ''} data-search="${slug} ${shown} ${dex} ${String(dex).padStart(3, '0')}">
   <div class="card-top">
     <span class="dex-no">${dexNo(dex)}</span>
     <span class="role">${m.pokedex.roles[role]}</span>
-    <span class="region">${region.name}</span>
-    <a class="anchor" href="#${slug}" aria-label="${m.pokedex.link(name)}">#</a>
+    <span class="region">${nameIn(locale, region.name)}</span>
+    <a class="anchor" href="#${slug}" aria-label="${m.pokedex.link(shown)}">#</a>
   </div>
   <div class="card-art">
-    ${stage(entry, css, m)}
-    ${sprites.portrait && html`<img class="portrait" src="${asset(dex, 'portrait.png')}"${sprites.shinyPortrait ? html` data-shiny-src="${asset(dex, 'portrait.png', true)}"` : ''} width="80" height="80" loading="lazy" alt="${m.pokedex.portrait(name)}" />`}
-    ${sprites.shiny && html`<button class="shiny-btn" type="button" aria-pressed="false" aria-label="${m.pokedex.shinyToggle(name)}" title="${m.pokedex.shinyToggle(name)}">★</button>`}
+    ${stage(entry, css, m, locale)}
+    ${sprites.portrait && html`<img class="portrait" src="${asset(dex, 'portrait.png')}"${sprites.shinyPortrait ? html` data-shiny-src="${asset(dex, 'portrait.png', true)}"` : ''} width="80" height="80" loading="lazy" alt="${m.pokedex.portrait(shown)}" />`}
+    ${sprites.shiny && html`<button class="shiny-btn" type="button" aria-pressed="false" aria-label="${m.pokedex.shinyToggle(shown)}" title="${m.pokedex.shinyToggle(shown)}">★</button>`}
   </div>
-  <h2>${name}</h2>
+  <h2>${shown}</h2>
   <div class="types">${types.map((t) => typeBadge(t, m))}</div>
-  ${entry.source.kind === 'starter' ? starterBody({ ...entry, source: entry.source }, locale) : entry.source.kind === 'wild' ? wildBody({ ...entry, source: entry.source }, m) : html`<p class="note">${m.pokedex.eventNote}</p>`}
+  ${entry.source.kind === 'starter' ? starterBody({ ...entry, source: entry.source }, locale) : entry.source.kind === 'wild' ? wildBody({ ...entry, source: entry.source }, m, locale) : html`<p class="note">${m.pokedex.eventNote}</p>`}
 </article>`
 }
 
-const filters = (entries: readonly DexEntry[], m: SiteMessages) => {
+const filters = (entries: readonly DexEntry[], m: SiteMessages, locale: SiteLocale) => {
   const types = POKE_TYPES.filter((t) => entries.some((e) => e.types.includes(t)))
   return html`<form class="dex-filters" id="dex-filters" role="search" aria-label="${m.pokedex.filters}">
     <label class="field field-search">${m.pokedex.search}<input type="search" name="q" placeholder="${m.pokedex.searchPlaceholder}" autocomplete="off" /></label>
     <label class="field">${m.pokedex.region}<select name="region"><option value="">${m.pokedex.allRegions}</option>${REGIONS.map(
-      (r) => html`<option value="${r.name.toLowerCase()}">${r.name}</option>`,
+      (r) => html`<option value="${r.name.toLowerCase()}">${nameIn(locale, r.name)}</option>`,
     )}</select></label>
     <label class="field">${m.pokedex.type}<select name="type"><option value="">${m.pokedex.all}</option>${types.map(
       (t) => html`<option value="${t}">${m.types[t]}</option>`,
@@ -219,7 +352,7 @@ const filters = (entries: readonly DexEntry[], m: SiteMessages) => {
 }
 
 /** `/pokedex/`: every Pokémon in the game, generated from `data/*`, with CSS-animated sprites and client-side filters. */
-export const pokedexPage = (locale: Locale) => {
+export const pokedexPage = (locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   const entries = pokedex()
   const css = createSpriteCss()
@@ -229,7 +362,7 @@ export const pokedexPage = (locale: Locale) => {
     <h1>${m.pokedex.h1}</h1>
     <p class="lead">${m.pokedex.intro(entries.length)}</p>
   </div>
-  ${filters(entries, m)}
+  ${filters(entries, m, locale)}
   <div class="dex-grid">${cards}</div>`
   return layout(
     {
@@ -244,7 +377,7 @@ export const pokedexPage = (locale: Locale) => {
           '@id': `${url}#list`,
           name: m.pokedex.h1,
           numberOfItems: entries.length,
-          itemListElement: entries.map((e, i) => ({ '@type': 'ListItem', position: i + 1, name: e.name, url: `${url}#${e.slug}` })),
+          itemListElement: entries.map((e, i) => ({ '@type': 'ListItem', position: i + 1, name: nameIn(locale, e.name), url: `${url}#${e.slug}` })),
         },
       ],
     },

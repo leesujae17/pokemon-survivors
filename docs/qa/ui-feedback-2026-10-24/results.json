@@ -1,0 +1,195 @@
+{
+  "url": "http://127.0.0.1:4183/ko/",
+  "results": [
+    {
+      "width": 771,
+      "height": 964,
+      "touch": false,
+      "missionCycles": 3,
+      "layout": {
+        "roster": {
+          "x": 12,
+          "y": 72,
+          "w": 747,
+          "h": 294,
+          "b": 366,
+          "r": 759
+        },
+        "hero": {
+          "x": 12,
+          "y": 380,
+          "w": 747,
+          "h": 431,
+          "b": 811,
+          "r": 759
+        },
+        "grid": {
+          "x": 31,
+          "y": 141,
+          "w": 709,
+          "h": 208,
+          "b": 349,
+          "r": 740
+        },
+        "vw": 771,
+        "overflow": false
+      },
+      "megaKorean": true,
+      "specialKorean": true,
+      "legends": 23,
+      "errors": []
+    },
+    {
+      "width": 738,
+      "height": 964,
+      "touch": true,
+      "missionCycles": 3,
+      "layout": {
+        "roster": {
+          "x": 12,
+          "y": 72,
+          "w": 714,
+          "h": 292,
+          "b": 364,
+          "r": 726
+        },
+        "hero": {
+          "x": 12,
+          "y": 378,
+          "w": 714,
+          "h": 429,
+          "b": 807,
+          "r": 726
+        },
+        "grid": {
+          "x": 30,
+          "y": 140,
+          "w": 678,
+          "h": 208,
+          "b": 348,
+          "r": 708
+        },
+        "vw": 738,
+        "overflow": false
+      },
+      "megaKorean": true,
+      "specialKorean": true,
+      "legends": 23,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "missionCycles": 3,
+      "layout": {
+        "roster": {
+          "x": 10,
+          "y": 262,
+          "w": 370,
+          "h": 402,
+          "b": 664,
+          "r": 380
+        },
+        "hero": {
+          "x": 10,
+          "y": 70,
+          "w": 370,
+          "h": 182,
+          "b": 252,
+          "r": 380
+        },
+        "grid": {
+          "x": 10,
+          "y": 318,
+          "w": 370,
+          "h": 744,
+          "b": 1062,
+          "r": 380
+        },
+        "vw": 390,
+        "overflow": false
+      },
+      "megaKorean": true,
+      "specialKorean": true,
+      "legends": 23,
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "touch": true,
+      "missionCycles": 3,
+      "layout": {
+        "roster": {
+          "x": 12,
+          "y": 58,
+          "w": 560,
+          "h": 256,
+          "b": 314,
+          "r": 572
+        },
+        "hero": {
+          "x": 582,
+          "y": 58,
+          "w": 250,
+          "h": 256,
+          "b": 314,
+          "r": 832
+        },
+        "grid": {
+          "x": 24,
+          "y": 106,
+          "w": 536,
+          "h": 182,
+          "b": 288,
+          "r": 560
+        },
+        "vw": 844,
+        "overflow": false
+      },
+      "megaKorean": true,
+      "specialKorean": true,
+      "legends": 23,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "touch": false,
+      "missionCycles": 3,
+      "layout": {
+        "roster": {
+          "x": 50,
+          "y": 72,
+          "w": 766,
+          "h": 700,
+          "b": 772,
+          "r": 816
+        },
+        "hero": {
+          "x": 830,
+          "y": 72,
+          "w": 400,
+          "h": 700,
+          "b": 772,
+          "r": 1230
+        },
+        "grid": {
+          "x": 69,
+          "y": 141,
+          "w": 728,
+          "h": 208,
+          "b": 349,
+          "r": 797
+        },
+        "vw": 1280,
+        "overflow": false
+      },
+      "megaKorean": true,
+      "specialKorean": true,
+      "legends": 23,
+      "errors": []
+    }
+  ]
+}

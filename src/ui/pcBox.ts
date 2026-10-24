@@ -3,6 +3,7 @@ import type { Input } from '../engine/input'
 import { context2d } from '../engine/pixelart'
 import { ENEMIES, type EnemyDef } from '../data/enemies'
 import { RIFT_LEGENDS } from '../data/rifts'
+import { GRAVEYARD } from '../data/places'
 import { dexStatus, type Pokedex } from '../game/dex'
 import { pokedex, type DexEntry } from '../site/pokedex'
 import { sparkleIcon } from '../render/art'
@@ -10,6 +11,7 @@ import type { WallpaperId } from '../data/style'
 import { wallpaperUrl } from '../render/cosmetics'
 import { cryUrl, drawPokemon, loadedSprites, loadSpecies } from '../render/sprites'
 import { t } from '../i18n'
+import { localName } from '../i18n/names'
 import { h, later } from './dom'
 import { loadSave } from './save'
 import { hint, typeBadge, type Screen } from './screens'
@@ -21,8 +23,9 @@ const BOX_SLOTS = BOX.cols * BOX.rows
 
 /**
  * Can this species be caught shiny? Playable lines can (the 1/64 roll, a
- * shiny hatch), and so can the wild horde and the rift legendaries; wave
- * bosses and event Pokémon never are. Only species with shiny sprites count.
+ * shiny hatch), and so can the wild horde, the rift legendaries and
+ * Spiritomb; wave bosses and event Pokémon never are. Only species with shiny
+ * sprites count.
  */
 const shinyCatchable = (e: DexEntry) => {
   if (!e.sprites.shiny) return false
@@ -30,7 +33,7 @@ const shinyCatchable = (e: DexEntry) => {
   if (e.source.kind !== 'wild') return false
   const wild = e.source.id
   const def: EnemyDef = ENEMIES[wild]
-  return def.tier !== undefined || RIFT_LEGENDS.some((id) => id === wild)
+  return def.tier !== undefined || RIFT_LEGENDS.some((id) => id === wild) || wild === GRAVEYARD.boss
 }
 
 /** Every species the Caixa do PC has room for, in national dex order. */
@@ -111,7 +114,7 @@ export const pcBoxScreen = (root: HTMLElement, input: Input, actions: PcActions,
       return
     }
     name.classList.remove('empty')
-    name.replaceChildren(h('small', {}, `#${String(e.dex).padStart(4, '0')}`), e.name, h('img', { src: sparkleIcon(), alt: 'Shiny' }))
+    name.replaceChildren(h('small', {}, `#${String(e.dex).padStart(4, '0')}`), localName(e.name), h('img', { src: sparkleIcon(), alt: 'Shiny' }))
     types.replaceChildren(...e.types.map(typeBadge))
   }
 
@@ -120,7 +123,7 @@ export const pcBoxScreen = (root: HTMLElement, input: Input, actions: PcActions,
     slots.forEach((el, i) => {
       const e = at(i)
       el.classList.toggle('filled', e !== undefined)
-      el.setAttribute('aria-label', e ? e.name : m.empty)
+      el.setAttribute('aria-label', e ? localName(e.name) : m.empty)
       marks[i]!.classList.toggle('hidden', e === undefined)
       if (e) void loadSpecies(e.dex, true).catch(() => {})
       if (!e) context2d(canvases[i]!).clearRect(0, 0, 48, 48)

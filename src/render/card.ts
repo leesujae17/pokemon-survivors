@@ -14,7 +14,8 @@ import { drawPokemon, hasShiny, loadSpecies, portraitUrl, type SpeciesSprites } 
  * Share cards: the run's card (results screen) and the Trainer Card (profile,
  * Caixa do PC), drawn like the game: a 270×338 pixel layout (≈4:5, a feed
  * post) built from code art, PMD sprites at whole scales and the game's fonts
- * snapped to hard pixels, then blown up ×4 into a 1080×1352 PNG. Text reads
+ * snapped to hard pixels, then blown up ×4 into a 1080×1352 PNG (Korean text
+ * goes on after that, in a smooth Gothic). Text reads
  * `t()` when drawn. `style` takes the equipped frame and background
  * (`render/cosmetics.ts`), the default one otherwise.
  */
@@ -24,8 +25,8 @@ export const CARD = { w: 270, h: 338, scale: 4 } as const
 /** A Pokémon on a card: its dex number, name and colors. */
 export type CardMon = { dex: number; name: string; shiny: boolean }
 
-/** Who shares the card: handle and equipped title when there is one, and the game's link (with `?ref=`). */
-export type CardTrainer = { handle: string | null; title: string | null; link: string }
+/** Who shares the card: handle and equipped title when there is one. */
+export type CardTrainer = { handle: string | null; title: string | null }
 
 export type RunOutcome = 'victory' | 'fainted' | 'endless'
 
@@ -99,10 +100,63 @@ const OUTCOME_COLORS = { victory: '#3878e8', fainted: '#d04848', endless: '#7048
 
 type Font = 'title' | 'body'
 
-const FAMILY = { title: '"Press Start 2P"', body: 'VT323' } as const satisfies Record<Font, string>
+const FAMILY = { title: '"Press Start 2P", "PS Hangul Title"', body: 'VT323, "PS Hangul Body"' } as const satisfies Record<Font, string>
+
+/** The font stack for the current language: Korean takes its title-font word gaps from Galmuri, as in CSS (fonts/hangul.css). */
+const family = (font: Font) => (font === 'title' && locale() === 'ko' ? `"PS Hangul Space", ${FAMILY.title}` : FAMILY[font])
+
+const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힣]/
+
+/**
+ * Text with Hangul in it skips the pixel fonts: snapped to hard pixels on this
+ * small canvas, Hangul's dense strokes break apart at any size. It waits for the
+ * ×4 card (`finish`) and is drawn there, smooth, in the device's own Gothic
+ * (맑은 고딕, Apple SD 산돌고딕 Neo, Noto Sans KR). Sizes are card px; big stat
+ * values are digits only and keep their pixel font.
+ */
+const GOTHIC = '"Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", "Nanum Gothic", sans-serif'
+const KOREAN = { title: { weight: 700, size: 10 }, body: { weight: 600, size: 10.5 } } as const satisfies Record<Font, { weight: number; size: number }>
+const gothic = (font: Font) => `${KOREAN[font].weight} ${KOREAN[font].size * CARD.scale}px ${GOTHIC}`
+
+const gothicWidths = new Map<string, number>()
+
+/** A Korean string's width in card px, in the Gothic it will be drawn in. */
+const gothicWidth = (text: string, font: Font) => {
+  const key = `${font}|${text}`
+  const cached = gothicWidths.get(key)
+  if (cached !== undefined) return cached
+  const probe = context2d(createCanvas(1, 1))
+  probe.font = gothic(font)
+  const width = Math.ceil(probe.measureText(text).width / CARD.scale)
+  gothicWidths.set(key, width)
+  return width
+}
+
+type LateText = { value: string; x: number; y: number; font: Font; color: string; shadow: string | undefined }
+
+/** Korean text laid out on a card, by its low-res context, waiting for the ×4 pass. */
+const lateTexts = new WeakMap<CanvasRenderingContext2D, LateText[]>()
+
+/** Draws a card's Korean text on its ×4 canvas, with the same one-pixel drop shadow as the pixel text. */
+const drawLateTexts = (big: CanvasRenderingContext2D, texts: readonly LateText[]) => {
+  const k = CARD.scale
+  big.textBaseline = 'alphabetic'
+  for (const { value, x, y, font, color, shadow } of texts) {
+    big.font = gothic(font)
+    if (shadow) {
+      big.fillStyle = shadow
+      big.fillText(value, x * k + k, y * k + k)
+    }
+    big.fillStyle = color
+    big.fillText(value, x * k, y * k)
+  }
+}
 
 /** Waits for the game fonts: a card drawn before them would fall back to a smooth system font. */
-const fontsReady = () => Promise.all([document.fonts.load(`8px ${FAMILY.title}`), document.fonts.load(`16px ${FAMILY.body}`)])
+const fontsReady = () => {
+  const sample = locale() === 'ko' ? 'A ' : 'A'
+  return Promise.all([document.fonts.load(`8px ${family('title')}`, sample), document.fonts.load(`16px ${family('body')}`, sample)])
+}
 
 type Mask = { canvas: HTMLCanvasElement; width: number; baseline: number }
 
@@ -110,16 +164,17 @@ const masks = canvasCache<string, Mask>()
 
 /** Text in white with every pixel fully on or off, so it reads like the rest of the pixel art. */
 const textMask = (text: string, font: Font, size: number): Mask => {
-  const key = `${font}|${size}|${text}`
+  const stack = family(font)
+  const key = `${stack}|${size}|${text}`
   const cached = masks.get(key)
   if (cached) return cached
   const probe = context2d(createCanvas(1, 1))
-  probe.font = `${size}px ${FAMILY[font]}`
+  probe.font = `${size}px ${stack}`
   const width = Math.ceil(probe.measureText(text).width)
   const baseline = Math.round(size * 1.5)
   const canvas = createCanvas(width + 2, size * 2)
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!
-  ctx.font = `${size}px ${FAMILY[font]}`
+  ctx.font = `${size}px ${stack}`
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = '#fff'
   ctx.fillText(text, 1, baseline)
@@ -141,9 +196,10 @@ const recolor = (mask: HTMLCanvasElement, color: string) => {
   return canvas
 }
 
-type TextOpts = { font?: Font; size?: number; color?: string; shadow?: string; align?: 'left' | 'center' | 'right' }
+/** `smooth`: Korean cards draw this in the Gothic too, Hangul or not (the header's date). */
+type TextOpts = { font?: Font; size?: number; color?: string; shadow?: string; align?: 'left' | 'center' | 'right'; smooth?: boolean }
 
-const textWidth = (text: string, font: Font = 'body', size = 16) => textMask(text, font, size).width
+const textWidth = (text: string, font: Font = 'body', size = 16) => (HANGUL.test(text) ? gothicWidth(text, font) : textMask(text, font, size).width)
 
 /** `text` cut with "…" until it fits `max` px. */
 const fit = (text: string, max: number, font: Font = 'body', size = 16) => {
@@ -153,9 +209,17 @@ const fit = (text: string, max: number, font: Font = 'body', size = 16) => {
   return `${cut.trimEnd()}…`
 }
 
-/** Draws pixel text with its baseline at `y`, with a 1 px drop shadow if asked. Returns its width. */
+/** Draws pixel text with its baseline at `y`, with a 1 px drop shadow if asked; Korean text is queued for the ×4 pass. Returns its width. */
 const text = (ctx: CanvasRenderingContext2D, value: string, x: number, y: number, opts: TextOpts = {}) => {
-  const { font = 'body', size = 16, color = INK, shadow, align = 'left' } = opts
+  const { font = 'body', size = 16, color = INK, shadow, align = 'left', smooth = false } = opts
+  if (HANGUL.test(value) || (smooth && locale() === 'ko')) {
+    const width = gothicWidth(value, font)
+    const left = align === 'center' ? x - Math.floor(width / 2) : align === 'right' ? x - width : x
+    const queued = lateTexts.get(ctx) ?? []
+    queued.push({ value, x: left, y, font, color, shadow })
+    lateTexts.set(ctx, queued)
+    return width
+  }
   const mask = textMask(value, font, size)
   const left = align === 'center' ? x - Math.floor(mask.width / 2) : align === 'right' ? x - mask.width : x
   const top = y - mask.baseline
@@ -460,24 +524,11 @@ const sectionTitle = (ctx: CanvasRenderingContext2D, title: string, note: string
   if (note) text(ctx, note, x + w - 1, y + 9, { align: 'right', color: '#c8d0f0', shadow: SHADOW })
 }
 
-/** The footer: who shares it (handle and title) and the link that brings friends in. */
-const footer = (ctx: CanvasRenderingContext2D, trainer: CardTrainer, y: number) => {
-  const { w } = CARD
-  const m = t().share.card
-  rect(ctx, 14, y, w - 28, 1, '#34447a')
-  const who = [trainer.handle && `@${trainer.handle}`, trainer.title && `★ ${trainer.title} ★`].filter((s): s is string => Boolean(s)).join(' · ')
-  text(ctx, fit(who || m.play, w - 28), w / 2, y + 13, { align: 'center', color: '#e8ecff', shadow: SHADOW })
-  const link = textWidth(trainer.link) <= w - 28 ? trainer.link : trainer.link.replace(/\?.*$/, '')
-  text(ctx, link, w / 2, y + 25, { align: 'center', color: GOLD_LIGHT, shadow: SHADOW })
-}
-
-const FOOTER_H = 28
-
 /** The logo (top left) and a line or two on the right. */
 const header = async (ctx: CanvasRenderingContext2D, right: readonly string[]) => {
   const logo = await titleLogo()
   ctx.drawImage(logo, 10, 9)
-  right.forEach((line, i) => text(ctx, line, CARD.w - 11, 20 + i * 11, { font: i === 0 ? 'body' : 'title', size: i === 0 ? 16 : 8, align: 'right', color: i === 0 ? '#a8b4e0' : GOLD_LIGHT, shadow: SHADOW }))
+  right.forEach((line, i) => text(ctx, line, CARD.w - 11, 20 + i * 11, { font: i === 0 ? 'body' : 'title', size: i === 0 ? 16 : 8, align: 'right', color: i === 0 ? '#a8b4e0' : GOLD_LIGHT, shadow: SHADOW, smooth: true }))
 }
 
 const HEADER_H = 46
@@ -485,7 +536,7 @@ const HEADER_H = 46
 /** Day, month and year in the current language. */
 const cardDate = (d: Date) => d.toLocaleDateString(LOCALES[locale()].tag, { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-/** Blocks stacked between the header and the footer, the spare height spread between them. */
+/** Blocks stacked between the header and the card's bottom, the spare height spread between them. */
 const stack = (heights: readonly number[], top: number, bottom: number) => {
   const gap = Math.max(4, Math.floor((bottom - top - heights.reduce((a, b) => a + b, 0)) / (heights.length + 1)))
   let y = top + gap
@@ -504,11 +555,14 @@ const blank = (style: CardStyle) => {
   return { canvas, ctx }
 }
 
-/** The finished card: the frame on top, then ×4 with hard pixels. */
+/** The finished card: the frame on top, then ×4 with hard pixels, and the Korean text over it. */
 const finish = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, style: CardStyle) => {
   drawFrame(ctx, CARD_FRAMES[style.frame])
   const out = createCanvas(CARD.w * CARD.scale, CARD.h * CARD.scale)
-  context2d(out).drawImage(canvas, 0, 0, out.width, out.height)
+  const big = context2d(out)
+  big.drawImage(canvas, 0, 0, out.width, out.height)
+  drawLateTexts(big, lateTexts.get(ctx) ?? [])
+  lateTexts.delete(ctx)
   return out
 }
 
@@ -544,7 +598,7 @@ export const drawRunCard = async (card: RunCardData, style: CardStyle = DEFAULT_
   await header(ctx, place ? [m.challenge(formatDay(place.day)), m.challengePlace(place.rank, place.total)] : [cardDate(card.date)])
   const section = runSection(card)
   const sectionH = section.kind === 'none' ? 0 : 12 + (section.kind === 'mons' ? gridHeight(Math.min(section.mons.length, CARD_SLOTS)) : movesHeight(card.moves.length))
-  const [heroY, statsY, sectionY] = stack(section.kind === 'none' ? [HERO_H, STRIP_H] : [HERO_H, STRIP_H, sectionH], HEADER_H, CARD.h - 8 - FOOTER_H)
+  const [heroY, statsY, sectionY] = stack(section.kind === 'none' ? [HERO_H, STRIP_H] : [HERO_H, STRIP_H, sectionH], HEADER_H, CARD.h - 8)
 
   // Hero: the Pokémon on the left half, its name, chips and legendaries on the right.
   const [sprites, portraits] = await Promise.all([spritesOf(card.mon), Promise.all(card.legends.slice(0, LEGENDS_SHOWN).map((dex) => loadImage(portraitUrl(dex))))])
@@ -598,7 +652,7 @@ export const drawRunCard = async (card: RunCardData, style: CardStyle = DEFAULT_
     await moveList(ctx, card.moves, INNER.x, sectionY! + 12, INNER.w)
   }
 
-  footer(ctx, card.trainer, CARD.h - 8 - FOOTER_H)
+  // No footer: the card carries no link, and the sharer's name rides with the post.
   return finish(canvas, ctx, style)
 }
 
@@ -613,7 +667,7 @@ export const drawTrainerCard = async (card: TrainerCardData, style: CardStyle = 
   const gridH = 12 + gridHeight(card.showcase.length > 0 ? Math.min(card.showcase.length, CARD_SLOTS) : 1)
   const ribbons = RIBBON_TIERS.some((tier) => card.ribbons[tier] > 0)
   const idH = HERO_H + (ribbons ? RIBBON_ROW : 0)
-  const [idY, statsY, gridY] = stack([idH, STRIP_H, gridH], HEADER_H, CARD.h - 8 - FOOTER_H)
+  const [idY, statsY, gridY] = stack([idH, STRIP_H, gridH], HEADER_H, CARD.h - 8)
 
   // The ID: paper with the trainer's lines on the left and the partner on the right.
   const x = INNER.x
@@ -653,7 +707,7 @@ export const drawTrainerCard = async (card: TrainerCardData, style: CardStyle = 
   if (card.showcase.length > 0) await monGrid(ctx, card.showcase, INNER.x, gridY! + 12, INNER.w)
   else emptyGrid(ctx, INNER.x, gridY! + 12, INNER.w)
 
-  footer(ctx, card.trainer, CARD.h - 8 - FOOTER_H)
+  // No footer: the trainer's name and title are already in the ID block, and the card carries no link.
   return finish(canvas, ctx, style)
 }
 

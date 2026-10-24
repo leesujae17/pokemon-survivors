@@ -1,14 +1,15 @@
 import { dir8, dirTo, fromAngle, TAU } from '../engine/math'
 import { chance, pick, range } from '../engine/rng'
 import { PLAYABLE, type PlayableId } from '../data/hatchlings'
+import { BRANCHES, type BranchDef, type BranchId } from '../data/branches'
 import { MEGAS, type MegaId } from '../data/megas'
 import { TYPE_COLORS, type PokeType } from '../data/types'
 import { burst } from './effects'
 import { recomputeStats } from './leveling'
-import { MOVES, moveStats } from './moves'
+import { MOVES, moveStats, type MoveDef } from './moves'
 import { enemiesInView, inView, isAlive } from './queries'
 import { spawnAttack } from './spawn'
-import { FIRST_STANCE, otherStance, STANCES, type Stance } from './stance'
+import { firstStance, nextStance, STANCES, STANCE_CYCLES, type Stance, type StanceSpecial } from './stance'
 import type { StatusSpec } from './status'
 import type { PlayerStats } from './stats'
 import type { Enemy, Game } from './types'
@@ -196,6 +197,12 @@ export const SPECIALS = {
     type: 'steel', kind: 'stance', cooldown: 2, charge: 0,
     base: { name: 'Stance Change', damage: 0, area: 1, count: 1 },
     final: { name: 'Stance Change', damage: 0, area: 1, count: 1 },
+  },
+  /** Deoxys only (Legend mode): cycles Normal, Attack, Defense and Speed Forme, like Stance Change. */
+  formeChange: {
+    type: 'psychic', kind: 'stance', cooldown: 2, charge: 0,
+    base: { name: 'Forme Change', damage: 0, area: 1, count: 1 },
+    final: { name: 'Forme Change', damage: 0, area: 1, count: 1 },
   },
   /* Mega forms only (`MEGAS`): one tier, stronger than any final one, on a shorter cooldown. */
   dragonFlare: {
@@ -432,6 +439,7 @@ const BY_SPECIES: Partial<Record<PlayableId, SpecialId | readonly SpecialId[]>> 
   azurill: ['boomburst', 'hydroCannon'],
   swablu: ['boomburst', 'dracoMeteor'],
   pidgey: 'aeroblast',
+  deoxys: 'formeChange',
 }
 
 export const specialOfType = (type: PokeType): SpecialId => BY_TYPE[type]
@@ -444,20 +452,25 @@ export const specialIdFor = (species: PlayableId, types: readonly PokeType[], st
   return typeof own === 'string' ? own : (own[Math.min(stage, own.length - 1)] ?? fallback)
 }
 
-/** The special at an evolution stage; in Mega form (`mega`), the Mega's own. */
-export const resolveSpecial = (starter: PlayableId, stage: number, mega: MegaId | null = null) => {
+/**
+ * The special at an evolution stage; in Mega form (`mega`), the Mega's own.
+ * From a branch's stage on (`branch`), the branch's: its own, or its first type's (Vaporeon's Hydro Cannon).
+ */
+export const resolveSpecial = (starter: PlayableId, stage: number, mega: MegaId | null = null, branch: BranchId | null = null, finalTier?: boolean) => {
   const species = PLAYABLE[starter]
-  const own = mega ? MEGAS[mega].special : undefined
+  const b: BranchDef | null = branch && BRANCHES[branch].line === starter && stage >= BRANCHES[branch].stage ? BRANCHES[branch] : null
+  const own = mega ? MEGAS[mega].special : b ? (b.special ?? specialOfType(b.types[0] ?? 'normal')) : undefined
   const id: SpecialId = own ?? specialIdFor(starter, species.line[0].types, stage)
   const def: SpecialDef = SPECIALS[id]
-  const final = stage >= species.line.length - 1
+  const final = finalTier ?? stage >= species.line.length - 1
   return { id, def, final, tier: final ? def.final : def.base }
 }
 
 export type ResolvedSpecial = ReturnType<typeof resolveSpecial>
 
-/** The special the player has right now: its stage's, or its Mega form's while that lasts. */
-export const gameSpecial = (g: Game) => resolveSpecial(g.starter, g.player.stage, g.mega.active > 0 ? g.mega.stone : null)
+/** The special the player has right now: its stage's, or its Mega form's while that lasts. A legend's turns final at its second awakening. */
+export const gameSpecial = (g: Game) =>
+  resolveSpecial(g.starter, g.player.stage, g.mega.active > 0 ? g.mega.stone : null, g.branch, g.legend ? g.legend.awakened >= 2 : undefined)
 
 /* ---------------- Timers (pure) ---------------- */
 
@@ -486,7 +499,7 @@ export type SpecialState = {
   reach: number
   /** Chain dash: id of the foe the last jump went for (-1 for none), skipped by the next jump. */
   target: number
-  /** Stance Change: Aegislash's forme; null for every other special. */
+  /** A stance special's forme (Aegislash's Stance Change, Deoxys's Forme Change); null for every other special. */
   stance: Stance | null
   /** Kills the special made (or made mid-chain) not yet turned into cooldown by Power Herb (`rechargeSpecial`). */
   kills: number
@@ -899,7 +912,8 @@ const arrivalCombo = (g: Game, casts = g.player.stats.comboMoves) => {
   const pool = [...p.moves]
   for (let i = 0; i < n; i++) {
     const [owned] = pool.splice(Math.floor(g.rng() * pool.length), 1)
-    if (owned) MOVES[owned.id].fire(g, moveStats(owned.id, owned.level, p.stats))
+    const def: MoveDef | null = owned ? MOVES[owned.id] : null
+    if (owned && def) def.fire(g, moveStats(owned.id, owned.level, p.stats, owned.path), owned)
   }
   burst(g, p.x, p.y - 10, { colors: ['#ffffff', '#f8d030', '#f878a8'], count: 10, speed: 90, ttl: 0.3 })
 }
@@ -1018,6 +1032,8 @@ const orbBurst = (g: Game, r: ResolvedSpecial, count: number) => {
  */
 const updateChain = (g: Game, r: ResolvedSpecial, pressed: boolean, dt: number) => {
   const s = g.special
+  // A chain never charges: drop the wind-up of a charged special swapped out mid-charge (Mega Evolving during Hydro Cannon's).
+  s.charge = 0
   const cooldown = specialCooldown(r.def, g.player.stats)
   if (s.active <= 0) tickChain(s, dt, cooldown)
   if (triggerSpecial(s, pressed, dt)) startJump(g, r)
@@ -1030,9 +1046,14 @@ const updateChain = (g: Game, r: ResolvedSpecial, pressed: boolean, dt: number) 
 
 /* ---------------- Stance Change ---------------- */
 
-/** Keeps the stance in step with the special: Shield when Aegislash arrives, none for anyone else. */
+const isStanceSpecial = (id: SpecialId): id is StanceSpecial => id in STANCE_CYCLES
+
+/** Keeps the stance in step with the special: its first forme when it arrives (Aegislash's Shield, Deoxys's Normal), none for anyone else. */
 const syncStance = (g: Game, r: ResolvedSpecial) => {
-  const want = r.def.kind === 'stance' ? (g.special.stance ?? FIRST_STANCE) : null
+  const id = r.id
+  const now = g.special.stance
+  const cycle: readonly Stance[] = isStanceSpecial(id) ? STANCE_CYCLES[id] : []
+  const want = !isStanceSpecial(id) ? null : now && cycle.includes(now) ? now : firstStance(id)
   if (want === g.special.stance) return
   g.special.stance = want
   recomputeStats(g)
@@ -1041,7 +1062,7 @@ const syncStance = (g: Game, r: ResolvedSpecial) => {
 const swapStance = (g: Game) => {
   const s = g.special
   const p = g.player
-  const stance = otherStance(s.stance ?? FIRST_STANCE)
+  const stance = nextStance(s.stance ?? 'shield')
   s.stance = stance
   recomputeStats(g)
   g.events.push({ kind: 'stance', stance })

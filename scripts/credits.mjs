@@ -53,7 +53,7 @@ const rows = DEX.flatMap((dex) => {
 
 const md = `# Credits
 
-Pokémon Survivors is a non-commercial fan project. Pokémon is © Nintendo, Creatures Inc. and GAME FREAK inc.
+Pokémon World is a non-commercial fan project. Pokémon is © Nintendo, Creatures Inc. and GAME FREAK inc.
 
 ## Sprites and portraits
 
@@ -73,7 +73,8 @@ Cries come from [PokéAPI/cries](https://github.com/PokeAPI/cries).
 
 [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) by CodeMan38 and
 [VT323](https://fonts.google.com/specimen/VT323) by Peter Hull, both under the SIL Open Font License,
-via [Fontsource](https://fontsource.org).
+via [Fontsource](https://fontsource.org). Korean text uses [Galmuri](https://github.com/quiple/galmuri) by Lee Minseo
+(quiple), also under the SIL Open Font License (`src/fonts/galmuri/LICENSE.txt`).
 `
 
 await writeFile(OUT, md)

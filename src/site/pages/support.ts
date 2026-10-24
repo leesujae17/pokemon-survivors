@@ -1,5 +1,5 @@
 import { DONATION } from '../../data/donations'
-import type { Locale } from '../../i18n'
+import type { SiteLocale } from '../../i18n'
 import { SITE_MESSAGES } from '../../i18n/site'
 import { html } from '../html'
 import { layout } from '../layout'
@@ -15,7 +15,7 @@ import { STRIPE_DONATION_URL } from '../routes'
  * donors get and the supporters' wall. Both checkouts come back with
  * `?thanks=<ref>`, and the page says where the rewards went, or shows the code.
  */
-export const supportPage = (locale: Locale) => {
+export const supportPage = (locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   const s = m.support
   const br = html`<section class="box donate-way" id="donate-br" aria-labelledby="donate-br-title">

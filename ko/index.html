@@ -1,0 +1,167 @@
+<!doctype html>
+<!-- Korean entry: same game as /, but `data-locale` makes first-time visitors start in Korean (see src/i18n). -->
+<html lang="ko" data-locale="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Keep the text alternative clipped before the game stylesheet loads. -->
+    <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101820" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Pokémon World" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Pokémon World</title>
+    <meta name="description" content="설치 없이 브라우저와 휴대폰에서 무료로 즐기는 뱀파이어 서바이버즈 스타일 포켓몬 로그라이트. 모든 지역의 스타팅 포켓몬 27마리(알에서 태어나는 55마리 추가) 중 하나를 골라 판 도중에 진화하고 뮤츠를 쓰러뜨리세요." />
+    <link rel="canonical" vite-ignore href="%VITE_SITE_URL%/ko/" />
+    <link rel="alternate" vite-ignore hreflang="pt-BR" href="%VITE_SITE_URL%/" />
+    <link rel="alternate" vite-ignore hreflang="en" href="%VITE_SITE_URL%/en/" />
+    <link rel="alternate" vite-ignore hreflang="es" href="%VITE_SITE_URL%/es/" />
+    <link rel="alternate" vite-ignore hreflang="ko" href="%VITE_SITE_URL%/ko/" />
+    <link rel="alternate" vite-ignore hreflang="x-default" href="%VITE_SITE_URL%/en/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pokémon World" />
+    <meta property="og:url" content="%VITE_SITE_URL%/ko/" />
+    <meta property="og:title" content="Pokémon World" />
+    <meta property="og:description" content="무료 뱀파이어 서바이버즈 스타일 포켓몬 팬게임. 설치 없이 브라우저나 휴대폰에서 플레이하세요." />
+    <meta property="og:image" content="%VITE_SITE_URL%/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="야생 포켓몬 무리와 싸우는 리자몽 픽셀 아트" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:locale:alternate" content="es_LA" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/pokemon/4/portrait.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "%VITE_SITE_URL%/#website",
+            "name": "Pokémon World",
+            "url": "%VITE_SITE_URL%/",
+            "inLanguage": ["pt-BR", "en", "es", "ko"]
+          },
+          {
+            "@type": "VideoGame",
+            "@id": "%VITE_SITE_URL%/#game",
+            "name": "Pokémon World",
+            "alternateName": ["Pokemon World", "포켓몬 월드", "포켓몬 뱀파이어 서바이버즈"],
+            "url": "%VITE_SITE_URL%/ko/",
+            "description": "무료 비공식 뱀파이어 서바이버즈 스타일 포켓몬 팬게임. 스타팅 포켓몬 27마리 중 하나를 고르거나 알을 부화시켜 55마리를 더 해금하고, 모든 세대의 야생 무리를 15분 동안 버티며 기술을 배우고 진화해 뮤츠를 쓰러뜨리세요. 설치 없이 브라우저와 휴대폰에서 실행됩니다.",
+            "image": "%VITE_SITE_URL%/og.png",
+            "genre": ["Roguelite", "Roguelike", "Bullet heaven", "Survivors-like", "Action"],
+            "gamePlatform": ["Web browser", "Android", "iOS", "PC"],
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any (web browser)",
+            "playMode": "SinglePlayer",
+            "inLanguage": ["ko", "en", "pt-BR", "es"],
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "author": { "@type": "Person", "name": "Pedro Barretto", "url": "https://pedrobarretto.com" },
+            "sameAs": ["https://github.com/pedrobarretto/pokemon-survivors"],
+            "isPartOf": { "@id": "%VITE_SITE_URL%/#website" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Pokémon World는 무료인가요?",
+                "acceptedAnswer": { "@type": "Answer", "text": "네. 광고도 결제도 없는 무료 팬게임이에요. 코드는 GitHub에 오픈 소스로 공개되어 있어요." }
+              },
+              {
+                "@type": "Question",
+                "name": "따로 설치해야 하나요?",
+                "acceptedAnswer": { "@type": "Answer", "text": "아니요. PC나 휴대폰 브라우저에서 바로 실행돼요. 휴대폰에서는 브라우저 메뉴에서 전체 화면 앱으로 설치할 수도 있어요." }
+              },
+              {
+                "@type": "Question",
+                "name": "어떤 게임인가요?",
+                "acceptedAnswer": { "@type": "Answer", "text": "뱀파이어 서바이버즈 스타일의 로그라이트예요. 이동만 하면 포켓몬이 알아서 공격해요. 15분 동안 무리를 버티며 경험치를 모으고, 레벨이 오를 때마다 기술과 지닌 물건을 골라 진화하고, 뮤츠까지 이어지는 전설의 보스에 맞서세요. 도중에 균열을 지나면 루기아, 가이오가, 레쿠쟈 같은 전설의 포켓몬이 있는 아레나로 가고, 뮤츠를 쓰러뜨린 뒤에는 무한 모드에서 아르세우스에 맞서 계속할 수 있어요." }
+              },
+              {
+                "@type": "Question",
+                "name": "공식 포켓몬 게임인가요?",
+                "acceptedAnswer": { "@type": "Answer", "text": "아니요. Nintendo, The Pokémon Company, GAME FREAK, Creatures와 관계없는 비공식 비영리 팬게임이에요." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="game" aria-label="Pokémon World"></canvas>
+    <div id="ui"></div>
+    <!-- Text alternative to the canvas: read by screen readers, search engines and AI crawlers that don't run JS. -->
+    <main class="sr-only">
+      <h1>Pokémon World: 무료 뱀파이어 서바이버즈 스타일 포켓몬 게임</h1>
+      <p>
+        Pokémon World는 포켓몬과 뱀파이어 서바이버즈를 섞은 무료 비공식 팬게임이에요. 설치도 가입도 없이
+        브라우저와 휴대폰에서 실행되는 액션 로그라이트(불릿 헤븐)예요.
+      </p>
+      <h2>플레이 방법</h2>
+      <p>
+        스타팅 포켓몬을 고르고 맵을 돌아다니면 포켓몬이 알아서 공격해요. 15분 동안 야생 포켓몬 무리를 버티며
+        경험치를 모으고, 기술을 배우고, 지닌 물건을 장착하고, 판 도중에 진화하세요. 마지막에는 뮤츠와 맞서요.
+        그 뒤에는 사신 아르세우스가 쫓아올 때까지 무한 모드로 계속할 수 있어요.
+      </p>
+      <h2>특징</h2>
+      <ul>
+        <li>관동부터 팔데아까지 모든 지역의 스타팅 포켓몬 27마리(파이리, 꼬부기, 이상해씨, 팽도리, 개구마르, 뜨아거, 나오하 등), 각각 진화 계통 전체 포함.</li>
+        <li>판에서 걸은 걸음 수로 부화하는 알: 보스, 상자, 균열에서 얻는 알로 모든 타입과 세대의 포켓몬 54마리(피카츄, 이브이, 고오스, 잉어킹, 리오르, 딥상어동, 아공이, 모노두, 드라꼰 등)를 해금하고, 1% 확률로 이로치가 태어나요. 잠만보로 진화하는 먹고자는 우정의 알에서만 태어나요. 플레이 가능한 포켓몬은 모두 82마리.</li>
+        <li>링크로 친구 초대: 링크로 가입한 친구는 우정의 알을, 실제로 플레이한 친구마다 나는 이상한 소포를 받아요(우정의 알, 전용 카드 프레임이 딸린 홍보대사 칭호, 친구 10명이면 이로치 먹고자).</li>
+        <li>기술 32종과 지닌 물건 25종: 알맞은 도구와 함께 기술을 최대로 강화하면 진화해요(불꽃세례 + 목탄 → 화염방사).</li>
+        <li>타입 상성, 화상·독·마비, 그리고 블라스트번, 하이드로캐논, 뇌격, 용성군 같은 18개 타입별 필살기. 나무지기, 리오르, 딥상어동 같은 날렵한 계통은 적에서 적으로 연속 돌진하고, 킬가르도는 실드폼과 블레이드폼을 오가요.</li>
+        <li>드래곤까지 포함한 9개 세대의 야생 포켓몬 415종(관동·성도·호연은 전설과 환상을 제외한 전 종), 5단계 티어: 판마다 등장 포켓몬이 달라지고, 초반엔 기본 포켓몬, 후반엔 진화형이 지역 타입에 맞춰 나와요.</li>
+        <li>전설의 보스: 롱스톤, 잠만보, 판마다 뽑히는 전설의 3마리(새 프리져·썬더·파이어, 개 라이코·앤테이·스이쿤, 또는 레지 레지락·레지아이스·레지스틸), 그리고 뮤츠. 가끔 환상의 포켓몬 뮤, 세레비, 지라치도 나타나요. 보스는 다음 보스가 올 때까지 머물다 도망가고, 마지막 뮤츠는 무리를 날려 버리고 1대1 결투를 벌여요.</li>
+        <li>판마다 5개 지역(1번도로, 상록숲, 달맞이산, 은빛산, 보라타워)과 타입 상성을 바꾸는 날씨: 쾌청, 비, 모래바람, 눈, 안개.</li>
+        <li>개성 있는 적(스테이지당 최대 1종): 럭키는 무리를 회복하고, 동미러와 동탁군은 보호막을 치고, 니드퀸은 지원군을 부르고, 찌리리공·붐볼·흔들풍손은 폭발하고, 코일과 투구뿌논은 빔을 쏘고, 시라소몬과 엑스레그는 무리를 뛰어넘어요.</li>
+        <li>전설의 균열: 루기아, 칠색조, 가이오가, 그란돈, 레쿠쟈, 디아루가, 라티아스, 라티오스, 테오키스의 아레나에 들어가 각기 다른 지형(얕은 물, 기둥, 차오르는 물, 용암, 무너지는 가장자리, 파도에 둘러싸인 섬, 우주의 운석)에서 희귀 보상을 노려요.</li>
+        <li>메가진화: 균열의 전설의 포켓몬을 쓰러뜨려 메가스톤을 얻고, 최종 진화에서 20초 동안 메가진화해요. 33개 계통에 메가진화 37종, 각각 고유 능력치·필살기·특성: 이상해꽃, 리자몽 X·Y, 거북왕, 라이츄 X·Y, 후딘, 팬텀, 망나뇽, 메가니움, 장크로다일, 마기라스, 나무킹, 번치코, 대짱이, 가디안, 피죤투, 갸라도스, 전룡, 핫삼, 헬가, 보스로라, 썬더볼트, 파비코리, 다크펫, 얼음귀신, 보만다, 메타그로스, 찌르호크, 한카리아스와 한카리아스 Z, 루카리오와 루카리오 Z, 염무왕, 브리가론, 마폭시, 개굴닌자. 메가진화가 둘인 계통은 스톤을 골라요.</li>
+        <li>뮤츠 이후 무한 모드: 무리는 끝없이 몰려오고 20:00부터 사신 아르세우스가 쫓아와요.</li>
+        <li>처음부터 모두 열려 있는 난이도 3단계: 노말, 하드, 그리고 무리는 가혹하고 회복은 절반인 나이트메어.</li>
+        <li>난이도별 생존 시간 랭킹(오늘, 이번 주, 전체), 포켓몬별·친구별 필터. 계정이 있으면 공유 링크가 있는 공개 프로필을 만들고 다른 트레이너를 팔로우할 수 있어요.</li>
+        <li>야생 이로치와 이로치 스타팅 포켓몬, 포켓달러, 그리고 이로치 확률을 두 배로 올리는 빛나는부적을 포함한 프렌들리숍의 영구 강화.</li>
+        <li>오늘의 대량발생: 매일 한 야생 종이 모든 판을 점령하고(모두에게 같음), 그 이로치가 한 판에 두 번쯤 나타나요.</li>
+        <li>오늘의 챌린지: 하루 한 번, 모두에게 같은 판(같은 시드, 포켓몬, 난이도, 강화와 아이템 없음). 처음 끝까지 플레이한 판만 챌린지 랭킹에 올라가고, 참가자 모두 금(상위 10%), 은(상위 절반), 동 리본을 받아요.</li>
+        <li>선반 3개짜리 프렌들리숍: 영구 강화, 오늘의 카운터(벌레유인코롱, 향로, 판매용 알, 일일 특가, 일일 재고), 스타일(공유 카드용 몬스터볼·슈퍼볼·하이퍼볼·마스터볼 프레임과 배경, PC 박스 배경화면).</li>
+        <li>572종이 실린 게임 내 도감: 보고 쓰러뜨린 포켓몬을 기록하고, 쓰러뜨린 이로치, 부화한 포켓몬, 플레이한 모든 모습을 잡아요.</li>
+        <li>일일·주간 미션과 동·은·금 메달이 있는 업적 55개, 그중 일부는 이로치 헌터 같은 칭호를 줘요. 일부 주간 미션과 모든 금메달은 알도 줘요.</li>
+        <li>맵 이벤트: 버프 제단, 회복의 샘, 매복이 지키는 잠긴 상자, 무리에게도 피해를 주는 함정, 코인을 가득 품고 도망치는 나옹.</li>
+        <li>포켓몬 불가사의 던전 스타일 픽셀 아트, 한국어·영어·스페인어·브라질 포르투갈어 지원.</li>
+        <li>휴대폰에서 터치 조이스틱으로 플레이하고 앱으로 설치할 수 있어요.</li>
+      </ul>
+      <h2>자주 묻는 질문</h2>
+      <h3>Pokémon World는 무료인가요?</h3>
+      <p>네. 광고도 결제도 없는 무료 게임이에요. 코드는 GitHub에 오픈 소스로 공개되어 있어요.</p>
+      <h3>따로 설치해야 하나요?</h3>
+      <p>아니요. PC나 휴대폰 브라우저에서 바로 실행돼요.</p>
+      <h3>공식 포켓몬 게임인가요?</h3>
+      <p>
+        아니요. Nintendo, The Pokémon Company, GAME FREAK, Creatures와 관계없는 비공식 비영리 팬게임이에요.
+        제작: Pedro Barretto.
+      </p>
+      <p>
+        <a href="/ko/pokedex/">포켓몬 도감</a> · <a href="/ko/guide/">플레이 방법</a> · <a href="/ko/changelog/">업데이트 내역</a> ·
+        <a href="/ko/legal/">법적 고지 및 개인정보</a> ·
+        <a href="%VITE_SITE_URL%/en/" hreflang="en">Play in English</a> ·
+        <a href="%VITE_SITE_URL%/" hreflang="pt-BR">Jogar em português</a> ·
+        <a href="%VITE_SITE_URL%/es/" hreflang="es">Jugar en español</a> ·
+        <a href="https://github.com/pedrobarretto/pokemon-survivors">GitHub 소스 코드</a>
+      </p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+
+> pokemon-world@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 9682 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/vt323-vietnamese-400-normal-D_5Q7Vcv.woff                  4.71 kB
+dist/assets/press-start-2p-latin-ext-400-normal-DBgyq7ky.woff          4.94 kB
+dist/assets/press-start-2p-latin-400-normal-KLytu4cr.woff              6.32 kB
+dist/assets/press-start-2p-greek-400-normal-DQfalijU.woff2             6.59 kB
+dist/assets/press-start-2p-cyrillic-ext-400-normal-CIYZrvmP.woff2      6.70 kB
+dist/assets/press-start-2p-cyrillic-400-normal-DBn7fddJ.woff2          6.86 kB
+dist/assets/vt323-vietnamese-400-normal-D0VnvwZ9.woff2                 7.93 kB
+dist/assets/vt323-latin-ext-400-normal-DqOq58ri.woff                   9.63 kB
+dist/assets/vt323-latin-400-normal-Dqn9ZSPj.woff                       9.75 kB
+dist/assets/press-start-2p-latin-ext-400-normal-DpfYvR5A.woff2         9.85 kB
+dist/en/support/index.html                                            10.49 kB │ gzip:   3.36 kB
+dist/apoie/index.html                                                 10.49 kB │ gzip:   3.47 kB
+dist/es/apoya/index.html                                              10.70 kB │ gzip:   3.48 kB
+dist/ko/support/index.html                                            11.08 kB │ gzip:   3.86 kB
+dist/assets/press-start-2p-latin-400-normal-_wFEWmAB.woff2            12.51 kB
+dist/en/legal/index.html                                              13.81 kB │ gzip:   4.75 kB
+dist/legal/index.html                                                 14.14 kB │ gzip:   4.99 kB
+dist/ko/legal/index.html                                              14.36 kB │ gzip:   5.57 kB
+dist/es/legal/index.html                                              14.52 kB │ gzip:   5.08 kB
+dist/sitemap.xml                                                      14.57 kB │ gzip:   0.57 kB
+dist/ko/index.html                                                    15.59 kB │ gzip:   6.00 kB
+dist/assets/vt323-latin-ext-400-normal-iUdYUaX4.woff2                 16.37 kB
+dist/assets/vt323-latin-400-normal-wDgJuOC9.woff2                     17.93 kB
+dist/en/index.html                                                    19.85 kB │ gzip:   7.39 kB
+dist/index.html                                                       20.13 kB │ gzip:   7.52 kB
+dist/es/index.html                                                    21.06 kB │ gzip:   7.76 kB
+dist/en/changelog/index.html                                          81.37 kB │ gzip:  26.40 kB
+dist/novidades/index.html                                             83.76 kB │ gzip:  27.35 kB
+dist/es/novedades/index.html                                          87.69 kB │ gzip:  27.86 kB
+dist/ko/changelog/index.html                                          94.16 kB │ gzip:  29.25 kB
+dist/assets/Galmuri11-Bold-QdFGsJ3v.woff2                            166.63 kB
+dist/en/guide/index.html                                             228.70 kB │ gzip:  40.83 kB
+dist/guia/index.html                                                 234.69 kB │ gzip:  41.93 kB
+dist/es/guia/index.html                                              240.18 kB │ gzip:  42.52 kB
+dist/ko/guide/index.html                                             246.67 kB │ gzip:  43.40 kB
+dist/assets/Galmuri11-DfQIlyDK.woff2                                 504.73 kB
+dist/en/pokedex/index.html                                         2,075.15 kB │ gzip: 173.08 kB
+dist/pokedex/index.html                                            2,099.53 kB │ gzip: 176.43 kB
+dist/es/pokedex/index.html                                         2,126.11 kB │ gzip: 177.86 kB
+dist/ko/pokedex/index.html                                         2,171.89 kB │ gzip: 189.05 kB
+dist/assets/client-Dh5hblCo.css                                       31.29 kB │ gzip:  14.59 kB
+dist/assets/main-CNpCWl3y.css                                        178.10 kB │ gzip:  43.24 kB
+dist/assets/modulepreload-polyfill-P2Xu9kJm.js                         0.67 kB │ gzip:   0.38 kB
+dist/assets/client-BYqeFR1e.js                                         6.81 kB │ gzip:   2.76 kB
+dist/assets/changelog-D-QkjBTA.js                                    272.21 kB │ gzip: 105.79 kB
+dist/assets/clerk-yQSHN66Y.js                                      1,531.39 kB │ gzip: 571.45 kB
+dist/assets/main-BoF0-Kmh.js                                       2,488.22 kB │ gzip: 700.18 kB
+
+✓ built in 16.98s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[PLUGIN_TIMINGS] JavaScript callbacks ran for 15.9s of this 17.0s build (94%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:prepare-out-dir renderStart (55%, 9.4s, 1 call)
+Additional callback time came from the callbacks below and from callbacks under 1s.
+2 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - plugin vite:css transform (9277 calls)
+  - plugin vite:build-html transform (24 calls)
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+

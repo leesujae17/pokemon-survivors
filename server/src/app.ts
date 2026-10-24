@@ -4,23 +4,30 @@ import { cors } from 'hono/cors'
 import { createMiddleware } from 'hono/factory'
 import { logger } from 'hono/logger'
 import { parseAdminGift, parseAdminQuery } from '../../src/game/admin'
+import { parseBugReport } from '../../src/game/bugReport'
 import { challengeOpen } from '../../src/game/challenge'
 import { parseDonation } from '../../src/data/donations'
 import { isPollOption } from '../../src/data/supporters'
 import { isDayKey } from '../../src/game/day'
 import { isDifficulty } from '../../src/game/difficulty'
 import { parseSaveData } from '../../src/game/meta'
+import { outbreakAt } from '../../src/game/outbreak'
 import { isRecord } from '../../src/game/parse'
-import { isBoardPeriod, isPlayable, parseDisplayName, parseHandle, parseRunResult } from '../../src/game/ranking'
-import { parseReplay } from '../../src/game/replay'
+import { isBoardPeriod, isPlayable, isRunMode, parseDisplayName, parseHandle, parseRunResult, runMode } from '../../src/game/ranking'
+import { parseReplay, rulesStanding } from '../../src/game/replay'
+import { banGated, parseModeration, parseReport } from '../../src/game/reports'
 import { parseCode } from '../../src/game/supporters'
 import { isSuggestionSort, isSuggestionStatus, isVote, parseSuggestionDraft } from '../../src/game/suggestions'
 import type { AdminStore } from './admin'
 import type { Verify } from './auth'
+import type { BugReports } from './bugReports'
 import type { Checks } from './checks'
 import type { SaveStore } from './db'
+import type { DiscordLink } from './discordLink'
+import type { Report } from './errors'
 import type { Donate } from './donations'
 import type { GiftStore } from './gifts'
+import type { ModerationStore } from './moderation'
 import type { RankingStore } from './ranking'
 import type { SupporterStore } from './supporters'
 import { SUGGESTION_ID, type SuggestionStore } from './suggestions'
@@ -29,7 +36,7 @@ import { abacateDonation, ABACATE_REF, stripeDonation, verifyAbacate, verifyStan
 export type AppDeps = {
   store: SaveStore
   ranking: RankingStore
-  gifts: Pick<GiftStore, 'inbox' | 'claim' | 'refer'>
+  gifts: Pick<GiftStore, 'inbox' | 'claim' | 'refer' | 'credit' | 'invites'>
   /** Re-simulates finished runs after the answer went out. */
   checks: Pick<Checks, 'schedule'>
   verify: Verify
@@ -38,13 +45,21 @@ export type AppDeps = {
   supporters: SupporterStore
   /** The idea board. */
   suggestions: SuggestionStore
+  /** Bug reports: stored, then posted to the community Discord's #bug-reports. */
+  bugReports: Pick<BugReports, 'submit'>
+  /** The player's Discord account: the community server and its supporter role. */
+  discord: Pick<DiscordLink, 'link' | 'unlink'>
   /** The gift desk: who is admin (asked of Clerk), finding players and sending them gifts. */
   admin: Pick<AdminStore, 'isAdmin' | 'search' | 'send' | 'recent'>
+  /** Reports and bans: the write gate asks who is banned, players report, the admin acts. */
+  moderation: Pick<ModerationStore, 'banned' | 'report' | 'open' | 'act'>
   /** Webhook secrets: Stripe's signing secret and Payment Link, AbacatePay's URL secret. Unset ones answer 503. */
   webhooks: { stripeSecret?: string; stripePaymentLink: string | null; abacatePaySecret?: string }
   allowedOrigin: (origin: string) => boolean
   /** Whether the database answers, for `/health`. */
   ping: () => Promise<boolean>
+  /** Error tracking for the 500s (`errors.ts`). */
+  report: Report
 }
 
 type Auth = { Variables: { userId: string } }
@@ -60,19 +75,33 @@ const SITE_PATH = /^\/[a-z0-9/-]{0,40}$/
 /** A donation's `ref`: our uuid (AbacatePay) or a Stripe Checkout Session id. */
 const DONATION_REF = /^(?:[0-9a-f-]{36}|cs_(?:test|live)_[A-Za-z0-9]{10,200})$/
 
+/**
+ * Who's asking, for a rate limit: the address the proxy (Traefik) saw. It
+ * sets `X-Real-IP` itself and adds the address to the end of
+ * `X-Forwarded-For`, so a client can't pick its own by sending either.
+ */
+export const clientIp = (realIp: string | undefined, forwarded: string | undefined) =>
+  realIp?.trim() || forwarded?.split(',').at(-1)?.trim() || 'unknown'
+
 /** What a hand-sent gift answers when it doesn't go, by `SendOutcome`. */
 const SEND_ERRORS = { unknown: 404, 'bad request': 400 } as const
 
 /** What posting or voting on an idea answers when it doesn't go. */
 const SUGGESTION_ERRORS = { profile: 403, limit: 429, unknown: 404, closed: 409 } as const
 
+/** What a report answers when it's refused, by `Reported`: only what's about the reporter. */
+const REPORT_ERRORS = { self: 400, limit: 429 } as const
+
 /** What a run's end answers when it's refused, by `FinishError`. */
-const FINISH_ERRORS = { unknown: 404, mismatch: 409, clock: 422, challenge: 400 } as const
+const FINISH_ERRORS = { unknown: 404, replaced: 409, mismatch: 409, seed: 400, clock: 422, challenge: 400 } as const
 
 /**
  * The HTTP API. Routes marked (auth) need a Clerk session token
  * (`Authorization: Bearer …`) and act on that player; the public ones read it
- * when present (to answer "me" and "following").
+ * when present (to answer "me" and "following"). A banned account's writes
+ * (`BAN_GATED`: run starts and ends, save pushes, reports, ideas and votes)
+ * get 403 `{ error: 'banned' }`, and banned players are left off every board,
+ * profile and list.
  *
  * - `GET /health`: 200 while the database answers, else 503.
  * - `GET /save` (auth): the stored save and its revision, 404 before the first push.
@@ -81,19 +110,28 @@ const FINISH_ERRORS = { unknown: 404, mismatch: 409, clock: 422, challenge: 400 
  *   what is stored now, for the device to keep (see `applyPush`).
  * - `GET /me` (auth): `{ profile }`, the player's handle and name, null before they pick them.
  * - `PUT /me` (auth) `{ handle, name }`: sets them. 409 `{ suggestion }` when the handle is taken.
- * - `POST /runs` (auth) `{ challenge? }`: `{ token }` for a run that just started. 429 past the start rate limit.
- *   With `challenge` (a `YYYY-MM-DD` Brasília day) it's that day's Desafio do dia, 400 when
- *   that day's challenge isn't open (`challengeOpen`).
+ * - `POST /runs` (auth) `{ challenge? }`: `{ token, seed }` for the player's next run: the start
+ *   token and the seed the run must play (random, from `crypto`). It replaces the player's other
+ *   unfinished token of the same kind, so only one regular and one challenge token are live at a
+ *   time. 429 past the start rate limit. With `challenge` (a `YYYY-MM-DD` Brasília day) it's that
+ *   day's Desafio do dia, whose seed is the day's (`dailyChallenge`); 400 when that day's challenge
+ *   isn't open (`challengeOpen`).
+ * - `POST /runs/:token/start` (auth): the run of a token asked for ahead really starts now: its
+ *   clock restarts (`stampRun`). 204, 404 for an unknown or finished token, 409 for a replaced one.
  * - `PUT /runs/:token` (auth) `RunResult & { replay }`: records how it ended and
  *   returns `{ ranks, challenge }` (`ChallengePlace`, null for any other run); the
- *   replay is re-simulated afterwards (`checks.ts`). A challenge run's replay must
+ *   replay may be re-simulated afterwards (`checks.ts`), and the run may make the player's invite count (`gifts.credit`). A challenge run's replay must
  *   be its day's challenge.
- *   400 for an implausible result or a replay of another run, 404 for an
- *   unknown token, 409 when it contradicts what the run already recorded, 422
- *   when the clock can't fit it. A body without a replay (an older game) is
- *   taken and stays unverified.
- * - `GET /boards/:difficulty?period=day|week|all&starter=&friends=1`: `Board`.
- *   `friends` needs a token.
+ *   400 for an implausible result, a missing replay or a replay of another run,
+ *   `seed` for a replay of another seed than the token's (`reportProblem`; a token from before the
+ *   server dealt seeds takes any), 404 for an unknown token, 409 for a replaced one or when it
+ *   contradicts what the run already recorded, 422 when the clock can't fit it. The replay must play by this
+ *   server's rules (`RULES_VERSION`), so every run on the boards can be
+ *   re-simulated: 400 `outdated` for older ones (the run straddled a deploy),
+ *   503 for newer ones (the API isn't deployed yet: the game keeps the result
+ *   and sends it again later).
+ * - `GET /boards/:difficulty?period=day|week|all&starter=&friends=1&mode=standard|legend`: `Board`.
+ *   `friends` needs a token. `mode=legend` is the Legend mode's board (runs played with a legend); without it, the regular one.
  * - `GET /challenge/:day?friends=1`: `ChallengeBoard`, the day's official attempts. `friends` needs a token.
  * - `GET /profiles/:handle`: `PublicProfile`, 404 if nobody has that handle.
  * - `PUT|DELETE /follows/:handle` (auth): follows or unfollows. `{ followed, followers }`.
@@ -101,6 +139,7 @@ const FINISH_ERRORS = { unknown: 404, mismatch: 409, clock: 422, challenge: 400 
  * - `POST /gifts/claim` (auth) `{ ids }`: marks those gifts claimed (the game applied them). `{ claimed }`.
  * - `POST /referral` (auth) `{ ref }`: the inviter's handle a new account came with. `{ referred }`:
  *   whether it counted (only a new account, never oneself: `canRefer`).
+ * - `GET /invites` (auth): `{ friends }` (`InvitedFriend[]`), who signed up with the player's link, newest first.
  * - `POST /donations` `{ amount, page, handle? }`: `{ url }`, an AbacatePay checkout (Pix or a
  *   Brazilian card) for `amount` whole reais (`parseDonation`), for the account of `handle`
  *   (400 when nobody has it). The donor comes back to `page` on the site, with
@@ -112,21 +151,36 @@ const FINISH_ERRORS = { unknown: 404, mismatch: 409, clock: 422, challenge: 400 
  *   (signed: `webhooks.ts`; AbacatePay's the Standard Webhooks way, or with `?webhookSecret=` for an
  *   older webhook). 401 for a bad signature, 503 without the secret.
  * - `GET /me/supporter` (auth): `SupporterStatus`. `PUT /me/supporter` (auth) `{ public }`: shows or hides the badge and name.
- * - `GET /supporters`: `{ supporters }`, the wall (`WallEntry[]`, with each one's title and Hall da Fama Pokémon).
+ * - `GET /supporters`: `{ supporters, hidden }`, the wall (`WallEntry[]`, with each one's title and Hall da Fama Pokémon) and how many supporters per tier stay off it.
  * - `GET /poll`: `Poll`. `PUT /poll` (auth) `{ choice }`: a supporter's vote, 403 for anyone else.
  * - `GET /suggestions?sort=top|new|done`: `{ suggestions }` (`Suggestion[]`), a tab of the idea board, with the asker's votes.
  * - `POST /suggestions` (auth) `{ title, body }`: posts an idea (`parseSuggestionDraft`), 201 `{ suggestion }`.
  *   400 invalid, 403 before the player has a handle, 429 past `SUGGESTION.perDay` in 24 hours.
  * - `PUT /suggestions/:id/vote` (auth) `{ vote }` (1, -1, or 0 to take it back): `{ score, vote }`. 404 unknown, 409 shipped.
+ * - `POST /bug-reports` `{ text, tech? }`: a bug report (`parseBugReport`), from a guest or (with a token)
+ *   a player. 201 `{ id }`, stored and on its way to Discord. 400 invalid, 429 past `BUG_REPORT.perHour`
+ *   for the IP or the account.
+ * - `POST /reports` (auth) `{ target, run?, reason, note? }` (`parseReport`): reports a player by handle, or one
+ *   of their runs on the boards. 202 `{ received: true }` whatever becomes of it (nothing about the target
+ *   comes back). 400 invalid or reporting oneself, 429 past `REPORT.perDay` in 24 hours.
+ * - `POST /discord/link` (auth): links the Discord account the player connected in Clerk, joins them
+ *   to the community server and gives them their supporter role. `{ username, joined }`; 404 when
+ *   Clerk has no verified Discord account for them, 503 when Clerk can't answer.
+ * - `DELETE /discord/link` (auth): forgets it (the player unlinked Discord). `{ unlinked: true }`.
  * - `/admin…` (admin): the gift desk, 403 for anyone whose verified email isn't in `ADMIN_EMAILS`.
  *   `GET /admin`: `{ admin: true }`. `GET /admin/users?q=`: `{ users }` (`AdminUser[]`) by handle or email.
  *   `POST /admin/gifts` `{ userId, content, request }`: sends a gift (`parseAdminGift`), `{ sent }`
  *   (false when that `request` already went); 404 for an unknown player. `GET /admin/gifts`: `{ gifts }`
  *   (`AdminSent[]`), the latest sent by hand. `PUT /admin/suggestions/:id` `{ status }`: marks an idea
  *   `done` (shipped), `open` again or `hidden` (off the board). `{ status }`, 404 for an unknown idea.
+ *   `GET /admin/reports`: `{ groups, open }`, the open reports grouped by run or player (`ReportGroup[]`)
+ *   and how many are open. `POST /admin/moderation` (`parseModeration`) `{ userId, action, run?, reason? }`:
+ *   `remove` a run from the boards, `reset` the save, `ban` (with a reason) or `unban`, or `dismiss`,
+ *   resolving the reports it answers. `{ resolved }`, 404 for an unknown player or run.
  */
-export const createApp = ({ store, ranking, gifts, checks, verify, donate, supporters, suggestions, admin, webhooks, allowedOrigin, ping }: AppDeps) => {
-  const app = new Hono()
+export const createApp = ({ store, ranking, gifts, checks, verify, donate, supporters, suggestions, bugReports, discord, admin, moderation, webhooks, allowedOrigin, ping, report }: AppDeps) => {
+  // `userId` is set by `auth` or `maybeAuth` on the routes that ask who's calling; `onError` reports it.
+  const app = new Hono<MaybeAuth>()
 
   app.use(logger())
   app.use(cors({ origin: (origin) => (allowedOrigin(origin) ? origin : null), allowMethods: ['GET', 'PUT', 'POST', 'DELETE'], allowHeaders: ['Authorization', 'Content-Type'], maxAge: 86400 }))
@@ -140,6 +194,8 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     const userId = token ? await verify(token) : null
     if (!userId) return c.json({ error: 'unauthorized' }, 401)
     c.set('userId', userId)
+    // Only the writes ask: a banned account still reads its save, boards and gifts.
+    if (banGated(c.req.method, c.req.path) && (await moderation.banned(userId))) return c.json({ error: 'banned' }, 403)
     await next()
   })
 
@@ -184,8 +240,14 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     const body = await json(c)
     const challenge = isRecord(body) && body.challenge !== undefined ? body.challenge : null
     if (challenge !== null && (!isDayKey(challenge) || !challengeOpen(challenge, new Date()))) return c.json({ error: 'not an open challenge' }, 400)
-    const token = await ranking.startRun(c.var.userId, challenge)
-    return token ? c.json({ token }, 201) : c.json({ error: 'too many runs' }, 429)
+    const started = await ranking.startRun(c.var.userId, challenge)
+    // The day's outbreak by this clock (the one `outbreakFits` checks against), so a wrong device clock can't play another day's.
+    return started ? c.json({ ...started, outbreak: outbreakAt(new Date()) }, 201) : c.json({ error: 'too many runs' }, 429)
+  })
+
+  app.post('/runs/:token/start', auth, async (c) => {
+    const stamped = await ranking.stampRun(c.var.userId, c.req.param('token'))
+    return stamped === 'ok' ? c.body(null, 204) : c.json({ error: stamped }, stamped === 'replaced' ? 409 : 404)
   })
 
   // A 30-minute replay is ~60 KB of JSON.
@@ -193,16 +255,21 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     const body = await json(c)
     const result = parseRunResult(body)
     if (!result) return c.json({ error: 'implausible result' }, 400)
-    const replay = isRecord(body) && body.replay !== undefined ? parseReplay(body.replay) : null
-    if (isRecord(body) && body.replay !== undefined && (!replay || replay.start.starter !== result.starter || replay.start.difficulty !== result.difficulty)) {
+    // A run without a replay, or with one this server can't judge, could claim anything: none counts.
+    const replay = isRecord(body) ? parseReplay(body.replay) : null
+    if (!replay || replay.start.starter !== result.starter || replay.start.difficulty !== result.difficulty) {
       return c.json({ error: 'replay of another run' }, 400)
     }
+    const standing = rulesStanding(replay.rules)
+    if (standing === 'older') return c.json({ error: 'outdated' }, 400)
+    if (standing === 'newer') return c.json({ error: 'api behind' }, 503)
     const token = c.req.param('token')
     const finished = await ranking.finishRun(c.var.userId, token, result, replay)
     if (!finished.ok) return c.json({ error: finished.error }, FINISH_ERRORS[finished.error])
-    if (replay) checks.schedule(token)
+    checks.schedule(token)
+    void gifts.credit(c.var.userId).catch((err) => console.error('invite credit failed', err))
     const [ranks, challenge] = await Promise.all([
-      ranking.runRanks(c.var.userId, result.difficulty),
+      ranking.runRanks(c.var.userId, runMode(result.starter), result.difficulty),
       finished.challenge ? ranking.challengePlace(c.var.userId, finished.challenge, finished.official === true) : null,
     ])
     return c.json({ ranks, challenge })
@@ -213,9 +280,10 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     const period = c.req.query('period') ?? 'all'
     const starter = c.req.query('starter') || null
     const friends = c.req.query('friends') === '1'
-    if (!isDifficulty(difficulty) || !isBoardPeriod(period) || (starter !== null && !isPlayable(starter))) return c.json({ error: 'unknown board' }, 400)
+    const mode = c.req.query('mode') ?? 'standard'
+    if (!isDifficulty(difficulty) || !isBoardPeriod(period) || !isRunMode(mode) || (starter !== null && !isPlayable(starter))) return c.json({ error: 'unknown board' }, 400)
     if (friends && !c.var.userId) return c.json({ error: 'unauthorized' }, 401)
-    return c.json(await ranking.board({ difficulty, period, starter, friends, viewer: c.var.userId }))
+    return c.json(await ranking.board({ mode, difficulty, period, starter, friends, viewer: c.var.userId }))
   })
 
   app.get('/challenge/:day', maybeAuth, async (c) => {
@@ -248,6 +316,8 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     if (!ids) return c.json({ error: 'expected { ids }' }, 400)
     return c.json({ claimed: await gifts.claim(c.var.userId, ids) })
   })
+
+  app.get('/invites', auth, async (c) => c.json({ friends: await gifts.invites(c.var.userId) }))
 
   app.post('/referral', auth, smallBody, async (c) => {
     const body = await json(c)
@@ -318,6 +388,18 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     return c.json({ received: true })
   })
 
+  app.post('/discord/link', auth, async (c) => {
+    const linked = await discord.link(c.var.userId).catch((err: unknown) => (console.error('discord link failed', err), null))
+    if (!linked) return c.json({ error: 'clerk unavailable' }, 503)
+    if (!linked.linked) return c.json({ error: 'no discord account' }, 404)
+    return c.json({ username: linked.username, joined: linked.joined })
+  })
+
+  app.delete('/discord/link', auth, async (c) => {
+    await discord.unlink(c.var.userId)
+    return c.json({ unlinked: true })
+  })
+
   app.get('/me/supporter', auth, async (c) => c.json(await supporters.mine(c.var.userId)))
 
   app.put('/me/supporter', auth, smallBody, async (c) => {
@@ -329,7 +411,8 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
 
   app.get('/supporters', async (c) => {
     c.header('Cache-Control', 'public, max-age=60')
-    return c.json({ supporters: await supporters.wall() })
+    const [wall, hidden] = await Promise.all([supporters.wall(), supporters.hidden()])
+    return c.json({ supporters: wall, hidden })
   })
 
   app.get('/poll', async (c) => c.json(await supporters.poll()))
@@ -365,6 +448,21 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     const voted = await suggestions.vote(c.var.userId, id, vote)
     if (!voted.ok) return c.json({ error: voted.error }, SUGGESTION_ERRORS[voted.error])
     return c.json({ score: voted.score, vote: voted.vote })
+  })
+
+  app.post('/reports', auth, smallBody, async (c) => {
+    const draft = parseReport(await json(c))
+    if (!draft) return c.json({ error: 'expected { target, run?, reason, note? }' }, 400)
+    const reported = await moderation.report(c.var.userId, draft)
+    if (reported !== 'stored') return c.json({ error: reported }, REPORT_ERRORS[reported])
+    return c.json({ received: true }, 202)
+  })
+
+  app.post('/bug-reports', maybeAuth, bodyLimit({ maxSize: 32 * 1024 }), async (c) => {
+    const report = parseBugReport(await json(c))
+    if (!report) return c.json({ error: 'expected { text, tech? }' }, 400)
+    const submitted = await bugReports.submit(report, { userId: c.var.userId, ip: clientIp(c.req.header('X-Real-IP'), c.req.header('X-Forwarded-For')) })
+    return submitted.ok ? c.json({ id: submitted.id }, 201) : c.json({ error: 'too many reports' }, 429)
   })
 
   /** The desk's routes, all behind a valid token whose user Clerk says is admin. Everyone else gets 403, whatever they send. */
@@ -406,10 +504,20 @@ export const createApp = ({ store, ranking, gifts, checks, verify, donate, suppo
     return c.json({ status })
   })
 
+  desk.get('/reports', async (c) => c.json(await moderation.open()))
+
+  desk.post('/moderation', smallBody, async (c) => {
+    const m = parseModeration(await json(c))
+    if (!m) return c.json({ error: 'expected { userId, action, run?, reason? }' }, 400)
+    const done = await moderation.act(c.var.userId, m)
+    return done ? c.json(done) : c.json({ error: 'unknown' }, 404)
+  })
+
   app.route('/admin', desk)
 
   app.onError((err, c) => {
     console.error(err)
+    report(err, { userId: c.var.userId, method: c.req.method, route: c.req.routePath })
     return c.json({ error: 'internal error' }, 500)
   })
 

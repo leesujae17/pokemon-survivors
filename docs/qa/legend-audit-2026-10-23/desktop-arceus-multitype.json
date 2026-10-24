@@ -1,0 +1,45 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 0.966666666666668,
+  "starter": "arceus",
+  "awakening": 0,
+  "biome": "cave",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 150,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "judgment",
+        "level": 1,
+        "cooldown": 2.233333333333335,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "shockWave",
+        "level": 1,
+        "cooldown": 0.833333333333335,
+        "path": 0,
+        "walkedAt": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "kecleon",
+      "x": 232.9270559691098,
+      "y": -93.32233533533166,
+      "hp": 29
+    }
+  ],
+  "menu": "Lv 1\n1\n1\nSPACE\n00:00\n0\n₽ 0\n아르세우스\nLv1\nHP\n멀티타입\n150/150\n구역 3/5\n달맞이산"
+}

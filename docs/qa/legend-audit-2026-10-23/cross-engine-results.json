@@ -1,0 +1,529 @@
+{
+  "existingDeterminismCommand": false,
+  "localRulesGuard": "src/game/rulesGuard.test.ts",
+  "method": "FNV float64 bit digests across snapshots and replay endings",
+  "engines": [
+    {
+      "name": "Node v24.14.1 / V8 13.6.233.17-node.44",
+      "status": "passed",
+      "scenarios": [
+        {
+          "id": "standard-levelups",
+          "rules": 26,
+          "ticks": 2998,
+          "kills": 51,
+          "level": 13,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "3981e5ec"
+        },
+        {
+          "id": "standard-mega",
+          "rules": 26,
+          "ticks": 1900,
+          "kills": 33,
+          "level": 2,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "fire",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "4f054153"
+        },
+        {
+          "id": "legend-nightmare-horde",
+          "rules": 26,
+          "ticks": 1098,
+          "kills": 51,
+          "level": 14,
+          "awakened": 1,
+          "biome": "forest",
+          "types": [
+            "water"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "be4ba96c"
+        },
+        {
+          "id": "legend-kyogre-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 42,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "fa3b72d6"
+        },
+        {
+          "id": "legend-groudon-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 40,
+          "level": 30,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "ground",
+            "fire"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "1bde90b7"
+        },
+        {
+          "id": "legend-rayquaza-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 37,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "dragon",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "b8a8c72c"
+        },
+        {
+          "id": "legend-deoxys-stances",
+          "rules": 26,
+          "ticks": 1801,
+          "kills": 43,
+          "level": 1,
+          "awakened": 0,
+          "biome": "meadow",
+          "types": [
+            "psychic"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "9a8d61ff"
+        },
+        {
+          "id": "legend-arceus-biome",
+          "rules": 26,
+          "ticks": 1396,
+          "kills": 59,
+          "level": 3,
+          "awakened": 0,
+          "biome": "cave",
+          "types": [
+            "rock"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "028b85a9"
+        }
+      ]
+    },
+    {
+      "name": "chromium",
+      "version": "156.0.8078.4",
+      "alternateInstalledDriver": false,
+      "status": "passed",
+      "scenarios": [
+        {
+          "id": "standard-levelups",
+          "rules": 26,
+          "ticks": 2998,
+          "kills": 51,
+          "level": 13,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "3981e5ec"
+        },
+        {
+          "id": "standard-mega",
+          "rules": 26,
+          "ticks": 1900,
+          "kills": 33,
+          "level": 2,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "fire",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "4f054153"
+        },
+        {
+          "id": "legend-nightmare-horde",
+          "rules": 26,
+          "ticks": 1098,
+          "kills": 51,
+          "level": 14,
+          "awakened": 1,
+          "biome": "forest",
+          "types": [
+            "water"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "be4ba96c"
+        },
+        {
+          "id": "legend-kyogre-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 42,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "fa3b72d6"
+        },
+        {
+          "id": "legend-groudon-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 40,
+          "level": 30,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "ground",
+            "fire"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "1bde90b7"
+        },
+        {
+          "id": "legend-rayquaza-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 37,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "dragon",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "b8a8c72c"
+        },
+        {
+          "id": "legend-deoxys-stances",
+          "rules": 26,
+          "ticks": 1801,
+          "kills": 43,
+          "level": 1,
+          "awakened": 0,
+          "biome": "meadow",
+          "types": [
+            "psychic"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "9a8d61ff"
+        },
+        {
+          "id": "legend-arceus-biome",
+          "rules": 26,
+          "ticks": 1396,
+          "kills": 59,
+          "level": 3,
+          "awakened": 0,
+          "biome": "cave",
+          "types": [
+            "rock"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "028b85a9"
+        }
+      ]
+    },
+    {
+      "name": "firefox",
+      "version": "150.0.2",
+      "alternateInstalledDriver": true,
+      "status": "passed",
+      "scenarios": [
+        {
+          "id": "standard-levelups",
+          "rules": 26,
+          "ticks": 2998,
+          "kills": 51,
+          "level": 13,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "3981e5ec"
+        },
+        {
+          "id": "standard-mega",
+          "rules": 26,
+          "ticks": 1900,
+          "kills": 33,
+          "level": 2,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "fire",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "4f054153"
+        },
+        {
+          "id": "legend-nightmare-horde",
+          "rules": 26,
+          "ticks": 1098,
+          "kills": 51,
+          "level": 14,
+          "awakened": 1,
+          "biome": "forest",
+          "types": [
+            "water"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "be4ba96c"
+        },
+        {
+          "id": "legend-kyogre-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 42,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "fa3b72d6"
+        },
+        {
+          "id": "legend-groudon-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 40,
+          "level": 30,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "ground",
+            "fire"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "1bde90b7"
+        },
+        {
+          "id": "legend-rayquaza-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 37,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "dragon",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "b8a8c72c"
+        },
+        {
+          "id": "legend-deoxys-stances",
+          "rules": 26,
+          "ticks": 1801,
+          "kills": 43,
+          "level": 1,
+          "awakened": 0,
+          "biome": "meadow",
+          "types": [
+            "psychic"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "9a8d61ff"
+        },
+        {
+          "id": "legend-arceus-biome",
+          "rules": 26,
+          "ticks": 1396,
+          "kills": 59,
+          "level": 3,
+          "awakened": 0,
+          "biome": "cave",
+          "types": [
+            "rock"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "028b85a9"
+        }
+      ]
+    },
+    {
+      "name": "webkit",
+      "version": "27.2",
+      "alternateInstalledDriver": false,
+      "status": "passed",
+      "scenarios": [
+        {
+          "id": "standard-levelups",
+          "rules": 26,
+          "ticks": 2998,
+          "kills": 51,
+          "level": 13,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "3981e5ec"
+        },
+        {
+          "id": "standard-mega",
+          "rules": 26,
+          "ticks": 1900,
+          "kills": 33,
+          "level": 2,
+          "awakened": null,
+          "biome": "meadow",
+          "types": [
+            "fire",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "4f054153"
+        },
+        {
+          "id": "legend-nightmare-horde",
+          "rules": 26,
+          "ticks": 1098,
+          "kills": 51,
+          "level": 14,
+          "awakened": 1,
+          "biome": "forest",
+          "types": [
+            "water"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "be4ba96c"
+        },
+        {
+          "id": "legend-kyogre-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 42,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "water"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "fa3b72d6"
+        },
+        {
+          "id": "legend-groudon-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 40,
+          "level": 30,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "ground",
+            "fire"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "1bde90b7"
+        },
+        {
+          "id": "legend-rayquaza-awakenings",
+          "rules": 26,
+          "ticks": 2370,
+          "kills": 37,
+          "level": 29,
+          "awakened": 2,
+          "biome": "meadow",
+          "types": [
+            "dragon",
+            "flying"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "b8a8c72c"
+        },
+        {
+          "id": "legend-deoxys-stances",
+          "rules": 26,
+          "ticks": 1801,
+          "kills": 43,
+          "level": 1,
+          "awakened": 0,
+          "biome": "meadow",
+          "types": [
+            "psychic"
+          ],
+          "phase": "playing",
+          "sameReplayEnd": true,
+          "digest": "9a8d61ff"
+        },
+        {
+          "id": "legend-arceus-biome",
+          "rules": 26,
+          "ticks": 1396,
+          "kills": 59,
+          "level": 3,
+          "awakened": 0,
+          "biome": "cave",
+          "types": [
+            "rock"
+          ],
+          "phase": "gameover",
+          "sameReplayEnd": true,
+          "digest": "028b85a9"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+
+> pokemon-world@0.1.0 test
+> vitest run --exclude .sites/** src/site src/i18n/i18n.test.ts --reporter=dot
+
+
+ RUN  v5.0.4 D:/Dev_Project/pokesurvivor-2
+
+쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌쨌
+
+ Test Files  4 passed (4)
+      Tests  18 passed (18)
+   Start at  23:25:21
+   Duration  1.41s (transform 36%, tests 32%, import 31%, worker 1%)
+

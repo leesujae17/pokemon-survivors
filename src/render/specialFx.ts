@@ -5,7 +5,7 @@ import { gameSpecial, SPECIALS, specialOfType, specialReach, type SpecialId } fr
 import { STANCES, type Stance } from '../game/stance'
 import type { Attack, Game } from '../game/types'
 import { FX, outlined, toIconUrl } from './art'
-import type { Form } from './sprites'
+import type { FormKey } from './sprites'
 
 /** Code-drawn pixel art for the special attacks (`game/special.ts`). */
 
@@ -299,10 +299,22 @@ const drawSlash = (ctx: Ctx, a: Attack) => {
 const SHIELD = ['.1111111.', '122222221', '123343321', '123444321', '123343321', '.1233321.', '.1223221.', '..12221..', '...121...', '....1....']
 const SWORD = ['...1...', '..141..', '..131..', '..131..', '..131..', '..131..', '..131..', '..131..', '1122211', '1222221', '..151..', '..151..', '..111..']
 
-/** Aegislash's forme as a small icon: a gold shield or its sword, in the stance color. */
+/** Deoxys's core: the crystal in its chest, and a chevron for its Speed Forme. */
+const CORE = ['...1...', '..121..', '.12321.', '1234321', '.12321.', '..121..', '...1...']
+const CHEVRON = ['1.....1', '21...12', '321.123', '.32123.', '..323..', '...3...']
+
+/** Deoxys's forme in its stance color: the core, the core with a spike, the shield, the chevron. */
+const deoxysArt = (rows: readonly string[], stance: Stance) =>
+  lazy(() => outlined(fromStrings(rows, { 1: '#582818', 2: STANCES[stance].color, 3: '#f8d0a0', 4: '#ffffff', 5: '#582818' })))
+
+/** A stance special's forme as a small icon: Aegislash's gold shield or sword, Deoxys's core in its forme's color. */
 const STANCE_ART = {
   shield: lazy(() => outlined(fromStrings(SHIELD, { 1: '#584010', 2: '#f8d030', 3: STANCES.shield.color, 4: '#ffffff' }))),
   blade: lazy(() => outlined(fromStrings(SWORD, { 1: '#282838', 2: STANCES.blade.color, 3: '#c8d0e0', 4: '#ffffff', 5: '#584010' }))),
+  normal: deoxysArt(CORE, 'normal'),
+  attack: deoxysArt(SWORD, 'attack'),
+  defense: deoxysArt(SHIELD, 'defense'),
+  speed: deoxysArt(CHEVRON, 'speed'),
 } as const satisfies Record<Stance, () => PixelSprite>
 
 export const stanceIcon = (stance: Stance) => toIconUrl(`stance:${stance}`, STANCE_ART[stance])
@@ -323,8 +335,15 @@ const drawStanceRing = (ctx: Ctx, g: Game, t: number) => {
   }
 }
 
-/** The sprite form Aegislash wears in each stance, like in the games: Shield is its normal sprite. */
-export const STANCE_FORMS = { shield: undefined, blade: 'blade' } as const satisfies Record<Stance, Form | undefined>
+/** The sprite form each stance wears, like in the games: Aegislash's Shield and Deoxys's Normal Forme are their normal sprites. */
+export const STANCE_FORMS = {
+  shield: undefined,
+  blade: 'blade',
+  normal: undefined,
+  attack: 'attack',
+  defense: 'defense',
+  speed: 'speed',
+} as const satisfies Record<Stance, FormKey | undefined>
 
 /**
  * The fire dash's look: orange flames, or Mega Charizard X's blue dragon fire
@@ -481,7 +500,8 @@ export const drawSpecialAura = (ctx: Ctx, g: Game, t: number) => {
   const p = g.player
   const r = gameSpecial(g)
   const { def } = r
-  const k = s.charge / def.charge
+  // Capped: a special with no wind-up (a chain) would make it Infinity, and the ring's loop endless.
+  const k = Math.min(1, s.charge / def.charge)
   const color = TYPE_COLORS[def.type]
   pixelRing(ctx, p.x, p.y - 10, Math.round(8 + k * 20), 2, Math.floor(t * 24) % 2 ? color : '#ffffff')
   const reach = specialReach(g, r) * (1 - k * 0.5)
@@ -495,6 +515,14 @@ export const drawSpecialAura = (ctx: Ctx, g: Game, t: number) => {
 /* ---------------- Icons ---------------- */
 
 const FIRE = { 1: '#a82010', 2: '#e05018', 3: '#f8a030', 4: '#fff0a0' }
+
+/** The dash specials' icon: an arrowhead with speed lines in the type's colors (their in-game slash is too thin to read at icon size). */
+const DASH = ['.....11....', '.....121...', '22...1231..', '.....12341.', '2222.123441', '.....12341.', '22...1231..', '.....121...', '.....11....']
+const dashIcon = (type: PokeType) => {
+  const [c1, c2, c3, c4] = PALETTES[type]
+  return outlined(fromStrings(DASH, { 1: c1, 2: c2, 3: c3, 4: c4 }))
+}
+
 const BESPOKE_ICONS: Record<Exclude<SpecialId, FormSpecial>, () => PixelSprite> = {
   blastBurn: () =>
     outlined(fromStrings(
@@ -512,25 +540,26 @@ const BESPOKE_ICONS: Record<Exclude<SpecialId, FormSpecial>, () => PixelSprite> 
       ['......1...', '...1...1..', '.1..1...1.', '121..1..1.', '1221.1..1.', '121..1..1.', '.1..1...1.', '...1...1..', '......1...'],
       { 1: '#f8f0d0', 2: '#a8a878' },
     ), '#383028'),
-  solarBlade: () => outlined(slashSprite('grass')),
-  closeCombat: () => outlined(slashSprite('fighting')),
-  dragonRush: () => outlined(slashSprite('dragon')),
-  braveBird: () => outlined(slashSprite('flying')),
-  ironHead: () => outlined(slashSprite('steel')),
+  solarBlade: () => dashIcon('grass'),
+  closeCombat: () => dashIcon('fighting'),
+  dragonRush: () => dashIcon('dragon'),
+  braveBird: () => dashIcon('flying'),
+  ironHead: () => dashIcon('steel'),
   stanceChange: STANCE_ART.shield,
+  formeChange: STANCE_ART.normal,
   dragonFlare: () =>
     outlined(fromStrings(
       ['.....1.....', '.1...21..1.', '.21.1321.2.', '..1123321..', '.112344321.', '12344443211', '.123444321.', '..1234321..', '.1.12321.1.', '.2..121..2.', '.....1.....'],
       { 1: '#2028a0', 2: '#3870f0', 3: '#78c8f8', 4: '#e8f8ff' },
     )),
-  voltTackle: () => outlined(slashSprite('electric')),
-  waveCrash: () => outlined(slashSprite('water')),
-  dragonClaw: () => outlined(slashSprite('dragon')),
-  blazeKick: () => outlined(slashSprite('fire')),
-  skyAttack: () => outlined(slashSprite('flying')),
-  nightSlash: () => outlined(slashSprite('dark')),
-  bulletPunch: () => outlined(slashSprite('steel')),
-  phantomForce: () => outlined(slashSprite('ghost')),
+  voltTackle: () => dashIcon('electric'),
+  waveCrash: () => dashIcon('water'),
+  dragonClaw: () => dashIcon('dragon'),
+  blazeKick: () => dashIcon('fire'),
+  skyAttack: () => dashIcon('flying'),
+  nightSlash: () => dashIcon('dark'),
+  bulletPunch: () => dashIcon('steel'),
+  phantomForce: () => dashIcon('ghost'),
   auraStorm: () =>
     outlined(fromStrings(
       ['1..2222..1', '.1233332.1', '.23344332.', '2344444432', '2344444432', '.23344332.', '1.233332.1', '1..2222..1'],
@@ -539,3 +568,20 @@ const BESPOKE_ICONS: Record<Exclude<SpecialId, FormSpecial>, () => PixelSprite> 
 }
 
 export const specialIcon = (id: SpecialId) => toIconUrl(`special:${id}`, isForm(id) ? () => glyph(id) : BESPOKE_ICONS[id])
+
+/**
+ * The special's HUD controls put every icon on one 16×16 grid, centered, and show it
+ * at a whole multiple (2× badge, 3× touch button): whichever character plays, the
+ * button reads at the same pixel size instead of each icon stretching by its own ratio.
+ */
+const HUD_ICON = 16
+const framed = (sprite: PixelSprite) => {
+  const canvas = createCanvas(HUD_ICON, HUD_ICON)
+  context2d(canvas).drawImage(sprite, Math.floor((HUD_ICON - sprite.width) / 2), Math.floor((HUD_ICON - sprite.height) / 2))
+  return canvas
+}
+
+export const specialHudIcon = (id: SpecialId) =>
+  toIconUrl(`special-hud:${id}`, () => framed(isForm(id) ? glyph(id) : BESPOKE_ICONS[id]()))
+
+export const stanceHudIcon = (stance: Stance) => toIconUrl(`stance-hud:${stance}`, () => framed(STANCE_ART[stance]()))

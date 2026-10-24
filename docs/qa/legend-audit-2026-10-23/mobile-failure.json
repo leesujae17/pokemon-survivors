@@ -1,0 +1,36 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "gameover",
+  "mode": "legend",
+  "time": 0.05,
+  "starter": "articuno",
+  "awakening": 0,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 0,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 0.35000000000000003,
+        "path": 0
+      },
+      {
+        "id": "roost",
+        "level": 1,
+        "cooldown": 0.15000000000000002,
+        "path": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [],
+  "menu": "Lv 1\n1\n1\n00:00\n0\n₽ 0\n프리져\nLv1\nHP\n눈숨기\n135/135\n프리져는 쓰러졌다!\n난이도\n노말\n시간\n00:00\n레벨\n1\n쓰러뜨린 수\n0\n걸음\n0\n+₽ 0\n코인 ₽ 0 · 보너스 ₽ 0\n다시 하기\n포켓몬 변경\n공유"
+}

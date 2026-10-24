@@ -1,5 +1,5 @@
 {
-  "name": "pokemon-survivors",
+  "name": "pokemon-world",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,19 +8,22 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude .sites/**",
     "roster": "node scripts/roster.mjs",
     "assets": "node scripts/fetch-assets.mjs",
     "credits": "node scripts/credits.mjs",
-    "bodies": "node scripts/bodies.mjs"
+    "bodies": "node scripts/bodies.mjs",
+    "names": "node scripts/names-ko.mjs"
   },
   "devDependencies": {
+    "@types/node": "^24.19.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.4"
   },
   "dependencies": {
     "@clerk/clerk-js": "^6.39.0",
+    "@clerk/shared": "^4.41.0",
     "@fontsource/press-start-2p": "^5.3.0",
     "@fontsource/vt323": "^5.3.0"
   },

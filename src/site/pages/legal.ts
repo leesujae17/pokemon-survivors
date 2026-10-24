@@ -1,4 +1,4 @@
-import type { Locale } from '../../i18n'
+import type { SiteLocale } from '../../i18n'
 import { SITE_MESSAGES } from '../../i18n/site'
 import { html, type Html } from '../html'
 import { layout } from '../layout'
@@ -10,7 +10,7 @@ const section = (id: string, title: string, body: Html) =>
 const paragraphs = (texts: readonly string[]) => texts.map((t) => html`<p>${t}</p>`)
 
 /** `/legal/`: fan-game disclaimer, licenses and credits, privacy (localStorage, optional accounts) and takedown contact. */
-export const legalPage = (locale: Locale) => {
+export const legalPage = (locale: SiteLocale) => {
   const m = SITE_MESSAGES[locale]
   const l = m.legal
   const s = l.sections

@@ -14,7 +14,7 @@ type Envelope<T> = { data: T | null; error: string | null; success: boolean }
 /**
  * Donations through AbacatePay's hosted checkout (Pix and Brazilian cards).
  * A checkout only sells catalog products, so each amount gets its own product
- * ("Doação Pokémon Survivors (R$ 25)", `externalId` `pokemon-survivors-donation-25`, prefixed because
+ * ("Doação Pokémon World (R$ 25)", `externalId` `pokemon-survivors-donation-25`, prefixed because
  * the AbacatePay account may sell other things), found or created the first time
  * someone gives it and remembered afterwards. Amounts come from `parseDonation`,
  * so there are at most a thousand of them.
@@ -45,8 +45,8 @@ export const abacatePay = (apiKey: string): Donate => {
     const create = () => call<{ id: string }>('/products/create', {
       body: {
         externalId,
-        name: `Doação Pokémon Survivors (R$ ${amount})`,
-        description: 'Apoio ao Pokémon Survivors, um fan game gratuito. Com uma conta, dá um agradecimento cosmético no jogo.',
+        name: `Doação Pokémon World (R$ ${amount})`,
+        description: 'Apoio ao Pokémon World, um fan game gratuito. Com uma conta, dá um agradecimento cosmético no jogo.',
         price: amount * 100,
         currency: 'BRL',
       },

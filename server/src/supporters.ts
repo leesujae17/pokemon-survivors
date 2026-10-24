@@ -2,7 +2,7 @@ import { randomFillSync } from 'node:crypto'
 import type { TransactionSql } from 'postgres'
 import { POLL, POLL_OPTION_IDS, type PollOptionId } from '../../src/data/supporters'
 import { donationPoints, newCode, supporterTier, TIER_GIFTS, tiersReached, type SupporterTier } from '../../src/game/supporters'
-import type { DonationStatus, Poll, SupporterStatus, WallEntry } from '../../src/game/supporters'
+import type { DonationStatus, HiddenSupporters, Poll, SupporterStatus, WallEntry } from '../../src/game/supporters'
 import { parseSaveData } from '../../src/game/meta'
 import { hallPokemon } from '../../src/game/trainer'
 import type { Sql } from './db'
@@ -18,26 +18,38 @@ const WALL_SIZE = 500
  * reaches sends its thank-you as Mystery Gifts (`TIER_GIFTS`, `key`
  * `support:<tier>:<i>`, so nothing lands twice). A paid donation with no
  * account gets a code instead, which an account redeems later.
+ *
+ * `onTierUp` hears of an account whose tier went up, once the transaction
+ * committed (the Discord bot updates its role).
  */
-export const supporterStore = (sql: Sql) => {
-  /** Credits the donation `id` if it's paid and not credited yet; one with no account just gets its code. */
-  const credit = async (tx: TransactionSql, id: string) => {
+export const supporterStore = (sql: Sql, hooks: { onTierUp?: (userId: string) => void } = {}) => {
+  /**
+   * Credits the donation `id` if it's paid and not credited yet; one with no account just gets its code.
+   * The account whose tier went up, if any.
+   */
+  const credit = async (tx: TransactionSql, id: string): Promise<string | null> => {
     const [d] = await tx<{ user_id: string | null; points: number; paid: boolean; credited: boolean; code: string | null }[]>`
       select user_id, points, paid_at is not null as paid, credited_at is not null as credited, code from donations where id = ${id} for update`
-    if (!d?.paid || d.credited) return
+    if (!d?.paid || d.credited) return null
     if (!d.user_id) {
       if (!d.code) await tx`update donations set code = ${newCode((b) => randomFillSync(b))} where id = ${id}`
-      return
+      return null
     }
     const [user] = await tx<{ points: number }[]>`select supporter_points as points from users where id = ${d.user_id} for update`
     const before = user?.points ?? 0
     const after = before + d.points
     await tx`update users set supporter_points = ${after}, supporter_since = coalesce(supporter_since, now()) where id = ${d.user_id}`
     await tx`update donations set credited_at = now() where id = ${id}`
-    for (const tier of tiersReached(before, after)) {
+    const reached = tiersReached(before, after)
+    for (const tier of reached) {
       for (const [i, content] of TIER_GIFTS[tier].entries()) await sendGift(tx, d.user_id, content, { kind: 'support', tier }, `support:${tier}:${i}`)
     }
     console.log(`donation ${id} credited to ${d.user_id} (${before} → ${after} points)`)
+    return reached.length > 0 ? d.user_id : null
+  }
+
+  const tierUp = (userId: string | null) => {
+    if (userId) hooks.onTierUp?.(userId)
   }
 
   return {
@@ -50,8 +62,8 @@ export const supporterStore = (sql: Sql) => {
     },
 
     /** A webhook said `d` is paid: records it (once, however often the webhook retries) and credits it. */
-    paid: (d: PaidDonation) =>
-      sql.begin(async (tx) => {
+    paid: async (d: PaidDonation) => {
+      const raised = await sql.begin(async (tx) => {
         const points = donationPoints(d.amount, d.currency)
         const [row] = await tx<{ id: string }[]>`
           insert into donations (provider, ref, handle, user_id, amount, currency, points, paid_at)
@@ -59,8 +71,10 @@ export const supporterStore = (sql: Sql) => {
           on conflict (ref) do update
           set amount = excluded.amount, currency = excluded.currency, points = excluded.points, paid_at = coalesce(donations.paid_at, excluded.paid_at)
           returning id`
-        if (row) await credit(tx, row.id)
-      }),
+        return row ? await credit(tx, row.id) : null
+      })
+      tierUp(raised)
+    },
 
     /** What the thank-you page shows for `ref`, or null before any webhook (Stripe's row comes with it). */
     status: async (ref: string): Promise<DonationStatus | null> => {
@@ -73,17 +87,21 @@ export const supporterStore = (sql: Sql) => {
     },
 
     /** Redeems a code for `userId`. `unknown`: no such code; `used`: it went to an account already. */
-    redeem: (userId: string, code: string): Promise<{ ok: true; tier: SupporterTier | null } | { ok: false; error: 'unknown' | 'used' }> =>
-      sql.begin(async (tx) => {
+    redeem: async (userId: string, code: string): Promise<{ ok: true; tier: SupporterTier | null } | { ok: false; error: 'unknown' | 'used' }> => {
+      const out = await sql.begin(async (tx) => {
         await tx`insert into users (id) values (${userId}) on conflict (id) do nothing`
         const [d] = await tx<{ id: string; user_id: string | null }[]>`select id, user_id from donations where code = ${code} for update`
         if (!d) return { ok: false, error: 'unknown' } as const
         if (d.user_id) return { ok: false, error: 'used' } as const
         await tx`update donations set user_id = ${userId} where id = ${d.id}`
-        await credit(tx, d.id)
+        const raised = await credit(tx, d.id)
         const [u] = await tx<{ points: number }[]>`select supporter_points as points from users where id = ${userId}`
-        return { ok: true, tier: supporterTier(u?.points ?? 0) } as const
-      }),
+        return { ok: true, tier: supporterTier(u?.points ?? 0), raised } as const
+      })
+      if (!out.ok) return out
+      tierUp(out.raised)
+      return { ok: true, tier: out.tier }
+    },
 
     /** The player's own standing, with their vote in the current poll. */
     mine: async (userId: string): Promise<SupporterStatus> => {
@@ -101,10 +119,23 @@ export const supporterStore = (sql: Sql) => {
     },
 
     /**
-     * Supporters who show themselves and have a handle, oldest first, with
+     * Supporters who show themselves and have a handle (never a banned one), oldest first, with
      * their title and Pokémon for the Hall da Fama. Only the save fields
      * those read come out of Postgres, never the whole save.
      */
+    /** Supporters per tier who stay off the wall (hidden, or without a handle yet): the Hall counts them without naming them. */
+    hidden: async (): Promise<HiddenSupporters> => {
+      const rows = await sql<{ points: number }[]>`
+        select supporter_points as points from users
+        where supporter_points > 0 and not (supporter_public and handle is not null)`
+      const counts: HiddenSupporters = { supporter: 0, gold: 0 }
+      for (const r of rows) {
+        const tier = supporterTier(r.points)
+        if (tier) counts[tier]++
+      }
+      return counts
+    },
+
     wall: async (): Promise<WallEntry[]> => {
       const rows = await sql<{ handle: string; name: string | null; points: number; since: Date; save: unknown }[]>`
         select u.handle, u.name, u.supporter_points as points, u.supporter_since as since,
@@ -114,7 +145,7 @@ export const supporterStore = (sql: Sql) => {
             'title', s.data->'title', 'titles', s.data->'titles', 'achievements', jsonb_build_object('unlocked', s.data->'achievements'->'unlocked')
           ) end as save
         from users u left join saves s on s.user_id = u.id
-        where u.supporter_points > 0 and u.supporter_public and u.handle is not null
+        where u.supporter_points > 0 and u.supporter_public and u.handle is not null and u.banned_at is null
         order by u.supporter_since, u.id limit ${WALL_SIZE}`
       return rows.flatMap((r) => {
         const tier = supporterTier(r.points)

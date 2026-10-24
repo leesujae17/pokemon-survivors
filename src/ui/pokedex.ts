@@ -1,15 +1,17 @@
 import { blitCentered, context2d } from '../engine/pixelart'
 import { playCry, playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
-import { dexCounts, dexStatus, type DexStatus, type Pokedex } from '../game/dex'
+import { clearCount } from '../game/clears'
+import { dexCounts, dexStatus, type DexStatus } from '../game/dex'
+import { PLAYABLE_IDS } from '../data/hatchlings'
 import { pokedex, type DexEntry } from '../site/pokedex'
-import { PICKUPS, pokeballIcon, sparkleIcon } from '../render/art'
+import { PICKUPS, pokeballIcon, sparkleIcon, trophyIcon } from '../render/art'
 import { cryUrl, drawPokemon, hasShiny, loadedSprites, loadSpecies, portraitUrl } from '../render/sprites'
-import { locale, t } from '../i18n'
+import { t } from '../i18n'
+import { localName } from '../i18n/names'
 import { h, later } from './dom'
 import { loadSave } from './save'
 import { hint, typeBadge, type Screen } from './screens'
-import { ROUTES } from '../site/routes'
 
 const DEX_FILTERS = ['all', 'seen', 'caught', 'missing'] as const
 
@@ -33,16 +35,21 @@ type Zone = 'tabs' | 'grid' | 'footer'
 /**
  * In-game Pokédex: every species in the game in national dex order, unseen
  * ones as "?", with progress counters, a filter and a detail panel (animated
- * sprite, types, defeats, caught and shiny). Keyboard and pad: arrows move,
+ * sprite, types, defeats, caught and shiny). A trophy marks every form of a
+ * family that beat Mewtwo (`game/clears.ts`), in the metal of the hardest
+ * difficulty. Keyboard and pad: arrows move,
  * ↑ from the top row reaches the filter, Esc/B goes back. Touch: tap a cell.
  */
 export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => void, openPc?: (back: () => void) => Screen): Screen => {
   const m = t().dex
-  const save: Pokedex = loadSave().dex
+  const levels = t().difficulty.names
+  const { dex: save, clears } = loadSave()
   const entries = pokedex()
   const status = entries.map((e) => dexStatus(save, e.dex))
   const wild = entries.filter(defeatable)
   const counts = dexCounts(save, entries.map((e) => e.dex))
+  /** The hardest difficulty the entry's family beat Mewtwo on, if it did. */
+  const clearOf = (e: DexEntry) => (e.source.kind === 'starter' ? clears[e.source.id] : undefined)
 
   let filter: DexFilter = 'all'
   let zone: Zone = 'grid'
@@ -61,6 +68,7 @@ export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => vo
       [m.seen, counts.seen, entries.length],
       [m.defeated, counts.defeated, wild.length],
       [m.caught, counts.caught, entries.length],
+      [m.cleared, clearCount(clears), PLAYABLE_IDS.length],
     ].map(([label, n, total]) => h('span', {}, label, h('b', {}, `${n}/${total}`))),
   )
 
@@ -68,12 +76,14 @@ export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => vo
 
   const cells = entries.map((e, i) => {
     const s = status[i]!
+    const clear = s.seen ? clearOf(e) : undefined
     const cell = h(
       'button',
-      { class: s.seen ? 'dex-cell' : 'dex-cell unseen', 'aria-label': s.seen ? e.name : `${dexNumber(e.dex)} ???` },
+      { class: s.seen ? 'dex-cell' : 'dex-cell unseen', 'aria-label': s.seen ? (clear ? `${localName(e.name)}, ${m.clearedOn(levels[clear])}` : localName(e.name)) : `${dexNumber(e.dex)} ???` },
       s.seen ? h('img', { src: portraitUrl(e.dex, s.shiny), alt: '', loading: 'lazy' }) : h('span', { class: 'dex-unknown' }, '?'),
       h('small', {}, e.dex),
       s.caught && h('img', { class: 'dex-mark', src: s.shiny ? sparkleIcon() : pokeballIcon(), alt: '' }),
+      clear && h('img', { class: 'dex-clear', src: trophyIcon(clear), alt: '', title: m.clearedOn(levels[clear]) }),
     )
     cell.addEventListener('click', () => (setZone('grid'), inspect(i, true)))
     return cell
@@ -103,8 +113,7 @@ export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => vo
 
   const back = h('button', { class: 'btn', onclick: close }, m.back)
   const pc = openPc ? h('button', { class: 'btn dex-pc', onclick: showPc }, h('img', { src: sparkleIcon(), alt: '' }), m.pc, h('span', { class: 'key-hint' }, 'P')) : null
-  const site = h('a', { class: 'btn dex-site', href: ROUTES.pokedex[locale()] }, m.site)
-  const footer = [back, ...(pc ? [pc] : []), site]
+  const footer = [back, ...(pc ? [pc] : [])]
 
   /** A caught shiny shows off its shiny form, when the species has one. */
   const shinyForm = (i: number) => status[i]!.shiny && hasShiny(entries[i]!.dex)
@@ -118,14 +127,16 @@ export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => vo
     if (!e || !s) return
     void loadSpecies(e.dex, shinyForm(current)).catch(() => {})
     detail.classList.toggle('unseen', !s.seen)
-    name.replaceChildren(h('small', {}, dexNumber(e.dex)), s.seen ? e.name : '???')
+    name.replaceChildren(h('small', {}, dexNumber(e.dex)), s.seen ? localName(e.name) : '???')
     types.replaceChildren(...(s.seen ? e.types.map(typeBadge) : []))
-    const row = (label: string, value: string | Node) => h('div', { class: 'dex-fact' }, h('span', {}, label), h('b', {}, value))
+    const row = (label: string, ...value: (string | Node)[]) => h('div', { class: 'dex-fact' }, h('span', {}, label), h('b', {}, ...value))
+    const clear = clearOf(e)
     const lines = [
       h('span', { class: 'tag' }, m.roles[e.role]),
       !s.seen && h('p', { class: 'dex-tip' }, m.unseen),
       s.seen && defeatable(e) && row(m.defeated, String(s.defeated)),
       s.seen && row(m.owned, s.caught ? m.yes : m.no),
+      s.seen && e.source.kind === 'starter' && (clear ? row(m.clear, h('img', { class: 'dex-clear-icon', src: trophyIcon(clear), alt: '' }), levels[clear]) : row(m.clear, m.no)),
       s.shiny && h('span', { class: 'tag tag-shiny' }, h('img', { src: sparkleIcon(), alt: '' }), m.shiny),
     ]
     facts.replaceChildren(...lines.filter((line) => line !== false))
@@ -230,7 +241,7 @@ export const pokedexScreen = (root: HTMLElement, input: Input, onClose: () => vo
     h(
       'div',
       { class: 'dialog box pop dex' },
-      h('div', { class: 'dex-head' }, h('div', { class: 'dialog-title' }, 'POKéDEX'), progress),
+      h('div', { class: 'dex-head' }, h('div', { class: 'dialog-title' }, localName('POKéDEX')), progress),
       h('div', { class: 'region-tabs dex-tabs', role: 'tablist' }, ...tabs),
       h('div', { class: 'dex-body' }, h('div', { class: 'dex-list' }, grid, empty), detail),
       h('div', { class: 'buttons' }, ...footer),

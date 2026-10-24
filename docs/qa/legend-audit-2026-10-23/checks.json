@@ -1,0 +1,113 @@
+{
+  "clientTypecheck": "passed",
+  "serverTypecheck": "passed",
+  "fullTests": {
+    "status": "passed",
+    "files": 114,
+    "tests": 908
+  },
+  "legendPersistenceTests": {
+    "status": "passed",
+    "tests": 27,
+    "includedInFullSuite": true
+  },
+  "siteAndLocaleTests": {
+    "status": "passed",
+    "files": 4,
+    "tests": 18
+  },
+  "productionBuild": "passed",
+  "lint": "not_configured",
+  "operationalDatabaseAndRanking": "not_run",
+  "crossBrowserEngineDeterminism": {
+    "status": "passed",
+    "engines": [
+      {
+        "name": "Node v24.14.1 / V8 13.6.233.17-node.44",
+        "version": null,
+        "status": "passed"
+      },
+      {
+        "name": "chromium",
+        "version": "156.0.8078.4",
+        "status": "passed"
+      },
+      {
+        "name": "firefox",
+        "version": "150.0.2",
+        "status": "passed"
+      },
+      {
+        "name": "webkit",
+        "version": "27.2",
+        "status": "passed"
+      }
+    ],
+    "scenariosPerEngine": 8,
+    "details": "cross-engine-results.json"
+  },
+  "full15MinuteNaturalPlay": "human_realtime_not_run",
+  "deniedActions": [],
+  "sourceHashes": "source-hashes.json",
+  "finalFullSuiteAfterLastKoreanChange": {
+    "status": "passed",
+    "files": 114,
+    "tests": 908,
+    "new27Included": true,
+    "log": "final-full-tests.log"
+  },
+  "finalProductionBuildAfterLastKoreanChange": {
+    "status": "passed",
+    "log": "build-check.log",
+    "localOnly": true
+  },
+  "simulationToolTypecheck": "passed",
+  "libraryScreenshot": {
+    "status": "succeeded",
+    "libraryFileId": "libfile_061a158411a48191bc409780e41b3226",
+    "localMetadata": "unsupported_on_windows"
+  },
+  "equivalentWholeRuns": {
+    "status": "passed",
+    "method": "accelerated legal-input 60Hz bot with max legal starting upgrades; no mid-run state edits",
+    "attempts": [
+      {
+        "starter": "kyogre",
+        "seed": 11,
+        "runSeconds": 917.3333333328277,
+        "phase": "victory",
+        "level": 63,
+        "kills": 6707,
+        "replayMatch": true
+      },
+      {
+        "starter": "charmander",
+        "seed": 11,
+        "runSeconds": 433.183333333268,
+        "phase": "gameover",
+        "level": 19,
+        "kills": 564,
+        "replayMatch": true
+      },
+      {
+        "starter": "charmander",
+        "seed": 23,
+        "runSeconds": 367.24999999999466,
+        "phase": "gameover",
+        "level": 9,
+        "kills": 510,
+        "replayMatch": true
+      },
+      {
+        "starter": "charmander",
+        "seed": 41,
+        "runSeconds": 934.966666666145,
+        "phase": "victory",
+        "level": 57,
+        "kills": 4258,
+        "replayMatch": true
+      }
+    ],
+    "details": "full-run-results.json"
+  }
+}

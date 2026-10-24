@@ -1,0 +1,43 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "victory",
+  "mode": "legend",
+  "time": 0.05,
+  "starter": "articuno",
+  "awakening": 0,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 135,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 0.35000000000000003,
+        "path": 0
+      },
+      {
+        "id": "swift",
+        "level": 1,
+        "cooldown": 0.15000000000000002,
+        "path": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 1,
+  "enemies": [
+    {
+      "id": "mewtwo",
+      "x": 100,
+      "y": 0,
+      "hp": 0
+    }
+  ],
+  "menu": "Lv 1\n1\n1\n00:00\n1\n₽ 0\n프리져\nLv1\nHP\n눈숨기\n135/135\n뮤츠를 쓰러뜨렸다!\n난이도\n노말\n시간\n00:00\n레벨\n1\n쓰러뜨린 수\n1\n걸음\n0\n알\n포켓몬 도감\n새 포켓몬 +1\n챔피언\n\n무리는 끝없이 몰려오고 20:00에 아르세우스가 사냥하러 와요. 얼마나 버틸 수 있을까요?\n\n+₽ 1,000\n코인 ₽ 0 · 보너스 ₽ 1,000\n미션\n미션과 메달: +₽ 500\n눈보라\n26,401\n무한 모드\n다시 하기\n포켓몬 변경\n공유"
+}

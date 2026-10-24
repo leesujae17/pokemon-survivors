@@ -1,0 +1,16 @@
+[
+  {
+    "origin": "https://my-pokemon-world.netlify.app",
+    "canonical": true,
+    "noDevHooks": true,
+    "touchStartSpecialPauseResume": true,
+    "errors": []
+  },
+  {
+    "origin": "https://pokemon-survivors-mobile-gpt.leesujae.chatgpt.site",
+    "canonical": true,
+    "noDevHooks": true,
+    "touchStartSpecialPauseResume": true,
+    "errors": []
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 1.3000000000000003,
+  "starter": "rayquaza",
+  "awakening": 2,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 200,
+    "level": 28,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "dragonAscent",
+        "level": 1,
+        "cooldown": 2.500000000000003,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "earthquake",
+        "level": 1,
+        "cooldown": 2.100000000000004,
+        "path": 0,
+        "walkedAt": 0
+      }
+    ]
+  },
+  "ability": "moxie",
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "plusle",
+      "x": -332.5588377549828,
+      "y": -164.153404636674,
+      "hp": 24
+    },
+    {
+      "id": "persian",
+      "x": -185.3204904016565,
+      "y": -179.48361891834466,
+      "hp": 24
+    }
+  ],
+  "menu": "Lv 28\n1\n1\nSPACE\n00:01\n0\n₽ 0\n메가레쿠쟈\nLv28\nHP\n자기과신\n200/200\n레쿠쟈 각성! 힘이 더욱 강해졌어요.\n레쿠쟈의 특성은 자기과신!\n레쿠쟈 → 메가레쿠쟈 각성!"
+}

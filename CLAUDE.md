@@ -1,4 +1,4 @@
-# Pokémon Survivors – agent guide
+# Pokémon World – agent guide
 
 Browser survivors-like (Vampire Survivors–style) with Pokémon. Vite + TypeScript + Canvas 2D, no engine. Read `README.md` for the architecture map.
 

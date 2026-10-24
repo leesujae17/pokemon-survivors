@@ -1,5 +1,7 @@
 import { mergeAchievements, mergeGiftTitles } from './achievements'
 import { mergeClaimedGifts } from './gifts'
+import { mergeClears } from './clears'
+import { mergeCaptures } from './capture'
 import { mergeBag } from './bag'
 import { mergeCounter } from './mart'
 import { mergeStyle } from './style'
@@ -37,7 +39,8 @@ const worth = (s: Save) => s.wallet + totalSpent(s.ranks) + s.spent
  *   spending, so ₽ spent on one side and kept on the other isn't counted twice.
  * - The title: `incoming`'s, if it shows one.
  * - The difficulty and the partner picked last: `incoming`'s, settings rather than progress.
- * - Shiny starters: a union; each Normal/Shiny pick is `incoming`'s when it has one.
+ * - Shiny starters: a union; each Normal/Shiny pick (a shiny hatch's too) is
+ *   `incoming`'s when it has one, else `base`'s, so a hatch switched to Normal stays so.
  * - The bag: each item's got and used counters keep the larger side; what's
  *   armed is `incoming`'s. The daily counter: the most recent day, the most
  *   bought of each item on the same day. Styles: a union, worn as `incoming`.
@@ -46,6 +49,10 @@ const worth = (s: Save) => s.wallet + totalSpent(s.ranks) + s.spent
  * - Ribbons: a union, one per day (the better one if both sides had that day).
  * - Shiny picks: a union by ticket; a pick made on either side stays made.
  * - The companion: `incoming`'s, if it has one (like the title).
+ * - Branches taken: per family, `incoming`'s when it has one (like the partner).
+ * - Clears: a union, each Pokémon at the harder difficulty of the two.
+ * - Legend captures: each legend's win count at the larger side (a shiny
+ *   captured is a `shinyStarters` key, a union like the rest).
  */
 export const mergeSaves = (base: Save, incoming: Save): Save => {
   const ranks: Ranks = Object.fromEntries(UPGRADE_IDS.map((id) => [id, Math.max(base.ranks[id], incoming.ranks[id])])) as Record<UpgradeId, number>
@@ -72,6 +79,9 @@ export const mergeSaves = (base: Save, incoming: Save): Save => {
     ribbons: mergeRibbons(base.ribbons, incoming.ribbons),
     shinyPicks: mergeShinyPicks(base.shinyPicks, incoming.shinyPicks),
     companion: incoming.companion ?? base.companion,
+    branches: { ...base.branches, ...incoming.branches },
+    clears: mergeClears(base.clears, incoming.clears),
+    legends: mergeCaptures(base.legends, incoming.legends),
   }
 }
 
@@ -86,9 +96,16 @@ export type Push = { save: Save; base: number | null }
  * seen everything stored, so its save is the newer one and replaces it as is:
  * that keeps ₽ spent, eggs hatched and refunds. Anything else (a first sign
  * in, another device pushed in between) merges both with `mergeSaves`.
+ *
+ * `resetAt` is the revision a reset stored, when the account's save was wiped
+ * (an edited save, see `server/README.md`). A device that hasn't seen it (its
+ * `base` is older, or it never synced) would merge the wiped progress back, so
+ * its push changes nothing and gets the stored save, as merged: the device
+ * takes it over its own.
  */
-export const applyPush = (stored: Stored | null, push: Push): Stored & { merged: boolean } => {
+export const applyPush = (stored: Stored | null, push: Push, resetAt: number | null = null): Stored & { merged: boolean } => {
   if (!stored) return { save: push.save, revision: 1, merged: false }
+  if (resetAt !== null && (push.base === null || push.base < resetAt)) return { ...stored, merged: true }
   const merged = push.base !== stored.revision
   return { save: merged ? mergeSaves(stored.save, push.save) : push.save, revision: stored.revision + 1, merged }
 }

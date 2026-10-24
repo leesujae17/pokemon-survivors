@@ -7,6 +7,7 @@ import { achievementProgress } from '../game/achievements'
 import type { RunRecord } from '../game/meta'
 import { MISSION_PERIODS, missionStatus, periodEnd, type MissionStatus } from '../game/missions'
 import { formatNumber, formatPokeDollars, t } from '../i18n'
+import { localName } from '../i18n/names'
 import { ENEMIES } from '../data/enemies'
 import { BAG_ITEMS, type BagItem } from '../game/bag'
 import { bagIcon, coinIcon, eggIcon, giftIcon, medalIcon } from '../render/art'
@@ -29,7 +30,7 @@ export const missionText = (goal: MissionGoal, target: number) => {
     case 'coins': return g.coins(formatPokeDollars(target))
     case 'wins': return goal.type ? g.typeWins(n, types[goal.type]) : g.wins(n)
     case 'survive': return goal.type ? g.typeSurvive(n, types[goal.type]) : g.survive(n)
-    case 'outbreakKills': return g.outbreakKills(n, ENEMIES[outbreakToday()].name)
+    case 'outbreakKills': return g.outbreakKills(n, localName(ENEMIES[outbreakToday()].name))
     default: return g[goal.kind](n)
   }
 }
@@ -60,7 +61,7 @@ const missionRow = (m: MissionStatus, opts: { gained?: number; fresh?: boolean }
       m.done ? '✓' : h('img', { src: coinIcon(0), alt: '' }),
       m.done ? '' : formatNumber(m.reward),
       !m.done && m.egg && h('img', { src: eggIcon(m.egg), alt: t().eggs.tiers[m.egg], title: t().missions.rewardEgg(t().eggs.tiers[m.egg]) }),
-      !m.done && m.item && h('img', { src: bagIcon(m.item), alt: BAG_ITEMS[m.item].name, title: t().missions.rewardItem(BAG_ITEMS[m.item].name) }),
+      !m.done && m.item && h('img', { src: bagIcon(m.item), alt: localName(BAG_ITEMS[m.item].name), title: t().missions.rewardItem(localName(BAG_ITEMS[m.item].name)) }),
     ),
     h(
       'span',

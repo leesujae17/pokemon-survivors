@@ -1,0 +1,51 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 1.3000000000000003,
+  "starter": "kyogre",
+  "awakening": 2,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 215,
+    "level": 28,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "originPulse",
+        "level": 1,
+        "cooldown": 2.500000000000003,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "thunder",
+        "level": 1,
+        "cooldown": 1.500000000000004,
+        "path": 0,
+        "walkedAt": 0
+      }
+    ]
+  },
+  "ability": "swiftSwim",
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "magcargo",
+      "x": 94.16907138184578,
+      "y": 304.8445855964463,
+      "hp": 31
+    },
+    {
+      "id": "gligar",
+      "x": -256.6022467146707,
+      "y": 28.87251759056738,
+      "hp": 29
+    }
+  ],
+  "menu": "Lv 28\n1\n1\nSPACE\n00:01\n0\n₽ 0\n원시가이오가\nLv28\nHP\n쓱쓱\n215/215\n비가 내리기 시작했다!\n물 기술 강화, 불꽃 기술 약화\n잔비으로 날씨가 바뀌었어요!\n가이오가 각성! 힘이 더욱 강해졌어요."
+}

@@ -1,0 +1,45 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "normal",
+  "time": 0.44999999999999996,
+  "starter": "charmander",
+  "awakening": null,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 90,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "ember",
+        "level": 1,
+        "cooldown": 0.95,
+        "path": 0,
+        "walkedAt": 0
+      },
+      {
+        "id": "fireSpin",
+        "level": 1,
+        "cooldown": 3.150000000000001,
+        "path": 0,
+        "walkedAt": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 3,
+  "enemies": [
+    {
+      "id": "articuno",
+      "x": 100,
+      "y": 0,
+      "hp": 0
+    }
+  ],
+  "menu": "Lv 1\n1\n1\n00:00\n3\n₽ 0\n파이리\nLv1\nHP\n90/90\n필살기\n프리져 포획 실패… 2/3\n1번 더 쓰러뜨리면 포획할 수 있어요.\n이로치 프리져를 손에 넣었다! 도감에 등록됐다."
+}

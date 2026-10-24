@@ -1,18 +1,35 @@
 {
-  "name": "Pokémon Survivors",
-  "short_name": "Survivors",
-  "description": "Jogo grátis estilo Vampire Survivors com Pokémon. Sobreviva às hordas selvagens com seu Pokémon inicial.",
-  "lang": "pt-BR",
+  "id": "/",
+  "name": "포켓몬 월드",
+  "short_name": "포켓몬 월드",
+  "description": "포켓몬과 함께 야생의 무리를 헤쳐 나가는 무료 생존 게임. 전설의 포켓몬을 포획하고 전설 모드에 도전하세요.",
+  "lang": "ko-KR",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
   "orientation": "any",
   "background_color": "#101820",
   "theme_color": "#101820",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

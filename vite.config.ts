@@ -70,13 +70,18 @@ const gameVersion = () => {
   }
 }
 
-// One page per language for the game (index.html, en/index.html, es/index.html); the site pages are added by `sitePages`.
+// The deploy's address (`%VITE_SITE_URL%` in the HTML entries, `SITE_URL` in src/site): empty unless the build sets it,
+// so a local build keeps canonical and Open Graph links relative instead of leaving the placeholder in the page.
+process.env.VITE_SITE_URL ??= ''
+
+// One page per language for the game (index.html, en/, es/ and ko/index.html); the site pages are added by `sitePages`.
 export default defineConfig({
   plugins: [sitePages()],
   define: { __GAME_VERSION__: JSON.stringify(gameVersion()) },
+  server: { watch: { ignored: ['**/.sites/**', '**/dist/**'] } },
   build: {
     rolldownOptions: {
-      input: { main: 'index.html', en: 'en/index.html', es: 'es/index.html' },
+      input: { main: 'index.html', en: 'en/index.html', es: 'es/index.html', ko: 'ko/index.html' },
     },
   },
 })

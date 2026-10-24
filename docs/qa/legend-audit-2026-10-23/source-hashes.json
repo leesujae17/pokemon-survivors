@@ -1,0 +1,19 @@
+{
+  "files": {
+    "src/data/legends.ts": "ac8a4dc6502e63c43b6b8471d958f52e002d407717534c9a658bde673bf7b396",
+    "src/game/capture.ts": "3a653cbdd83ecde97a2933dd8c98b8a9da1db1b655e4605c1309458d3bb7e276",
+    "src/game/legend.ts": "3374ba97b70a2f189c9d13ead257ad0df26e46f7a044a6118927d0d39a043404",
+    "src/game/meta.ts": "04556b409cf799818d289fee69228dc86bb60aaca829cd158459a4bc459a4714",
+    "src/game/sync.ts": "219786b75be9e80c06995e0de6535034dc08d4172468cee0e39d36aaf5bda651",
+    "src/game/replay.ts": "0dbcb28a86033dd7a73860f4123d3b0e89905180bb36503adb24838a493e74e9",
+    "src/game/legendPersistence.test.ts": "ea16d17ae52ae91e313a0f2cfc7db07a1cf658658d2389be0d439a6e02e036f9",
+    "src/ui/starterSelect.ts": "6ff45a40a30f325825e8e34a5d2453a7b5d5c9256486808c1ef39eb052955825",
+    "src/ui/abilityPick.ts": "d128c4594e2d64fb0b81c1d545b201711097cc65e4385f1bd50c9e74f7209967",
+    "src/site/changelog.ts": "4754431b8a01ac997d60488072cbcc69926e21ded273c35c239276a4c1204d21",
+    "scripts/qa-legends.mjs": "240df74e8be36618fe6ab9d1f7df0310ee81476d8df686b1af3b78c247c8d7a1",
+    "scripts/qa-legend-production.mjs": "c4177cfbf9eb92b37ca01f0d9de9d10be20a7cf6d340fca3a745a49987a085ed",
+    "src/i18n/ko.ts": "3373a4999c9275462f237abb98d588434f1ebefd5d2d91a90e646633f460150a",
+    "scripts/qa-simulation-core.ts": "ac0e5823cc538022b9379d047c595c5e1f246632e7ccaf13280e62c31161f629",
+    "scripts/qa-simulation.mjs": "8c874c679212a9e469cfaf8c9b5b26aa352cd2b5e33dd50851cd82cd88bf175c"
+  }
+}

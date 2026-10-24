@@ -4,12 +4,14 @@ import type { Input } from '../engine/input'
 import { formatTime } from '../engine/math'
 import { context2d } from '../engine/pixelart'
 import { ENEMIES } from '../data/enemies'
-import { isHatchling, PLAYABLE } from '../data/hatchlings'
+import { PLAYABLE } from '../data/hatchlings'
 import { nextIsOfficial, type Challenge } from '../game/challenge'
 import { msToNextDay } from '../game/day'
 import { isUnlocked } from '../game/eggs'
+import { playsShiny } from '../game/shinyPicks'
 import type { ChallengeBoard } from '../game/ranking'
 import { formatDay, t } from '../i18n'
+import { localName } from '../i18n/names'
 import { ribbonIcon, sparkleIcon } from '../render/art'
 import { drawPokemon, loadedSprites, loadSpecies } from '../render/sprites'
 import { fetchChallengeBoard, rankingEnabled } from '../ranking'
@@ -25,11 +27,8 @@ export type ChallengeActions = {
   onClose: () => void
 }
 
-/** Whether the player plays `c`'s Pokémon shiny: a shiny hatch, or a shiny starter picked so. */
-export const challengeShiny = (c: Challenge) => {
-  const save = loadSave()
-  return (isHatchling(c.starter) && save.hatched[c.starter]?.shiny === true) || save.shinyStarters[c.starter] === true
-}
+/** Whether the player plays `c`'s Pokémon shiny: an owned shiny not switched to Normal. */
+export const challengeShiny = (c: Challenge) => playsShiny(loadSave(), c.starter)
 
 /** `h:mm:ss` until the next challenge. */
 const countdown = () => {
@@ -88,9 +87,9 @@ export const challengeScreen = (root: HTMLElement, input: Input, actions: Challe
             'div',
             { class: 'challenge-id' },
             h('small', {}, m.day(formatDay(c.day))),
-            h('b', { class: 'challenge-name' }, PLAYABLE[c.starter].name, shiny && h('img', { src: sparkleIcon(), alt: 'Shiny' })),
+            h('b', { class: 'challenge-name' }, localName(PLAYABLE[c.starter].name), shiny && h('img', { src: sparkleIcon(), alt: 'Shiny' })),
             h('div', { class: 'types' }, ...form.types.map(typeBadge), difficultyTag(c.difficulty)),
-            h('small', { class: 'challenge-outbreak' }, m.outbreak(ENEMIES[c.outbreak].name)),
+            h('small', { class: 'challenge-outbreak' }, m.outbreak(localName(ENEMIES[c.outbreak].name))),
           ),
         ),
         h(

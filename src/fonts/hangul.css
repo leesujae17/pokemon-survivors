@@ -1,0 +1,36 @@
+/*
+ * Hangul for the Korean locale. Press Start 2P and VT323 have no Hangul, so these
+ * faces cover only Korean code points and the browser falls back to them glyph by
+ * glyph: Latin text keeps the game's fonts, and the files only download when a
+ * Korean glyph is on screen. Galmuri is a Korean pixel font (SIL OFL 1.1, see
+ * galmuri/LICENSE.txt); `size-adjust` lines its Hangul up with each Latin face.
+ */
+@font-face {
+  font-family: 'PS Hangul Title';
+  src: url('./galmuri/Galmuri11-Bold.woff2') format('woff2');
+  font-display: swap;
+  unicode-range: U+1100-11FF, U+3000-303F, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+  /* Press Start 2P's capitals are 0.87 em and Galmuri's Hangul 0.92 em: close enough at full size, and Hangul needs every pixel at 8 px. */
+  size-adjust: 100%;
+}
+
+/*
+ * Press Start 2P's space is a full em: fine between its square letters, a gaping hole
+ * between Hangul words. In Korean (`:lang(ko)` in style.css) this space-only face goes
+ * first in the title stack, so word gaps come from Galmuri and letters from their own fonts.
+ */
+@font-face {
+  font-family: 'PS Hangul Space';
+  src: url('./galmuri/Galmuri11-Bold.woff2') format('woff2');
+  font-display: swap;
+  unicode-range: U+0020;
+}
+
+@font-face {
+  font-family: 'PS Hangul Body';
+  src: url('./galmuri/Galmuri11.woff2') format('woff2');
+  font-display: swap;
+  unicode-range: U+1100-11FF, U+3000-303F, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+  /* VT323's capitals are 0.56 em, Galmuri's Hangul 0.92 em: scaled so Hangul sits a touch above the capitals. */
+  size-adjust: 65%;
+}

@@ -1,0 +1,637 @@
+{
+  "naturalHumanPlay": false,
+  "accelerated60HzBot": true,
+  "stateEditsAfterStart": false,
+  "attempts": [
+    {
+      "starter": "kyogre",
+      "seed": 11,
+      "difficulty": "normal",
+      "legalMaxUpgradeRanks": true,
+      "noMidRunStateEdits": true,
+      "simulatedSeconds": 960.1499999994554,
+      "runSeconds": 917.3333333328277,
+      "phase": "victory",
+      "ticks": 57609,
+      "kills": 6707,
+      "level": 63,
+      "hp": 285,
+      "awakened": 2,
+      "moves": [
+        {
+          "id": "ionDeluge",
+          "level": 4
+        },
+        {
+          "id": "rockSlide",
+          "level": 8
+        },
+        {
+          "id": "meteorBeam",
+          "level": 8
+        },
+        {
+          "id": "icyWind",
+          "level": 5
+        },
+        {
+          "id": "ironHead",
+          "level": 4
+        },
+        {
+          "id": "originPulse",
+          "level": 5
+        }
+      ],
+      "captures": {
+        "regirock": 1,
+        "regice": 1,
+        "registeel": 1,
+        "mewtwo": 1
+      },
+      "milestones": [
+        {
+          "time": 60.01666666666454,
+          "event": "minute",
+          "hp": 200,
+          "level": 3,
+          "kills": 94
+        },
+        {
+          "time": 120.01666666666114,
+          "event": "minute",
+          "hp": 200,
+          "level": 5,
+          "kills": 265
+        },
+        {
+          "time": 150.0000000000115,
+          "event": "boss",
+          "detail": "onix"
+        },
+        {
+          "time": 180.00000000003539,
+          "event": "minute",
+          "hp": 200,
+          "level": 7,
+          "kills": 490
+        },
+        {
+          "time": 209.61666666672562,
+          "event": "awakened",
+          "detail": "kyogre"
+        },
+        {
+          "time": 240.00000000008313,
+          "event": "minute",
+          "hp": 225,
+          "level": 15,
+          "kills": 761
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "boss",
+          "detail": "snorlax"
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "minute",
+          "hp": 245,
+          "level": 17,
+          "kills": 1095
+        },
+        {
+          "time": 360.00000000000125,
+          "event": "minute",
+          "hp": 245,
+          "level": 21,
+          "kills": 1391
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "boss",
+          "detail": "regirock"
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "minute",
+          "hp": 245,
+          "level": 25,
+          "kills": 1770
+        },
+        {
+          "time": 429.59999999993795,
+          "event": "legendBeaten",
+          "detail": "regirock"
+        },
+        {
+          "time": 452.73333333325024,
+          "event": "awakened",
+          "detail": "kyogre"
+        },
+        {
+          "time": 480.01666666655876,
+          "event": "minute",
+          "hp": 285,
+          "level": 31,
+          "kills": 2162
+        },
+        {
+          "time": 540.0166666665042,
+          "event": "minute",
+          "hp": 275.5249999999895,
+          "level": 40,
+          "kills": 2630
+        },
+        {
+          "time": 570.0166666664769,
+          "event": "boss",
+          "detail": "regice"
+        },
+        {
+          "time": 581.6499999997997,
+          "event": "legendBeaten",
+          "detail": "regice"
+        },
+        {
+          "time": 600.0166666664496,
+          "event": "minute",
+          "hp": 285,
+          "level": 42,
+          "kills": 3079
+        },
+        {
+          "time": 660.016666666395,
+          "event": "minute",
+          "hp": 285,
+          "level": 46,
+          "kills": 3701
+        },
+        {
+          "time": 720.0166666663405,
+          "event": "boss",
+          "detail": "registeel"
+        },
+        {
+          "time": 720.0166666663405,
+          "event": "minute",
+          "hp": 284.8499999999974,
+          "level": 48,
+          "kills": 4345
+        },
+        {
+          "time": 733.4166666663283,
+          "event": "legendBeaten",
+          "detail": "registeel"
+        },
+        {
+          "time": 780.0166666662859,
+          "event": "minute",
+          "hp": 261.1000000000139,
+          "level": 51,
+          "kills": 4902
+        },
+        {
+          "time": 840.0166666662313,
+          "event": "minute",
+          "hp": 285,
+          "level": 54,
+          "kills": 5782
+        },
+        {
+          "time": 900.0166666661768,
+          "event": "boss",
+          "detail": "mewtwo"
+        },
+        {
+          "time": 900.0166666661768,
+          "event": "minute",
+          "hp": 285,
+          "level": 63,
+          "kills": 6650
+        },
+        {
+          "time": 917.3333333328277,
+          "event": "legendBeaten",
+          "detail": "mewtwo"
+        },
+        {
+          "time": 917.3333333328277,
+          "event": "victory",
+          "detail": ""
+        }
+      ],
+      "digest": "0966d694",
+      "sameReplayEnd": true,
+      "replayFile": "full-run-kyogre-11-replay.json"
+    },
+    {
+      "starter": "charmander",
+      "seed": 11,
+      "difficulty": "normal",
+      "legalMaxUpgradeRanks": true,
+      "noMidRunStateEdits": true,
+      "simulatedSeconds": 447.9666666665879,
+      "runSeconds": 433.183333333268,
+      "phase": "gameover",
+      "ticks": 26878,
+      "kills": 564,
+      "level": 19,
+      "hp": 0,
+      "awakened": null,
+      "moves": [
+        {
+          "id": "ember",
+          "level": 4
+        },
+        {
+          "id": "flameWheel",
+          "level": 3
+        },
+        {
+          "id": "dragonBreath",
+          "level": 4
+        }
+      ],
+      "captures": {},
+      "milestones": [
+        {
+          "time": 60.01666666666454,
+          "event": "minute",
+          "hp": 140,
+          "level": 2,
+          "kills": 63
+        },
+        {
+          "time": 120.01666666666114,
+          "event": "minute",
+          "hp": 140,
+          "level": 3,
+          "kills": 147
+        },
+        {
+          "time": 150.0000000000115,
+          "event": "boss",
+          "detail": "onix"
+        },
+        {
+          "time": 180.00000000003539,
+          "event": "minute",
+          "hp": 129,
+          "level": 4,
+          "kills": 208
+        },
+        {
+          "time": 240.00000000008313,
+          "event": "minute",
+          "hp": 103,
+          "level": 5,
+          "kills": 277
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "boss",
+          "detail": "snorlax"
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "minute",
+          "hp": 165,
+          "level": 13,
+          "kills": 345
+        },
+        {
+          "time": 360.00000000000125,
+          "event": "minute",
+          "hp": 138.84000000000606,
+          "level": 13,
+          "kills": 380
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "boss",
+          "detail": "regirock"
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "minute",
+          "hp": 148.36000000003028,
+          "level": 14,
+          "kills": 435
+        },
+        {
+          "time": 433.183333333268,
+          "event": "gameover",
+          "detail": ""
+        }
+      ],
+      "digest": "d036970e",
+      "sameReplayEnd": true,
+      "replayFile": "full-run-charmander-11-replay.json"
+    },
+    {
+      "starter": "charmander",
+      "seed": 23,
+      "difficulty": "normal",
+      "legalMaxUpgradeRanks": true,
+      "noMidRunStateEdits": true,
+      "simulatedSeconds": 372.9499999999895,
+      "runSeconds": 367.24999999999466,
+      "phase": "gameover",
+      "ticks": 22377,
+      "kills": 510,
+      "level": 9,
+      "hp": 0,
+      "awakened": null,
+      "moves": [
+        {
+          "id": "ember",
+          "level": 3
+        },
+        {
+          "id": "flameWheel",
+          "level": 1
+        },
+        {
+          "id": "pyroBall",
+          "level": 3
+        }
+      ],
+      "captures": {},
+      "milestones": [
+        {
+          "time": 60.01666666666454,
+          "event": "minute",
+          "hp": 115,
+          "level": 2,
+          "kills": 61
+        },
+        {
+          "time": 120.01666666666114,
+          "event": "minute",
+          "hp": 140,
+          "level": 3,
+          "kills": 134
+        },
+        {
+          "time": 150.0000000000115,
+          "event": "boss",
+          "detail": "onix"
+        },
+        {
+          "time": 180.00000000003539,
+          "event": "minute",
+          "hp": 129,
+          "level": 4,
+          "kills": 232
+        },
+        {
+          "time": 240.00000000008313,
+          "event": "minute",
+          "hp": 70,
+          "level": 5,
+          "kills": 292
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "boss",
+          "detail": "snorlax"
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "minute",
+          "hp": 65,
+          "level": 7,
+          "kills": 379
+        },
+        {
+          "time": 360.00000000000125,
+          "event": "minute",
+          "hp": 8.449999999999863,
+          "level": 9,
+          "kills": 491
+        },
+        {
+          "time": 367.24999999999466,
+          "event": "gameover",
+          "detail": ""
+        }
+      ],
+      "digest": "807de703",
+      "sameReplayEnd": true,
+      "replayFile": "full-run-charmander-23-replay.json"
+    },
+    {
+      "starter": "charmander",
+      "seed": 41,
+      "difficulty": "normal",
+      "legalMaxUpgradeRanks": true,
+      "noMidRunStateEdits": true,
+      "simulatedSeconds": 988.1333333327633,
+      "runSeconds": 934.966666666145,
+      "phase": "victory",
+      "ticks": 59288,
+      "kills": 4258,
+      "level": 57,
+      "hp": 173.79166666663687,
+      "awakened": null,
+      "moves": [
+        {
+          "id": "flamethrower",
+          "level": 5
+        },
+        {
+          "id": "flameWheel",
+          "level": 8
+        },
+        {
+          "id": "pyroBall",
+          "level": 7
+        },
+        {
+          "id": "solarBeam",
+          "level": 7
+        },
+        {
+          "id": "dragonBreath",
+          "level": 6
+        },
+        {
+          "id": "dragonTail",
+          "level": 5
+        }
+      ],
+      "captures": {
+        "raikou": 1,
+        "entei": 1,
+        "suicune": 1,
+        "mewtwo": 1
+      },
+      "milestones": [
+        {
+          "time": 60.01666666666454,
+          "event": "minute",
+          "hp": 140,
+          "level": 2,
+          "kills": 60
+        },
+        {
+          "time": 120.01666666666114,
+          "event": "minute",
+          "hp": 140,
+          "level": 5,
+          "kills": 161
+        },
+        {
+          "time": 150.0000000000115,
+          "event": "boss",
+          "detail": "onix"
+        },
+        {
+          "time": 180.00000000003539,
+          "event": "minute",
+          "hp": 135.84999999999377,
+          "level": 6,
+          "kills": 250
+        },
+        {
+          "time": 240.00000000008313,
+          "event": "minute",
+          "hp": 90.8499999999774,
+          "level": 7,
+          "kills": 326
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "boss",
+          "detail": "snorlax"
+        },
+        {
+          "time": 300.0000000000558,
+          "event": "minute",
+          "hp": 107.45999999996138,
+          "level": 8,
+          "kills": 548
+        },
+        {
+          "time": 360.00000000000125,
+          "event": "minute",
+          "hp": 84.24999999997553,
+          "level": 10,
+          "kills": 697
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "boss",
+          "detail": "raikou"
+        },
+        {
+          "time": 420.01666666661333,
+          "event": "minute",
+          "hp": 161.5099999999959,
+          "level": 12,
+          "kills": 820
+        },
+        {
+          "time": 480.01666666655876,
+          "event": "minute",
+          "hp": 136.60000000000858,
+          "level": 22,
+          "kills": 942
+        },
+        {
+          "time": 486.71666666655267,
+          "event": "legendBeaten",
+          "detail": "raikou"
+        },
+        {
+          "time": 540.0166666665042,
+          "event": "minute",
+          "hp": 164.22500000000028,
+          "level": 23,
+          "kills": 1121
+        },
+        {
+          "time": 570.0166666664769,
+          "event": "boss",
+          "detail": "entei"
+        },
+        {
+          "time": 592.5999999997897,
+          "event": "legendBeaten",
+          "detail": "entei"
+        },
+        {
+          "time": 600.0166666664496,
+          "event": "minute",
+          "hp": 132.37500000000622,
+          "level": 32,
+          "kills": 1501
+        },
+        {
+          "time": 660.016666666395,
+          "event": "minute",
+          "hp": 204.3250000000003,
+          "level": 36,
+          "kills": 1906
+        },
+        {
+          "time": 720.0166666663405,
+          "event": "boss",
+          "detail": "suicune"
+        },
+        {
+          "time": 720.0166666663405,
+          "event": "minute",
+          "hp": 191.52500000000194,
+          "level": 37,
+          "kills": 2441
+        },
+        {
+          "time": 748.8499999996476,
+          "event": "legendBeaten",
+          "detail": "suicune"
+        },
+        {
+          "time": 780.0166666662859,
+          "event": "minute",
+          "hp": 205,
+          "level": 49,
+          "kills": 2751
+        },
+        {
+          "time": 840.0166666662313,
+          "event": "minute",
+          "hp": 205,
+          "level": 52,
+          "kills": 3475
+        },
+        {
+          "time": 900.0166666661768,
+          "event": "boss",
+          "detail": "mewtwo"
+        },
+        {
+          "time": 900.0166666661768,
+          "event": "minute",
+          "hp": 205,
+          "level": 56,
+          "kills": 4160
+        },
+        {
+          "time": 934.966666666145,
+          "event": "legendBeaten",
+          "detail": "mewtwo"
+        },
+        {
+          "time": 934.966666666145,
+          "event": "victory",
+          "detail": ""
+        }
+      ],
+      "digest": "cf60f711",
+      "sameReplayEnd": true,
+      "replayFile": "full-run-charmander-41-replay.json"
+    }
+  ]
+}

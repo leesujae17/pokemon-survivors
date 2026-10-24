@@ -1,16 +1,17 @@
-import { accountState, accountsEnabled, onAccountChange, onGifts, signIn, syncSave } from '../account'
+import { accountState, accountsEnabled, onAccountChange, signIn, syncSave } from '../account'
 import { playCry, playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
 import { HATCHLINGS, isHatchling, PLAYABLE, PLAYABLE_IDS, type PlayableId } from '../data/hatchlings'
 import { POLL, SUPPORTER, type PollOptionId } from '../data/supporters'
 import { pendingPicks, pickShiny, ownsShiny, shinyChoices } from '../game/shinyPicks'
-import { canWalkWith, hallOf, isSupporter, parseCode, type Companion, type SupporterStatus, type WallEntry } from '../game/supporters'
+import { canWalkWith, hallOf, isSupporter, parseCode, supporterCount, type Companion, type SupporterStatus, type Wall, type WallEntry } from '../game/supporters'
 import { savedSupporterTier } from '../game/trainer'
 import { LOCALES, locale, t } from '../i18n'
+import { localName } from '../i18n/names'
 import { context2d } from '../engine/pixelart'
 import { eggIcon, giftIcon, heartIcon, medalIcon, pokeballIcon, sparkleIcon, supporterIcon } from '../render/art'
 import { cryUrl, drawPokemon, hasShiny, loadSpecies, portraitUrl, type SpeciesSprites } from '../render/sprites'
-import { ROUTES } from '../site/routes'
+import { pagePath } from '../site/routes'
 import { fetchPoll, fetchSupporterStatus, fetchWall, redeemCode, setSupporterPublic, vote } from '../supporters'
 import { h, later, rich } from './dom'
 import { hatchScene } from './incubator'
@@ -36,7 +37,7 @@ const longDay = (iso: string) => new Date(iso).toLocaleDateString(LOCALES[locale
 const supportUrl = () => {
   const s = accountState()
   const handle = s.kind === 'signedIn' ? s.handle : null
-  return `${ROUTES.support[locale()]}${handle ? `?u=${encodeURIComponent(handle)}` : ''}`
+  return `${pagePath('support', locale())}${handle ? `?u=${encodeURIComponent(handle)}` : ''}`
 }
 
 /* ---------------- Spatial navigation ---------------- */
@@ -86,7 +87,7 @@ type Cell = { id: PlayableId | null; shiny: boolean }
 
 /** A portrait to tap in a picker: the family's first stage, a Poké Ball for "none". */
 const cellButton = (c: Cell, extra: Node | null = null) => {
-  const name = c.id ? PLAYABLE[c.id].line[0].name : t().supporters.companionNone
+  const name = c.id ? localName(PLAYABLE[c.id].line[0].name) : t().supporters.companionNone
   return h(
     'button',
     { class: 'pick-cell', type: 'button', title: name, 'aria-label': name },
@@ -162,7 +163,7 @@ const shinyPicker = (root: HTMLElement, input: Input, actions: { play: (id: Play
     const def = PLAYABLE[id]
     playSfx('shiny')
     playCry(cryUrl(def.line[0].dex), 0.5)
-    const buttons = [h('button', { class: 'btn' }, m.play(def.name)), h('button', { class: 'btn' }, m.ok)]
+    const buttons = [h('button', { class: 'btn' }, m.play(localName(def.name))), h('button', { class: 'btn' }, m.ok)]
     const nav = menu(input, buttons, (i) => (playSfx('select'), later(i === 0 ? () => (o.dispose(), actions.play(id)) : o.close)), { horizontal: true })
     o.setNav(nav.off)
     o.el.replaceChildren(
@@ -170,7 +171,7 @@ const shinyPicker = (root: HTMLElement, input: Input, actions: { play: (id: Play
         'div',
         { class: 'dialog box pop supporters pick-reveal' },
         h('div', { class: 'portrait-wrap' }, h('img', { class: 'result-portrait', src: portraitUrl(def.line[0].dex, true), alt: '' }), h('img', { class: 'shiny-badge', src: sparkleIcon(), alt: 'Shiny' })),
-        h('p', { class: 'hatch-text' }, rich(m.picked(def.line[0].name)), h('small', {}, m.pickedNote)),
+        h('p', { class: 'hatch-text' }, rich(m.picked(localName(def.line[0].name))), h('small', {}, m.pickedNote)),
         h('div', { class: 'buttons' }, ...buttons),
       ),
     )
@@ -200,7 +201,7 @@ const shinyPicker = (root: HTMLElement, input: Input, actions: { play: (id: Play
         return { cell: { id, shiny: true }, el }
       })
     const footer: Action[] = [
-      ...(choices.length > 0 ? [{ label: picked ? m.pickConfirm(PLAYABLE[picked].line[0].name) : m.pickNone, run: () => (picked ? confirm() : undefined) }] : []),
+      ...(choices.length > 0 ? [{ label: picked ? m.pickConfirm(localName(PLAYABLE[picked].line[0].name)) : m.pickNone, run: () => (picked ? confirm() : undefined) }] : []),
       { label: m.back, run: o.close },
     ]
     const { box, nav, buttons } = pickerDialog(input, {
@@ -253,7 +254,7 @@ const companionPicker = (root: HTMLElement, input: Input, back: Back): Screen =>
           const companion = picked ? { id: picked, shiny: shiny && canShiny } : null
           updateSave((s) => ({ ...s, companion }))
           void syncSave()
-          toast(root, companion ? m.companionSaved(PLAYABLE[companion.id].line[0].name) : m.companionOff, 2200)
+          toast(root, companion ? m.companionSaved(localName(PLAYABLE[companion.id].line[0].name)) : m.companionOff, 2200)
           o.close()
         },
       },
@@ -304,7 +305,7 @@ const pollScreen = (root: HTMLElement, input: Input, mine: SupporterStatus | nul
         'button',
         { class: p.id === choice ? 'poll-row mine' : 'poll-row', type: 'button', disabled: !canVote },
         h('img', { src: portraitUrl(p.dex), alt: '' }),
-        h('span', { class: 'poll-name' }, p.name, p.id === choice && h('span', { class: 'tag tag-new' }, m.yourVote)),
+        h('span', { class: 'poll-name' }, localName(p.name), p.id === choice && h('span', { class: 'tag tag-new' }, m.yourVote)),
         h('span', { class: 'progress' }, h('span', { style: `width:${Math.round((n / total) * 100)}%` })),
         h('small', {}, votes ? m.votes(n) : '—'),
       )
@@ -316,7 +317,7 @@ const pollScreen = (root: HTMLElement, input: Input, mine: SupporterStatus | nul
           if (!next || next === 'denied') return toast(root, m.offline, 2200)
           choice = p.id
           playSfx('unlock')
-          toast(root, m.voted(p.name), 2000)
+          toast(root, m.voted(localName(p.name)), 2000)
           show(next.votes)
         },
       }
@@ -439,12 +440,12 @@ const legendCard = (e: WallEntry) => {
       )
   const el = h(
     'button',
-    { class: 'legend-card', type: 'button', 'aria-label': `${e.name} @${e.handle}` },
+    { class: 'legend-card', type: 'button', 'aria-label': `${localName(e.name)} @${e.handle}` },
     h('span', { class: 'legend-beam', 'aria-hidden': 'true' }),
     h('img', { class: 'legend-spark one', src: sparkleIcon(), alt: '' }),
     h('img', { class: 'legend-spark two', src: sparkleIcon(), alt: '' }),
     h('span', { class: 'legend-stage' }, ball, h('span', { class: 'legend-pedestal' })),
-    h('b', { class: 'legend-name' }, e.name),
+    h('b', { class: 'legend-name' }, localName(e.name)),
     h('small', { class: 'legend-handle' }, `@${e.handle}`),
     e.title && h('em', { class: 'legend-title' }, t().achievements.titles[e.title]),
   )
@@ -463,9 +464,9 @@ const fanChip = (e: WallEntry) => {
   const face = hallFace(e.pokemon)
   return h(
     'button',
-    { class: 'fan-chip', type: 'button', 'aria-label': `${e.name} @${e.handle}` },
+    { class: 'fan-chip', type: 'button', 'aria-label': `${localName(e.name)} @${e.handle}` },
     h('span', { class: 'fan-avatar' }, face ? hallPortrait(face) : h('img', { src: pokeballIcon(), class: 'ball', alt: '' })),
-    h('span', { class: 'fan-who' }, h('b', {}, e.name), h('small', {}, `@${e.handle}`)),
+    h('span', { class: 'fan-who' }, h('b', {}, localName(e.name)), h('small', {}, `@${e.handle}`)),
     h('img', { class: 'fan-heart', src: heartIcon(), alt: '' }),
   )
 }
@@ -526,7 +527,7 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
   /** The account's standing: undefined while it loads, null when the API can't say. */
   let status: SupporterStatus | null | undefined
   /** The wall: undefined while it loads, null offline. */
-  let wall: WallEntry[] | null | undefined
+  let wall: Wall | null | undefined
   let legends: ReturnType<typeof legendCard>[] = []
   let closed = false
 
@@ -641,7 +642,7 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
     const buttons: { el: HTMLElement; run: () => void }[] = []
     legends = []
     if (wall === undefined || wall === null) return { sections: [...sections, h('p', { class: `hall-note${wall === undefined ? ' blink' : ''}` }, wall === undefined ? m.loading : m.offline)], buttons }
-    const split = hallOf(wall)
+    const split = hallOf(wall.entries)
     legends = split.legends.map(legendCard)
     const empty = h('div', { class: 'legend-card empty' }, h('span', { class: 'legend-stage' }, h('span', { class: 'legend-pedestal' })), h('b', { class: 'legend-name' }, m.firstLegend))
     sections.push(
@@ -657,8 +658,10 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
       h(
         'section',
         { class: 'hall-fans' },
-        h('h3', { class: 'hall-label pink' }, m.fans(split.supporters.length)),
+        h('h3', { class: 'hall-label pink' }, m.fans(split.supporters.length + wall.hidden.supporter)),
         fans.length > 0 ? h('div', { class: 'fan-grid' }, ...fans.map((f) => f.el)) : h('p', { class: 'hall-note' }, m.wallEmpty),
+        // Supporters who chose to stay off the wall still count: the Hall says so, without naming them.
+        ...(wall.hidden.supporter + wall.hidden.gold > 0 ? [h('p', { class: 'hall-note' }, m.offWall(supporterCount(wall)))] : []),
       ),
     )
     buttons.push(...split.legends.map((e, i) => ({ el: legends[i]!.el, run: () => profile(e.handle) })), ...fans.map((f) => ({ el: f.el, run: () => profile(f.e.handle) })))
@@ -682,8 +685,6 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
   }
 
   const offState = onAccountChange(() => (loadStatus(), build()))
-  // A redeemed code's gifts land on the next sync: the shiny ticket and the companion show up then.
-  const offGifts = onGifts(() => build())
   const offKeys = input.onKey((key) => !sub && (key === 'Escape' || key === 'Backspace') && close())
 
   function dispose() {
@@ -691,7 +692,6 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
     sub?.dispose()
     nav?.off()
     offState()
-    offGifts()
     offKeys()
     el.remove()
   }
@@ -729,8 +729,8 @@ export const supportersScreen = (root: HTMLElement, input: Input, actions: Suppo
 export const creditsLine = () => {
   const el = h('p', { class: 'supporter-credits hidden' })
   void fetchWall().then((wall) => {
-    if (!wall || wall.length === 0) return
-    const names = [...wall].sort(() => Math.random() - 0.5).slice(0, SUPPORTER.credits).map((e) => e.name)
+    if (!wall || wall.entries.length === 0) return
+    const names = [...wall.entries].sort(() => Math.random() - 0.5).slice(0, SUPPORTER.credits).map((e) => localName(e.name))
     el.replaceChildren(h('img', { src: heartIcon(), alt: '' }), h('small', {}, t().supporters.credits), h('span', {}, names.join(' · ')))
     el.classList.remove('hidden')
   })

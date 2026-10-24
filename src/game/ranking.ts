@@ -1,5 +1,7 @@
 import type { TitleId } from '../data/achievements'
+import { BRANCHES, isBranch, type BranchId } from '../data/branches'
 import { PLAYABLE, type PlayableId } from '../data/hatchlings'
+import { isLegend } from '../data/legends'
 import { RUN_LENGTH } from '../data/waves'
 import { DAY_TIME_ZONE, isDayKey, type DayKey } from './day'
 import { isDifficulty, type Difficulty } from './difficulty'
@@ -28,6 +30,11 @@ export type RunResult = {
   starter: PlayableId
   /** Evolution stage reached (2 = final), so the boards show the form it ended in. */
   stage: number
+  /**
+   * The branching evolution it took (Espeon, Gallade…, `data/branches.ts`),
+   * null when it took none. An older game sends none: read as null.
+   */
+  branch: BranchId | null
   difficulty: Difficulty
   /** Seconds survived, endless overtime included. */
   time: number
@@ -61,6 +68,8 @@ export const RANKED = {
   window: 10 * 60,
   /** Start tokens never used are dropped after this many days. */
   tokenDays: 7,
+  /** Seeds the server deals are in [0, seedSpan): the 32 bits the simulation reads (`createRng`). */
+  seedSpan: 2 ** 32,
 } as const
 
 export const isPlayable = (v: unknown): v is PlayableId => typeof v === 'string' && Object.hasOwn(PLAYABLE, v)
@@ -68,6 +77,14 @@ export const isPlayable = (v: unknown): v is PlayableId => typeof v === 'string'
 const isOutcome = (v: unknown): v is RunOutcome => RUN_OUTCOMES.some((o) => o === v)
 
 const isWhole = (v: unknown, min: number, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max
+
+/**
+ * The branch a run of `starter` that reached `stage` can report: one of its
+ * family's, at a stage the run got to. Anything else (another family's, one
+ * it hasn't evolved into yet, garbage) reads as none.
+ */
+export const runBranch = (starter: PlayableId, stage: number, raw: unknown): BranchId | null =>
+  isBranch(raw) && BRANCHES[raw].line === starter && stage >= BRANCHES[raw].stage ? raw : null
 
 /** The most faints a run of `time` seconds can report (see `RANKED.maxKillRate`). */
 export const maxKills = (time: number) => Math.ceil(time * (RANKED.maxKillRate + (RANKED.killRateGrowth * time) / 60))
@@ -79,18 +96,37 @@ export const maxKills = (time: number) => Math.ceil(time * (RANKED.maxKillRate +
  */
 export const parseRunResult = (raw: unknown): RunResult | null => {
   if (!isRecord(raw)) return null
-  const { starter, stage, difficulty, time, outcome, level, kills, version } = raw
+  const { starter, stage, branch, difficulty, time, outcome, level, kills, version } = raw
   if (!isPlayable(starter) || !isDifficulty(difficulty) || !isOutcome(outcome)) return null
   if (typeof time !== 'number' || !Number.isFinite(time) || time < 0 || time > RANKED.maxTime) return null
   if (!isWhole(stage, 0, PLAYABLE[starter].line.length - 1) || !isWhole(level, 1, RANKED.maxLevel)) return null
   if (!isWhole(kills, 0, maxKills(time))) return null
   if (outcome === 'victory' && time < RUN_LENGTH) return null
   if (typeof version !== 'string' || version.length === 0 || version.length > 40) return null
-  return { starter, stage, difficulty, time, outcome, level, kills, version }
+  return { starter, stage, branch: runBranch(starter, stage, branch), difficulty, time, outcome, level, kills, version }
 }
 
 /** Whether `time` seconds of play fit in `elapsed` seconds of wall clock since the start token. */
 export const clockAllows = (elapsed: number, time: number) => time <= elapsed + RANKED.slack
+
+/** What a start token's row holds when its run reports: the seed dealt with it (null on rows from before the server dealt seeds) and what the run reported before, if it did. */
+export type IssuedRun = { seed: number | null; reported: Pick<RunResult, 'starter' | 'difficulty' | 'time' | 'outcome'> | null }
+
+/**
+ * Why a run's report doesn't fit its start token's row, or null when it does.
+ * `seed`: the replay played another seed than the one dealt (a row without
+ * one takes any). `mismatch`: the run reported before and this isn't it
+ * grown: another Pokémon or difficulty, a shorter run, or a longer one after
+ * anything but a victory (only endless mode goes on). So a short run can't
+ * keep its seed on hold to grow later.
+ */
+export const reportProblem = (row: IssuedRun, result: RunResult, seed: number): 'seed' | 'mismatch' | null => {
+  if (row.seed !== null && row.seed !== seed) return 'seed'
+  const before = row.reported
+  if (!before) return null
+  if (before.starter !== result.starter || before.difficulty !== result.difficulty || before.time > result.time) return 'mismatch'
+  return before.time < result.time && before.outcome !== 'victory' ? 'mismatch' : null
+}
 
 /** Quits in the first minute stay off the ranking: they'd only crowd the profile's recent runs. */
 export const rankable = (r: RunResult) => r.outcome !== 'quit' || r.time >= 60
@@ -99,6 +135,7 @@ export const rankable = (r: RunResult) => r.outcome !== 'quit' || r.time >= 60
 export const runResult = (g: Game, version: string): RunResult => ({
   starter: g.starter,
   stage: g.player.stage,
+  branch: g.branch,
   difficulty: g.difficulty,
   time: g.time,
   outcome: wonRun(g) ? 'victory' : g.phase === 'gameover' ? 'death' : 'quit',
@@ -112,7 +149,7 @@ export const runResult = (g: Game, version: string): RunResult => ({
 export const HANDLE = { min: 3, max: 20 } as const
 
 /** Handles that would read as the game speaking. */
-const RESERVED = new Set(['admin', 'api', 'me', 'mod', 'moderator', 'null', 'pokemon', 'pokemonsurvivors', 'staff', 'support', 'survivors', 'undefined'])
+const RESERVED = new Set(['admin', 'api', 'me', 'mod', 'moderator', 'null', 'pokemon', 'pokemonworld', 'staff', 'support', 'survivors', 'undefined'])
 
 export type HandleProblem = 'short' | 'long' | 'chars' | 'reserved'
 
@@ -185,24 +222,40 @@ export type BoardPeriod = (typeof BOARD_PERIODS)[number]
 
 export const isBoardPeriod = (v: unknown): v is BoardPeriod => BOARD_PERIODS.some((p) => p === v)
 
+/**
+ * The boards' two sides: the regular runs (`standard`) and the Legend mode's
+ * (`legend`, a legend played), each split by difficulty. The mode follows the
+ * Pokémon played, so a run can't report the wrong one.
+ */
+export const RUN_MODES = ['standard', 'legend'] as const
+
+export type RunMode = (typeof RUN_MODES)[number]
+
+export const isRunMode = (v: unknown): v is RunMode => RUN_MODES.some((m) => m === v)
+
+/** The boards a run of `starter` goes on. */
+export const runMode = (starter: PlayableId): RunMode => (isLegend(starter) ? 'legend' : 'standard')
+
 /** Players shown at the top of a board. */
 export const BOARD_SIZE = 50
 
 /**
- * One player's best run on a board. `at` is when the run started (ISO);
- * `verified` is null while the server hasn't re-simulated it yet (runs that
- * failed never show).
+ * One player's best run on a board. `at` is when the run started (ISO). Runs
+ * whose re-simulation failed never show.
  */
 export type BoardEntry = ProfileName & {
   rank: number
   starter: PlayableId
   stage: number
+  /** The branching evolution the run took (`RunResult.branch`). Missing from an older API. */
+  branch?: BranchId | null
   time: number
   outcome: RunOutcome
   at: string
-  verified: boolean | null
   /** The player's supporter badge (`game/supporters.ts`), null when they have none or hide it. Missing from an older API. */
   supporter?: SupporterTier | null
+  /** The run's id, to report it (`game/reports.ts`). Missing from an older API. */
+  run?: string
 }
 
 /** The top of a board, plus the asking player's own line (null if they're not on it). */
@@ -233,14 +286,24 @@ export const parseChallengePlace = (v: unknown): ChallengePlace | null => {
   return { day: v.day, official: v.official === true, rank: typeof v.rank === 'number' ? v.rank : null, total: v.total }
 }
 
-/** A run on a public profile (`verified` as on `BoardEntry`). */
-export type ProfileRun = { starter: PlayableId; stage: number; difficulty: Difficulty; time: number; outcome: RunOutcome; at: string; verified: boolean | null }
+/** A run on a public profile (`branch` as on `BoardEntry`). */
+export type ProfileRun = {
+  starter: PlayableId
+  stage: number
+  branch?: BranchId | null
+  difficulty: Difficulty
+  time: number
+  outcome: RunOutcome
+  at: string
+}
 
 /** What `/profiles/:handle` answers. `followed`: the asking player follows them; `self`: it's the asking player. */
 export type PublicProfile = ProfileName & {
   title: TitleId | null
   dex: { seen: number; caught: number }
   records: Partial<Record<Difficulty, ProfileRun>>
+  /** The Legend mode's records, by difficulty. Missing from an older API. */
+  legendRecords?: Partial<Record<Difficulty, ProfileRun>>
   recent: ProfileRun[]
   followers: number
   following: number

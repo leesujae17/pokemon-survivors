@@ -4,6 +4,7 @@ import type { WeatherId } from '../data/biomes'
 import { WEATHER } from '../data/weather'
 import type { Game } from '../game/types'
 import { art, lazy, toIconUrl } from './art'
+import { roomOf } from '../game/room'
 
 /**
  * Weather overlays, drawn in screen space over the world. Every particle is a
@@ -132,34 +133,52 @@ const FOG_LEVELS = 4
  * the GBA way to do a soft gradient. Built once per view size.
  */
 const fogVeil = (() => {
-  let cache: { key: string; canvas: PixelSprite } | null = null
+  let cache: { w: number; h: number; sight: number; canvas: PixelSprite } | null = null
   onCanvasReset(() => (cache = null))
-  return (w: number, h: number, sight: number) => {
-    const key = `${w}x${h}:${sight}`
-    if (cache?.key === key) return cache.canvas
+  const ready = (w: number, h: number, sight: number) => cache !== null && cache.w === w && cache.h === h && cache.sight === sight
+  const veil = (w: number, h: number, sight: number) => {
+    if (cache && ready(w, h, sight)) return cache.canvas
     const cw = w * 2
     const ch = h * 2
     const canvas = createCanvas(cw, ch)
     const vctx = context2d(canvas)
     const img = vctx.createImageData(cw, ch)
     const radius = Math.min(w, h) * sight
+    // The distance only depends on how far a pixel is from the center on each axis: one quarter's worth, mirrored.
+    const dist = new Float64Array((w + 1) * (h + 1))
+    for (let dy = 0; dy <= h; dy++) for (let dx = 0; dx <= w; dx++) dist[dy * (w + 1) + dx] = Math.hypot(dx, dy * 1.25) / radius
+    // Each band's opacity, worked out once.
+    const alphas = Array.from({ length: FOG_LEVELS + 2 }, (_, band) => Math.round((Math.min(band, FOG_LEVELS) / FOG_LEVELS) * FOG_MAX * 255))
+    const data = img.data
+    const [r, gr, b] = FOG_RGB
     for (let y = 0; y < ch; y++) {
+      const row = Math.abs(y - h) * (w + 1)
+      const dither = (y % 4) * 4
       for (let x = 0; x < cw; x++) {
-        const d = Math.hypot(x - w, (y - h) * 1.25) / radius
+        const d = dist[row + Math.abs(x - w)]!
         const k = Math.min(1, Math.max(0, (d - 0.55) / 0.75))
         const level = k * FOG_LEVELS
-        const band = Math.floor(level) + ((level % 1) * 16 > BAYER[(y % 4) * 4 + (x % 4)]! ? 1 : 0)
+        const band = Math.floor(level) + ((level % 1) * 16 > BAYER[dither + (x % 4)]! ? 1 : 0)
         const i = (y * cw + x) * 4
-        img.data[i] = FOG_RGB[0]
-        img.data[i + 1] = FOG_RGB[1]
-        img.data[i + 2] = FOG_RGB[2]
-        img.data[i + 3] = Math.round((Math.min(band, FOG_LEVELS) / FOG_LEVELS) * FOG_MAX * 255)
+        data[i] = r
+        data[i + 1] = gr
+        data[i + 2] = b
+        data[i + 3] = alphas[band]!
       }
     }
     vctx.putImageData(img, 0, 0)
-    return (cache = { key, canvas }).canvas
+    return (cache = { w, h, sight, canvas }).canvas
   }
+  return Object.assign(veil, { ready })
 })()
+
+/** Builds the fog veil for a view ahead of time (it takes longer than a frame). True if it built it. */
+export const warmFog = (w: number, h: number) => {
+  const sight = WEATHER.fog.sight ?? 0.42
+  if (fogVeil.ready(w, h, sight)) return false
+  fogVeil(w, h, sight)
+  return true
+}
 
 const fog = (ctx: Ctx, w: number, h: number, camX: number, camY: number, t: number, px: number, py: number) => {
   ctx.fillStyle = 'rgba(184,176,208,0.12)'
@@ -192,7 +211,7 @@ const drawOne = (ctx: Ctx, id: WeatherId, alpha: number, g: Game, camX: number, 
 
 /** Weather overlay for the frame, in screen space. The outgoing weather fades as the new one rolls in. */
 export const drawWeather = (ctx: Ctx, g: Game, camX: number, camY: number, t: number) => {
-  if (g.rift.arena) return
+  if (roomOf(g)) return
   const k = Math.min(1, (g.time - g.weather.since) / FADE)
   drawOne(ctx, g.weather.prev, 1 - k, g, camX, camY, t)
   drawOne(ctx, g.weather.id, k, g, camX, camY, t)

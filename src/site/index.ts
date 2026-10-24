@@ -1,4 +1,4 @@
-import { LOCALE_IDS, type Locale } from '../i18n'
+import { SITE_LOCALE_IDS, type SiteLocale } from '../i18n'
 import { changelogPage } from './pages/changelog'
 import { guidePage } from './pages/guide'
 import { legalPage } from './pages/legal'
@@ -8,7 +8,7 @@ import { PAGE_IDS, ROUTES, type PageId } from './routes'
 
 export { sitemap } from './routes'
 
-const RENDER: Record<PageId, (locale: Locale) => string> = {
+const RENDER: Record<PageId, (locale: SiteLocale) => string> = {
   pokedex: pokedexPage,
   guide: guidePage,
   changelog: changelogPage,
@@ -29,7 +29,7 @@ export type SitePage = {
  * time (and on request in dev), so the HTML ships complete, without client JS.
  */
 export const SITE_PAGES: readonly SitePage[] = PAGE_IDS.flatMap((id) =>
-  LOCALE_IDS.map((locale) => {
+  SITE_LOCALE_IDS.map((locale) => {
     const path = ROUTES[id][locale]
     return { path, file: `${path.slice(1)}index.html`, render: () => RENDER[id](locale) }
   }),

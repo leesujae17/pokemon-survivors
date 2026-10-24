@@ -1,0 +1,65 @@
+{
+  "url": "https://pokemon-survivors-mobile-gpt.leesujae.chatgpt.site/ko/",
+  "results": [
+    {
+      "width": 520,
+      "height": 964,
+      "touch": true,
+      "socialMenus": 0,
+      "keyboardMoves": 12,
+      "trainerMissionsReturn": true,
+      "partnerReturn": true,
+      "legends": 23,
+      "errors": [],
+      "popups": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "socialMenus": 0,
+      "keyboardMoves": 12,
+      "trainerMissionsReturn": true,
+      "partnerReturn": true,
+      "legends": 23,
+      "errors": [],
+      "popups": []
+    },
+    {
+      "width": 771,
+      "height": 964,
+      "touch": false,
+      "socialMenus": 0,
+      "keyboardMoves": 12,
+      "trainerMissionsReturn": true,
+      "partnerReturn": true,
+      "legends": 23,
+      "errors": [],
+      "popups": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "touch": true,
+      "socialMenus": 0,
+      "keyboardMoves": 12,
+      "trainerMissionsReturn": true,
+      "partnerReturn": true,
+      "legends": 23,
+      "errors": [],
+      "popups": []
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "touch": false,
+      "socialMenus": 0,
+      "keyboardMoves": 12,
+      "trainerMissionsReturn": true,
+      "partnerReturn": true,
+      "legends": 23,
+      "errors": [],
+      "popups": []
+    }
+  ]
+}

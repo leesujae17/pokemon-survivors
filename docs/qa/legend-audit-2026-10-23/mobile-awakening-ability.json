@@ -1,0 +1,38 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "ability",
+  "mode": "legend",
+  "time": 0.5666666666666668,
+  "starter": "articuno",
+  "awakening": 1,
+  "biome": "meadow",
+  "player": {
+    "x": 36,
+    "y": 0,
+    "hp": 160,
+    "level": 12,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 2.833333333333334,
+        "path": 0,
+        "walkedAt": 26.39999999999999
+      },
+      {
+        "id": "roost",
+        "level": 1,
+        "cooldown": 0.13333333333333347,
+        "path": 0,
+        "walkedAt": 29.99999999999999
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [],
+  "menu": "Lv 12\n1\n1\n00:00\n0\n₽ 0\n프리져\nLv12\nHP\n눈숨기\n160/160\n프리져의 특성이 깨어났어요!\n\n이번 판이 끝날 때까지 사용할 특성을 고르세요.\n\n아이스바디\n\n눈 속에서 초당 HP 1.5 회복. 눈 피해를 받지 않아요.\n\n날카로운눈\n\n습득 범위 +25, 투사체 속도 +15%.\n\n숨겨진 특성\n스나이퍼\n\n보스·엘리트에게 주는 데미지 +25%.\n\n눌러서 선택 · 길게 눌러 기술 확인"
+}

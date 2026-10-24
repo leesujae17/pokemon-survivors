@@ -1,9 +1,12 @@
 import manifest from '../data/sprites.generated.json'
 import { ENEMIES, type EnemyDef, type EnemyId } from '../data/enemies'
+import { BRANCHES, branchesOf, branchStage, type BranchId } from '../data/branches'
 import { HATCHLING_IDS, PLAYABLE, type PlayableId } from '../data/hatchlings'
 import { REGIONS, STARTER_IDS, type Region } from '../data/starters'
 import type { PokeType } from '../data/types'
-import { RIFT, RIFT_LEGENDS } from '../data/rifts'
+import { isRiftLegend, RIFT, type RiftLegend } from '../data/rifts'
+import { DOMAINS } from '../data/domains'
+import { GRAVEYARD, PLACE, PLACE_IDS, PLACES, type PlaceId } from '../data/places'
 import { SUMMONS } from '../data/traits'
 import { bossCandidates, EVENTS, RUN_LENGTH, STAGES, TRIO_IDS, TRIOS, type TrioId } from '../data/waves'
 import { ENDLESS, REAPER } from '../game/endless'
@@ -40,10 +43,11 @@ export type DexEntry = {
   region: Region
   sprites: Sprites
   /**
-   * `starter`: playable, a starter or an egg family (`role: 'egg'`); `wild` set when the species also roams the horde.
+   * `starter`: playable, a starter or an egg family (`role: 'egg'`); `wild` set when the species also roams the horde,
+   * `branch` when it's a stage a branching evolution can go to (`data/branches.ts`).
    * `event`: met at a map event (the fleeing Meowth), not in the horde.
    */
-  source: { kind: 'starter'; id: PlayableId; stage: number; wild?: EnemyId } | { kind: 'wild'; id: EnemyId } | { kind: 'event' }
+  source: { kind: 'starter'; id: PlayableId; stage: number; wild?: EnemyId; branch?: BranchId } | { kind: 'wild'; id: EnemyId } | { kind: 'event' }
 }
 
 /** Last national dex number of each generation, in `REGIONS` order. */
@@ -89,12 +93,20 @@ const base = (dex: number, name: string, types: readonly PokeType[]) => ({
 
 const wildByDex = new Map((Object.keys(ENEMIES) as EnemyId[]).map((id) => [ENEMIES[id].dex, id]))
 
-const playableEntries = (id: PlayableId, role: Role): DexEntry[] =>
-  PLAYABLE[id].line.map((stage, i) => ({
-    ...base(stage.dex, stage.name, stage.types),
-    role,
-    source: { kind: 'starter', id, stage: i, wild: wildByDex.get(stage.dex) },
-  }))
+/** A playable line's stages, then the branches its evolution can take (Eevee's eight, Gallade…), each at the stage it replaces. */
+const playableEntries = (id: PlayableId, role: Role): DexEntry[] => {
+  const branchOf = new Map<number, BranchId>(branchesOf(id).map((b) => [BRANCHES[b].dex, b]))
+  const stages = PLAYABLE[id].line.map((stage, i) => ({ stage, i }))
+  const branches = [...branchOf.values()].map((b) => ({ stage: branchStage(b), i: BRANCHES[b].stage }))
+  const seen = new Set<number>()
+  return [...stages, ...branches].flatMap(({ stage, i }) => {
+    if (seen.has(stage.dex)) return []
+    seen.add(stage.dex)
+    const branch = branchOf.get(stage.dex)
+    const source = { kind: 'starter', id, stage: i, wild: wildByDex.get(stage.dex), ...(branch ? { branch } : {}) } as const
+    return [{ ...base(stage.dex, stage.name, stage.types), role, source } satisfies DexEntry]
+  })
+}
 
 const wildEntry = (id: EnemyId): DexEntry => {
   const e = ENEMIES[id]
@@ -128,15 +140,17 @@ export type Appearance =
   | { kind: 'rift'; from: number }
   /** Hunts the player in endless mode from `at`. */
   | { kind: 'reaper'; at: number }
+  /** Lives in a place (`data/places.ts`), coming out from `from`; `boss` for the place's own boss. */
+  | { kind: 'place'; place: PlaceId; from: number; boss: boolean }
   /** Called in by a summoner (Nidoqueen's Nidoran). */
   | { kind: 'summoned'; by: EnemyId }
-
-const isRiftLegend = (id: EnemyId): boolean => RIFT_LEGENDS.some((l) => l === id)
+  /** Comes at the player in a legendary's domain (`by`'s rift): its crossing's retinue, adds it calls in or keepers of its barrier. */
+  | { kind: 'retinue'; by: EnemyId }
 
 /**
  * When an enemy can show up: the spawn-pool windows of the stages with a slot
  * of its tier (contiguous stages merged), the swarms (flyers only) and rings of
- * its tier or naming it, its boss events, rifts, the reaper and summons.
+ * its tier or naming it, its boss events, rifts, the reaper, places and summons.
  */
 export const appearances = (id: EnemyId): Appearance[] => {
   const def: EnemyDef = ENEMIES[id]
@@ -160,12 +174,35 @@ export const appearances = (id: EnemyId): Appearance[] => {
     if (e.tier !== def.tier || (e.kind === 'swarm' && !def.types.includes('flying'))) return []
     return [{ kind: e.kind, at: e.at, count: e.count }]
   })
-  const rift: Appearance[] = isRiftLegend(id) ? [{ kind: 'rift', from: RIFT.firstAt }] : []
+  const rift: Appearance[] = isRiftLegend(id) ? [{ kind: 'rift', from: RIFT.slots[0] }] : []
   const reaper: Appearance[] = id === REAPER ? [{ kind: 'reaper', at: ENDLESS.reaperAt }] : []
+  // A place's dwellers come out once the run's stage has their tier (never before the first entrance).
+  const placed = PLACE_IDS.flatMap((place): Appearance[] => {
+    if (place === 'graveyard' && id === GRAVEYARD.boss) return [{ kind: 'place', place, from: PLACE.firstAt, boss: true }]
+    const species: readonly EnemyId[] = PLACES[place].species
+    if (!species.includes(id)) return []
+    const stage = STAGES.findIndex((s) => s.cast.includes(def.tier ?? 1))
+    return [{ kind: 'place', place, from: Math.max(PLACE.firstAt, STAGES[stage - 1]?.until ?? 0), boss: false }]
+  })
   const summoned = (Object.keys(SUMMONS) as Array<keyof typeof SUMMONS>)
     .filter((by) => SUMMONS[by].includes(id))
     .map((by): Appearance => ({ kind: 'summoned', by }))
-  return [...windows, ...events, ...rift, ...reaper, ...summoned]
+  const retinue = (Object.keys(DOMAINS) as RiftLegend[])
+    .filter((by) => domainCast(by).includes(id))
+    .map((by): Appearance => ({ kind: 'retinue', by }))
+  return [...windows, ...events, ...rift, ...reaper, ...placed, ...summoned, ...retinue]
+}
+
+/** Everyone a legendary's domain brings besides its legendaries: the crossing's retinue, its adds and its barrier's keepers. */
+const domainCast = (legend: RiftLegend): readonly EnemyId[] => {
+  const d = DOMAINS[legend]
+  if (!d) return []
+  const phases = [...d.phases, ...(d.partner?.phases ?? [])]
+  const patterns = phases.flatMap((ph) => ph.patterns)
+  return [
+    ...d.crossing.retinue.members.map((m) => m.id),
+    ...patterns.flatMap((p) => (p.kind === 'summon' || p.kind === 'guard' ? p.enemies : [])),
+  ]
 }
 
 /** `m:ss` run clock, as shown on the HUD. */

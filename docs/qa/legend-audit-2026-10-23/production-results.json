@@ -1,0 +1,11 @@
+{
+  "origin": "http://127.0.0.1:4180",
+  "status": "passed",
+  "isolatedStorage": true,
+  "touchStartAndDraft": true,
+  "touchDragAndSpecialDispatched": true,
+  "pauseResume": true,
+  "devHooksAbsent": true,
+  "errors": [],
+  "missingAssets": []
+}

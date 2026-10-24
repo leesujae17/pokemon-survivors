@@ -13,7 +13,8 @@ import type { Roster } from './roster'
  * them come shiny (1 to 3 in most runs), where any other species meets a
  * fraction of one. Odds per spawn above the regular ones would overshoot.
  * It's a run input (`ReplayStart.outbreak`): the server checks it against
- * the day the run started (`outbreakFits`). Pure.
+ * the day the run started (`outbreakFits`), and deals a ranked run's with its
+ * token (`POST /runs`), so a wrong device clock can't pick another. Pure.
  */
 
 export const OUTBREAK = {
@@ -28,6 +29,9 @@ export const OUTBREAK_SPECIES: readonly EnemyId[] = (Object.keys(ENEMIES) as Ene
     return def.tier === OUTBREAK.tier && def.trait === undefined && def.boss !== true && hasShinySprite(def.dex)
   })
   .sort((a, b) => ENEMIES[a].dex - ENEMIES[b].dex)
+
+/** Whether an untrusted value (a replay, the API's answer) names a species that can break out. */
+export const isOutbreakSpecies = (v: unknown): v is EnemyId => OUTBREAK_SPECIES.some((id) => id === v)
 
 /** A seeded shuffle of the outbreak species: one cycle of days gives each one its day. */
 const cycleOrder = (cycle: number) => {
@@ -65,7 +69,8 @@ export const outbreakFits = (outbreak: EnemyId | null, startedAt: Date) => {
  * The run's cast with the outbreak in every stage, weighing as much as the
  * stage's heaviest species, so it's the most common Pokémon of the run.
  * Done after the draw, so the rest of the cast is the same either way. It
- * never runs (a whole horde of runners would be no outbreak).
+ * never runs or spits (a whole horde of runners would be no outbreak, and
+ * a species that only sometimes spits would be hard to read).
  */
 export const withOutbreak = (roster: Roster, outbreak: EnemyId | null): Roster => {
   if (outbreak === null) return roster
@@ -76,5 +81,6 @@ export const withOutbreak = (roster: Roster, outbreak: EnemyId | null): Roster =
       return [...pool.filter(([id]) => id !== outbreak), [outbreak, weight] as const]
     }),
     runners: roster.runners.map((id) => (id === outbreak ? null : id)),
+    spitters: roster.spitters.map((id) => (id === outbreak ? null : id)),
   }
 }

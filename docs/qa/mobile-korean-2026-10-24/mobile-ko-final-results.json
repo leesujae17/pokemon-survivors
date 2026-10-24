@@ -1,0 +1,81 @@
+{
+  "origin": "http://127.0.0.1:4183",
+  "results": [
+    {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "mobileDefault": true,
+      "tabs": {
+        "font": "14px",
+        "countFont": "18px",
+        "overflow": false
+      },
+      "menus": true,
+      "errors": []
+    },
+    {
+      "width": 510,
+      "height": 964,
+      "touch": false,
+      "mobileDefault": true,
+      "tabs": {
+        "font": "14px",
+        "countFont": "18px",
+        "overflow": false
+      },
+      "menus": true,
+      "errors": []
+    },
+    {
+      "width": 688,
+      "height": 964,
+      "touch": true,
+      "mobileDefault": true,
+      "tabs": {
+        "font": "14px",
+        "countFont": "18px",
+        "overflow": false
+      },
+      "menus": true,
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "touch": true,
+      "mobileDefault": true,
+      "tabs": {
+        "font": "14px",
+        "countFont": "16px",
+        "overflow": false
+      },
+      "menus": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "touch": false,
+      "mobileDefault": false,
+      "tabs": {
+        "font": "14px",
+        "countFont": "18px",
+        "overflow": false
+      },
+      "menus": true,
+      "errors": []
+    },
+    {
+      "twoFingerMoveAndSpecial": true,
+      "mega": true,
+      "lunge": true,
+      "pauseResume": true,
+      "fixedJoystick": true,
+      "errors": []
+    }
+  ],
+  "guide": true,
+  "changelog": true,
+  "entryFlashPrevented": true
+}

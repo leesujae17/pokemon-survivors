@@ -1,6 +1,7 @@
 import { playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
 import { formatNumber, formatPokeDollars, t } from '../i18n'
+import { localName } from '../i18n/names'
 import { STYLE_SLOTS, styleIds, stylePrice, type StyleId, type StyleSlot } from '../data/style'
 import { BAG_ITEMS, bagCount } from '../game/bag'
 import { msToNextDay } from '../game/day'
@@ -54,7 +55,7 @@ const rowShell = (picture: HTMLElement, name: string) => {
 const upgradeRows = (): Row[] =>
   UPGRADE_IDS.map((id) => {
     const def = UPGRADES[id]
-    const { el, sub, price } = rowShell(icon(upgradeIcon(id)), def.name)
+    const { el, sub, price } = rowShell(icon(upgradeIcon(id)), localName(def.name))
     sub.classList.add('pips')
     return {
       el,
@@ -71,7 +72,7 @@ const upgradeRows = (): Row[] =>
         const maxed = rank >= def.maxRank
         return {
           icon: icon(upgradeIcon(id)),
-          title: t().mart.rank(def.name, rank, def.maxRank),
+          title: t().mart.rank(localName(def.name), rank, def.maxRank),
           text: t().upgrades[id],
           action: maxed ? t().max : t().mart.buy(formatPokeDollars(upgradePrice(id, rank))),
           disabled: maxed || upgradePrice(id, rank) > save.wallet,
@@ -87,7 +88,7 @@ const counterItem = (counter: Counter, slot: CounterSlot) => {
     const tier = counter.egg
     return { name: t().eggs.tiers[tier], src: eggIcon(tier), text: t().mart.eggDescription(formatNumber(EGG_TIERS[tier].steps)) }
   }
-  return { name: BAG_ITEMS[slot].name, src: bagIcon(slot), text: t().bag.descriptions[slot] }
+  return { name: localName(BAG_ITEMS[slot].name), src: bagIcon(slot), text: t().bag.descriptions[slot] }
 }
 
 /** The day's counter: Lure, Incense and the egg of the day, one of them on sale, each with its stock. */
@@ -367,7 +368,7 @@ export const shop = (root: HTMLElement, input: Input, onClose: () => void): Scre
     h(
       'div',
       { class: 'dialog box pop mart' },
-      h('div', { class: 'mart-head' }, h('div', { class: 'dialog-title' }, 'POKé MART'), h('div', { class: 'mart-wallet' }, h('img', { src: coinIcon(0), alt: '' }), wallet)),
+      h('div', { class: 'mart-head' }, h('div', { class: 'dialog-title' }, localName('POKé MART')), h('div', { class: 'mart-wallet' }, h('img', { src: coinIcon(0), alt: '' }), wallet)),
       h('div', { class: 'tabs mart-tabs', role: 'tablist' }, ...tabs),
       intro,
       list,

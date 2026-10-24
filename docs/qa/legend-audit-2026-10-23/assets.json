@@ -1,0 +1,99 @@
+{
+  "roster": [
+    {
+      "id": "articuno",
+      "dex": 144
+    },
+    {
+      "id": "zapdos",
+      "dex": 145
+    },
+    {
+      "id": "moltres",
+      "dex": 146
+    },
+    {
+      "id": "raikou",
+      "dex": 243
+    },
+    {
+      "id": "entei",
+      "dex": 244
+    },
+    {
+      "id": "suicune",
+      "dex": 245
+    },
+    {
+      "id": "regirock",
+      "dex": 377
+    },
+    {
+      "id": "regice",
+      "dex": 378
+    },
+    {
+      "id": "registeel",
+      "dex": 379
+    },
+    {
+      "id": "mew",
+      "dex": 151
+    },
+    {
+      "id": "celebi",
+      "dex": 251
+    },
+    {
+      "id": "jirachi",
+      "dex": 385
+    },
+    {
+      "id": "mewtwo",
+      "dex": 150
+    },
+    {
+      "id": "lugia",
+      "dex": 249
+    },
+    {
+      "id": "hoOh",
+      "dex": 250
+    },
+    {
+      "id": "kyogre",
+      "dex": 382
+    },
+    {
+      "id": "groudon",
+      "dex": 383
+    },
+    {
+      "id": "rayquaza",
+      "dex": 384
+    },
+    {
+      "id": "dialga",
+      "dex": 483
+    },
+    {
+      "id": "latias",
+      "dex": 380
+    },
+    {
+      "id": "latios",
+      "dex": 381
+    },
+    {
+      "id": "deoxys",
+      "dex": 386
+    },
+    {
+      "id": "arceus",
+      "dex": 493
+    }
+  ],
+  "checkedFiles": 284,
+  "variants": 64,
+  "missing": []
+}

@@ -1,0 +1,45 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 1.016666666666668,
+  "starter": "articuno",
+  "awakening": 2,
+  "biome": "meadow",
+  "player": {
+    "x": 36,
+    "y": 0,
+    "hp": 200,
+    "level": 28,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 2.3833333333333355,
+        "path": 0,
+        "walkedAt": 26.39999999999999
+      },
+      {
+        "id": "roost",
+        "level": 1,
+        "cooldown": 0.15833333333333355,
+        "path": 0,
+        "walkedAt": 36
+      }
+    ]
+  },
+  "ability": "iceBody",
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 0,
+  "enemies": [
+    {
+      "id": "linoone",
+      "x": 292.44740554006205,
+      "y": -95.0570704383313,
+      "hp": 27
+    }
+  ],
+  "menu": "Lv 28\n1\n1\n00:01\n0\n₽ 0\n프리져\nLv28\nHP\n아이스바디\n200/200\n필살기\n프리져 각성! 힘이 더욱 강해졌어요.\n프리져의 특성은 아이스바디!\n프리져 각성! 힘이 더욱 강해졌어요."
+}

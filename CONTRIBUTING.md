@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for wanting to help! Pokémon Survivors is a hobby project, so the best contributions are small, focused and easy to review.
+Thanks for wanting to help! Pokémon World is a hobby project, so the best contributions are small, focused and easy to review.
 
 ## Issues
 

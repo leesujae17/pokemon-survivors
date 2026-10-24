@@ -2,7 +2,7 @@ import { context2d, createCanvas, onCanvasReset, type PixelSprite } from '../eng
 import { PICKUPS } from './art'
 
 /**
- * The "POKéMON SURVIVORS" logo as pixel art: the game font rasterized at its
+ * The "POKéMON WORLD" logo as pixel art: the game font rasterized at its
  * native 8px grid (16px for the chunky top line), thresholded to hard pixels,
  * then outlined and drop-shadowed like a sprite.
  */
@@ -80,8 +80,9 @@ const lettering = (mask: PixelSprite, fill: PixelSprite, outline: string, thickn
 const build = () => {
   const topMask = textMask('POKéMON', 16, 0)
   const top = lettering(topMask, banded(topMask, [['#fff070', 0.2], ['#ffcb05', 0.55], ['#f0a000', 0.25]]), '#2a5aa8', 2, 3)
-  const bottomMask = textMask('SURVIVORS', 8, 2)
-  const bottom = lettering(bottomMask, banded(bottomMask, [['#ffffff', 0.6], ['#d0d8f0', 0.4]]), '#c82828', 1, 2)
+  // 16px like the top line: at 8px the font's W has 1px gaps that the outline fills, and it reads as a block.
+  const bottomMask = textMask('WORLD', 16, 0)
+  const bottom = lettering(bottomMask, banded(bottomMask, [['#ffffff', 0.6], ['#d0d8f0', 0.4]]), '#c82828', 2, 3)
   const ball = PICKUPS.pokeball()
   const gap = 4
   const bottomRow = bottom.width + (ball.width + gap) * 2

@@ -1,6 +1,7 @@
 import { GIFT_TITLES, type GiftTitleId } from '../data/achievements'
+import { parseTitle } from './achievements'
 import { HATCHLING_IDS, HATCHLINGS, type HatchlingId } from '../data/hatchlings'
-import { STYLE_SLOTS, styleIds, type StyleId, type StyleSlot } from '../data/style'
+import { STYLE_SLOTS, styleIds, stylePrice, type StyleId, type StyleSlot } from '../data/style'
 import { parseHandle } from './ranking'
 import { markHatch } from './dex'
 import { EGG_TIER_IDS, EGG_TIERS, EGGS, grantEgg, type EggTier, type Hatch } from './eggs'
@@ -9,7 +10,7 @@ import { isRecord, wholeNumber } from './parse'
 import { mergeRibbons, parseRibbon, type Ribbon } from './ribbons'
 import { isSupporterTier, type SupporterTier } from './supporters'
 import { grantShinyPick } from './shinyPicks'
-import { equipStyle, grantStyle, type StyleSave } from './style'
+import { equipStyle, grantStyle, parseStyle, type StyleSave } from './style'
 
 /**
  * Presente Misterioso (Mystery Gift): the API keeps an inbox per player
@@ -39,16 +40,25 @@ export type GiftKind = GiftContent['kind']
 
 /**
  * Why it came: an invite's welcome (from the inviter's handle), friends
- * brought, a donation (`game/supporters.ts`), or a present from the game's
- * admin (`game/admin.ts`, from their handle).
+ * brought, a donation (`game/supporters.ts`), a present from the game's
+ * admin (`game/admin.ts`, from their handle), or joining the community
+ * Discord with the account linked (`DISCORD_GIFT`).
  */
 export type GiftReason =
   | { kind: 'welcome'; from: string | null }
   | { kind: 'friends'; count: number }
   | { kind: 'support'; tier: SupporterTier }
   | { kind: 'staff'; from: string | null }
+  | { kind: 'discord' }
 
 export type Gift = { id: string; content: GiftContent; reason: GiftReason | null }
+
+/**
+ * The thank-you for joining the community Discord: a shiny Noibat (Echoed
+ * Voice, in Discord's purple), once per account, when linking puts the
+ * player in the server. The Discord screen shows it before they link.
+ */
+export const DISCORD_GIFT = { kind: 'shinyHatch', family: 'noibat' } as const satisfies GiftContent
 
 /** Most coins one gift may bring. */
 const MAX_COINS = 100_000
@@ -102,6 +112,7 @@ const parseReason = (v: unknown): GiftReason | null => {
   if (v.kind === 'friends') return { kind: 'friends', count: wholeNumber(v.count) }
   if (v.kind === 'support' && isSupporterTier(v.tier)) return { kind: 'support', tier: v.tier }
   if (v.kind === 'staff') return { kind: 'staff', from: parseHandle(v.from) }
+  if (v.kind === 'discord') return { kind: 'discord' }
   return null
 }
 
@@ -176,6 +187,16 @@ export const applyGift = (save: Save, gift: Gift): GiftOutcome => {
   return { status: 'applied', save: { ...given.save, gifts: [...given.save.gifts, gift.id] }, hatch: given.hatch }
 }
 
+/**
+ * The gift to open next of those waiting: the oldest that can land now, else
+ * the oldest (`blocked`: an egg waiting for room in the incubator). Null when none waits.
+ */
+export const giftToOpen = (save: Save, waiting: readonly Gift[]): { gift: Gift; blocked: boolean } | null => {
+  const open = waiting.find((g) => applyGift(save, g).status !== 'wait')
+  const gift = open ?? waiting[0]
+  return gift ? { gift, blocked: !open } : null
+}
+
 /* ---------------- Save field ---------------- */
 
 /** The save's `gifts`: the ids of the gifts applied, without duplicates. */
@@ -183,3 +204,33 @@ export const parseClaimedGifts = (v: unknown): string[] => (Array.isArray(v) ? [
 
 /** Both lists in one (a union), sorted so the merge comes out the same either way. */
 export const mergeClaimedGifts = (a: readonly string[], b: readonly string[]): string[] => [...new Set([...a, ...b])].sort()
+
+/* ---------------- What only a gift brings ---------------- */
+
+/**
+ * `save` with only the gift-only rewards the API really sent: `given` is
+ * every gift of the player (claimed or not). Gift titles, ribbons, shiny
+ * tickets and the styles never sold (a `null` price) can't be earned on the
+ * device, so whatever else a save lists came from editing it. The equipped
+ * title and styles fall back when they go, and so does the companion with the
+ * Supporter title. The API runs it on every push.
+ */
+export const keepGiven = (save: Save, given: readonly Pick<Gift, 'id' | 'content'>[]): Save => {
+  const contents = given.map((g) => g.content)
+  const titles = save.titles.filter((t) => contents.some((c) => c.kind === 'title' && c.title === t))
+  const ribbons = mergeRibbons([], contents.flatMap((c) => (c.kind === 'ribbon' && save.ribbons.some((r) => r.day === c.ribbon.day) ? [c.ribbon] : [])))
+  const tickets = new Set(given.flatMap((g) => (g.content.kind === 'shinyPick' ? [g.id] : [])))
+  const styles = contents.flatMap((c) => (c.kind === 'style' ? [c.style] : []))
+  const kept = <S extends StyleSlot>(slot: S, ids: readonly StyleId<S>[]) =>
+    ids.filter((id) => stylePrice(slot, id) !== null || styles.some((s) => s.slot === slot && s.id === id))
+  const owned = { frame: kept('frame', save.style.owned.frame), background: kept('background', save.style.owned.background), wallpaper: kept('wallpaper', save.style.owned.wallpaper) }
+  return {
+    ...save,
+    titles,
+    title: parseTitle(save.title, save.achievements.unlocked, titles),
+    ribbons,
+    shinyPicks: save.shinyPicks.filter((p) => tickets.has(p.id)),
+    style: parseStyle({ owned, equipped: save.style.equipped }),
+    companion: titles.includes('supporter') ? save.companion : null,
+  }
+}

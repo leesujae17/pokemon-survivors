@@ -1,19 +1,22 @@
 import { bodyOf, type Body } from '../data/bodies'
 import type { MegaForm } from '../data/megas'
+import type { LegendForm } from '../data/legends'
 import manifest from '../data/sprites.generated.json'
 import { createCanvas, context2d, fromStrings, onCanvasReset } from '../engine/pixelart'
 import type { Dir8 } from '../engine/math'
 
 /**
  * Loader/renderer for PMD SpriteCollab sheets. Each sheet has 8 rows (one per
- * direction) and N columns (frames). Durations are in 1/60s ticks.
+ * direction) and N columns (frames). Durations are in 1/60s ticks. `Fly` is a
+ * flyer's wingbeat up in the sky, for the species SpriteCollab has one for.
  */
-export type AnimName = 'Walk' | 'Idle' | 'Hurt'
+export type AnimName = 'Walk' | 'Idle' | 'Hurt' | 'Fly'
 export type Dex = number
 
 type Sheet = {
   img: HTMLImageElement | HTMLCanvasElement
-  white: HTMLCanvasElement
+  /** The sheet's white silhouette, made on first use (`whiteOf`). */
+  white: HTMLCanvasElement | null
   fw: number
   fh: number
   durations: readonly number[]
@@ -22,7 +25,7 @@ type Sheet = {
 
 export type SpeciesSprites = {
   dex: Dex
-  anims: Record<AnimName, Sheet>
+  anims: Record<Exclude<AnimName, 'Fly'>, Sheet> & { Fly?: Sheet }
   portrait: HTMLImageElement
   cry: string
   /** Distance from frame center down to the feet, in px. */
@@ -46,8 +49,11 @@ type Manifest = typeof manifest
 /** An alternate form with its own sheets (`FORMS` in scripts/dex.mjs), like Aegislash's `blade`. Inferred from the manifest. */
 export type Form = { [K in keyof Manifest]: Manifest[K] extends { forms: infer F } ? keyof F : never }[keyof Manifest]
 
-/** A form the game may ask for: one with sheets, or a Mega's, whose sheets SpriteCollab may not have yet (then the normal ones stand in). */
-type FormKey = Form | MegaForm
+/**
+ * A form the game may ask for: one with sheets, or a Mega's or a legend's (Primal Kyogre, Deoxys's
+ * formes), whose sheets may not be downloaded yet (then the normal ones stand in).
+ */
+export type FormKey = Form | MegaForm | LegendForm
 
 const base = (dex: Dex) => `${import.meta.env.BASE_URL}assets/pokemon/${dex}`
 /** Alternate forms live in a `<form>/` subfolder, shinies in a `shiny/` one below the form's, each with their own sheets. */
@@ -62,13 +68,16 @@ const manifestVariant = (dex: Dex, shiny: boolean, form?: FormKey) => {
 
 export const hasShiny = (dex: Dex) => MANIFEST[String(dex)]?.shiny !== undefined
 
-const loadImage = (src: string) =>
-  new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error(`Failed to load ${src}`))
-    img.src = src
-  })
+/** Loads an image and decodes it off the main thread, so its first draw (mid-run) doesn't stall a frame. */
+const loadImage = (src: string) => {
+  const img = new Image()
+  img.src = src
+  // A browser that can't decode ahead (a rejected `decode` on an image that did load) still gets the image.
+  return img.decode().then(
+    () => img,
+    () => (img.complete && img.naturalWidth > 0 ? img : Promise.reject(new Error(`Failed to load ${src}`))),
+  )
+}
 
 /** Solid white silhouette used for hit flashes and the evolution sequence. */
 const silhouette = (img: HTMLImageElement | HTMLCanvasElement) => {
@@ -80,6 +89,13 @@ const silhouette = (img: HTMLImageElement | HTMLCanvasElement) => {
   ctx.fillRect(0, 0, img.width, img.height)
   return canvas
 }
+
+/**
+ * The sheet's silhouette, made the first time a hit flash, tint or outline draws it. Made up front,
+ * every loaded sheet kept one: the run's whole horde, the menus' starters, shinies and forms, over
+ * 100 MB of canvases seconds into a run, past what iOS lets a page hold (`getContext` then fails).
+ */
+const whiteOf = (sheet: Sheet) => (sheet.white ??= silhouette(sheet.img))
 
 const tints = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>()
 
@@ -125,7 +141,7 @@ const fetchSpecies = async (dex: Dex, shiny: boolean, form?: FormKey): Promise<S
     const img = await loadImage(`${dir}/${anims[name] ? name : 'Walk'}.png`)
     return {
       img,
-      white: silhouette(img),
+      white: null,
       fw: meta.frameWidth,
       fh: meta.frameHeight,
       durations: meta.durations,
@@ -133,12 +149,12 @@ const fetchSpecies = async (dex: Dex, shiny: boolean, form?: FormKey): Promise<S
     }
   }
 
-  const [Walk, Idle, Hurt] = await Promise.all([loadSheet('Walk'), loadSheet('Idle'), loadSheet('Hurt')])
+  const [Walk, Idle, Hurt, Fly] = await Promise.all([loadSheet('Walk'), loadSheet('Idle'), loadSheet('Hurt'), anims.Fly ? loadSheet('Fly') : null])
   // A missing portrait shouldn't block a run: fall back to the walk sheet. Forms ship none and use the normal one.
   const portrait = await loadImage(form ? portraitUrl(dex, shiny) : `${dir}/portrait.png`).catch(() => loadImage(`${dir}/Walk.png`))
   const sprites: SpeciesSprites = {
     dex,
-    anims: { Walk, Idle, Hurt },
+    anims: { Walk, Idle, Hurt, ...(Fly && { Fly }) },
     portrait,
     cry: cryUrl(dex, form),
     // A form's own body only places its sheets; hitboxes keep the species' `bodyOf`.
@@ -186,12 +202,100 @@ let puff: Sheet | null = null
 const standIns = new Map<Dex, SpeciesSprites>()
 
 // A GPU reset blanks the silhouettes (and their tints, keyed by them) and the puff, all canvases.
-// The sheets are images and survive, so the silhouettes are redrawn from them.
+// The sheets are images and survive, so the silhouettes are redrawn from them when next drawn.
 onCanvasReset(() => {
-  for (const s of cache.values()) for (const sheet of Object.values(s.anims)) sheet.white = silhouette(sheet.img)
+  for (const s of cache.values()) for (const sheet of Object.values(s.anims)) sheet.white = null
   puff = null
   standIns.clear()
 })
+
+/* ---------------- Fitting big sprites ---------------- */
+
+/**
+ * One frame of a sheet shrunk by `k` (< 1) the pixel-art way: each pixel of
+ * the smaller frame takes the commonest opaque color of the block it covers
+ * (the darker one on a tie, so outlines hold), or stays clear when most of the
+ * block is. Hard-edged, no blending.
+ */
+const shrinkFrame = (src: ImageData, sx: number, sy: number, fw: number, fh: number, out: ImageData, ox: number, oy: number, w: number, h: number) => {
+  const counts = new Map<number, number>()
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const x0 = sx + Math.floor((x * fw) / w)
+      const x1 = sx + Math.max(Math.floor((x * fw) / w) + 1, Math.floor(((x + 1) * fw) / w))
+      const y0 = sy + Math.floor((y * fh) / h)
+      const y1 = sy + Math.max(Math.floor((y * fh) / h) + 1, Math.floor(((y + 1) * fh) / h))
+      counts.clear()
+      let opaque = 0
+      for (let yy = y0; yy < y1; yy++) {
+        for (let xx = x0; xx < x1; xx++) {
+          const i = (yy * src.width + xx) * 4
+          if (src.data[i + 3]! < 128) continue
+          opaque++
+          const rgb = (src.data[i]! << 16) | (src.data[i + 1]! << 8) | src.data[i + 2]!
+          counts.set(rgb, (counts.get(rgb) ?? 0) + 1)
+        }
+      }
+      if (opaque * 2 < (x1 - x0) * (y1 - y0)) continue
+      let best = 0
+      let most = 0
+      for (const [rgb, n] of counts) {
+        const darker = ((rgb >> 16) & 255) + ((rgb >> 8) & 255) + (rgb & 255) < ((best >> 16) & 255) + ((best >> 8) & 255) + (best & 255)
+        if (n > most || (n === most && darker)) [best, most] = [rgb, n]
+      }
+      const o = ((oy + y) * out.width + ox + x) * 4
+      out.data[o] = (best >> 16) & 255
+      out.data[o + 1] = (best >> 8) & 255
+      out.data[o + 2] = best & 255
+      out.data[o + 3] = 255
+    }
+  }
+}
+
+/** A whole sheet shrunk frame by frame (`shrinkFrame`). */
+const shrinkSheet = (sheet: Sheet, k: number): Sheet => {
+  const cols = Math.round(sheet.img.width / sheet.fw)
+  const rows = Math.round(sheet.img.height / sheet.fh)
+  const fw = Math.max(1, Math.round(sheet.fw * k))
+  const fh = Math.max(1, Math.round(sheet.fh * k))
+  const read = context2d(createCanvas(sheet.img.width, sheet.img.height))
+  read.drawImage(sheet.img, 0, 0)
+  const src = read.getImageData(0, 0, sheet.img.width, sheet.img.height)
+  const canvas = createCanvas(cols * fw, rows * fh)
+  const ctx = context2d(canvas)
+  const out = ctx.createImageData(canvas.width, canvas.height)
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) shrinkFrame(src, c * sheet.fw, r * sheet.fh, sheet.fw, sheet.fh, out, c * fw, r * fh, fw, fh)
+  ctx.putImageData(out, 0, 0)
+  return { ...sheet, img: canvas, white: silhouette(canvas), fw, fh }
+}
+
+let fits = new WeakMap<SpeciesSprites, SpeciesSprites>()
+onCanvasReset(() => {
+  fits = new WeakMap()
+})
+
+/**
+ * Sprites no wider than `maxW` px of body: a bigger species (Lugia's wings
+ * span 79 px) is shrunk once, the pixel-art way, and cached. Smaller ones and
+ * the dust puff of a species still downloading come back as they are.
+ */
+export const fitSprites = (s: SpeciesSprites, maxW: number): SpeciesSprites => {
+  if (s.bodyW <= maxW || standIns.get(s.dex) === s) return s
+  let fit = fits.get(s)
+  if (!fit) {
+    const k = maxW / s.bodyW
+    const { Walk, Idle, Hurt, Fly } = s.anims
+    fit = {
+      ...s,
+      anims: { Walk: shrinkSheet(Walk, k), Idle: shrinkSheet(Idle, k), Hurt: shrinkSheet(Hurt, k), ...(Fly && { Fly: shrinkSheet(Fly, k) }) },
+      footY: Math.round(s.footY * k),
+      bodyW: Math.round(s.bodyW * k),
+      bodyH: Math.round(s.bodyH * k),
+    }
+    fits.set(s, fit)
+  }
+  return fit
+}
 
 /** Downloads `sprites` already kicked off: dex numbers (normal forms) and alternate form cache keys. */
 const requested = new Set<Dex | string>()
@@ -208,7 +312,7 @@ const pendingSprites = (dex: Dex): SpeciesSprites => {
       const frame = fromStrings(PUFF, { 1: '#6c7058', 2: '#b0b098', 3: '#e0e0c8' })
       const img = createCanvas(frame.width, frame.height * 8)
       for (let row = 0; row < 8; row++) context2d(img).drawImage(frame, 0, row * frame.height)
-      puff = { img, white: silhouette(img), fw: frame.width, fh: frame.height, durations: [60], totalTicks: 60 }
+      puff = { img, white: null, fw: frame.width, fh: frame.height, durations: [60], totalTicks: 60 }
     }
     // The puff stands where the Pokémon will: same feet and body as its real sprite.
     s = { dex, anims: { Walk: puff, Idle: puff, Hurt: puff }, portrait: new Image(), cry: cryUrl(dex), ...bodyOf(dex) }
@@ -303,7 +407,7 @@ export const drawPokemon = (
   y: number,
   opts: DrawOpts = {},
 ) => {
-  const sheet = s.anims[anim]
+  const sheet = s.anims[anim] ?? s.anims.Walk
   const frame = frameIndex(sheet, seconds, opts.loop ?? true)
   const sx = frame * sheet.fw
   const sy = dir * sheet.fh
@@ -316,7 +420,7 @@ export const drawPokemon = (
   const flash = opts.flash ?? 0
   if (alpha !== 1) ctx.globalAlpha = alpha
   if (opts.outline) {
-    const edge = tinted(sheet.white, opts.outline)
+    const edge = tinted(whiteOf(sheet), opts.outline)
     ctx.drawImage(edge, sx, sy, sheet.fw, sheet.fh, dx - 1, dy, dw, dh)
     ctx.drawImage(edge, sx, sy, sheet.fw, sheet.fh, dx + 1, dy, dw, dh)
     ctx.drawImage(edge, sx, sy, sheet.fw, sheet.fh, dx, dy - 1, dw, dh)
@@ -326,11 +430,15 @@ export const drawPokemon = (
   const tint = opts.tint
   if (tint && tint.amount > 0 && flash < 1) {
     ctx.globalAlpha = alpha * Math.min(1, tint.amount)
-    ctx.drawImage(tinted(sheet.white, tint.color), sx, sy, sheet.fw, sheet.fh, dx, dy, dw, dh)
+    ctx.drawImage(tinted(whiteOf(sheet), tint.color), sx, sy, sheet.fw, sheet.fh, dx, dy, dw, dh)
   }
   if (flash > 0) {
     ctx.globalAlpha = alpha * Math.min(1, flash)
-    ctx.drawImage(sheet.white, sx, sy, sheet.fw, sheet.fh, dx, dy, dw, dh)
+    ctx.drawImage(whiteOf(sheet), sx, sy, sheet.fw, sheet.fh, dx, dy, dw, dh)
   }
   ctx.globalAlpha = 1
 }
+
+/** `key` as one of `dex`'s alternate forms (a boss phase's `form`), if the manifest has it. */
+export const formOf = (dex: Dex, key: string | undefined): Form | undefined =>
+  key !== undefined && MANIFEST[String(dex)]?.forms?.[key] ? (key as Form) : undefined

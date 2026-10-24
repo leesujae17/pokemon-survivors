@@ -28,11 +28,30 @@ describe('achievements', () => {
     expect(recordAchievements(first.achievements, summary({ kills: 5 }), null).unlocked).toEqual([])
   })
 
+  it('count Alphas toward their own medals, the gold one with the Alpha Hunter title', () => {
+    const first = recordAchievements(NO_ACHIEVEMENTS, summary({ alphaKills: 25 }), null)
+    expect(first.unlocked).toEqual(['firstRun', 'alpha1', 'alpha25'])
+    const later = recordAchievements(first.achievements, summary({ alphaKills: 75 }), null)
+    expect(later.unlocked).toEqual(['alpha100'])
+    expect(ACHIEVEMENTS.alpha100).toMatchObject({ medal: 'gold', title: true })
+  })
+
   it('track region wins and the grass/fire/water trio', () => {
     let save = NO_ACHIEVEMENTS
     for (const starter of ['bulbasaur', 'cyndaquil', 'mudkip'] as const) save = recordAchievements(save, summary({ starter, victory: true }), null).achievements
     expect(save.unlocked).toEqual(expect.arrayContaining(['champion', 'trio', 'kanto', 'johto', 'hoenn']))
     expect(achievementProgress(save.lifetime, 'regions')).toEqual({ value: 3, target: 9 })
+  })
+
+  it('make an explorer of whoever clears every place, over as many runs as it takes', () => {
+    const cave = recordAchievements(NO_ACHIEVEMENTS, summary({ places: ['cave'], placeClears: 1 }), null)
+    expect(cave.unlocked).toContain('place1')
+    const again = recordAchievements(cave.achievements, summary({ places: ['cave', 'graveyard'], placeClears: 2 }), null)
+    expect(again.unlocked).not.toContain('explorer')
+    const sky = recordAchievements(again.achievements, summary({ starter: 'pidgey', places: ['sky'], placeClears: 1 }), null)
+    expect(sky.unlocked).toContain('explorer')
+    expect(sky.achievements.lifetime).toMatchObject({ placeClears: 4, places: ['cave', 'graveyard', 'sky'] })
+    expect(parseAchievements(JSON.parse(JSON.stringify(sky.achievements))).lifetime.places).toEqual(['cave', 'graveyard', 'sky'])
   })
 
   it('pay missions and medals into the wallet', () => {

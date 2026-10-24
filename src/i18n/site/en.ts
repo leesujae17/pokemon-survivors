@@ -1,3 +1,4 @@
+import type { BlastSafe } from '../../data/bosses'
 import type { SiteMessages } from './pt'
 
 /** Number in English format (`1,250`, `0.75`). */
@@ -24,7 +25,7 @@ export const siteEn: SiteMessages = {
   },
   footer: {
     disclaimer:
-      'Pokémon Survivors is an unofficial, free, non-commercial fan game. It is not affiliated with, endorsed, sponsored or approved by Nintendo, The Pokémon Company, GAME FREAK, Creatures or Spike Chunsoft. Pokémon and Pokémon character names are trademarks of Nintendo.',
+      'Pokémon World is an unofficial, free, non-commercial fan game. It is not affiliated with, endorsed, sponsored or approved by Nintendo, The Pokémon Company, GAME FREAK, Creatures or Spike Chunsoft. Pokémon and Pokémon character names are trademarks of Nintendo.',
     legal: 'Legal and privacy',
     credits: 'Credits',
     source: 'Source on GitHub',
@@ -40,12 +41,12 @@ export const siteEn: SiteMessages = {
   },
 
   pokedex: {
-    title: 'Pokémon Survivors Pokédex: starters, enemies, bosses and legendaries',
+    title: 'Pokémon World Pokédex: starters, enemies, bosses and legendaries',
     description:
-      'Every Pokémon in Pokémon Survivors with animated and shiny sprites: the 27 starters and the 55 egg families with their evolutions, wild enemies, bosses and legendaries. Types, in-game stats, moves, specials and when each one shows up.',
+      'Every Pokémon in Pokémon World with animated and shiny sprites: the 27 starters and the 55 egg families with their evolutions, wild enemies, bosses and legendaries. Types, in-game stats, moves, specials and when each one shows up.',
     h1: 'Pokédex',
     intro: (count: number) =>
-      `All ${count} Pokémon in Pokémon Survivors, with the game's own numbers: starters from every region, the families that hatch from eggs and their evolutions, the wild horde, the bosses and the legendaries. Hover (or tap) to see the sprite walk, and use ★ to see the shiny.`,
+      `All ${count} Pokémon in Pokémon World, with the game's own numbers: starters from every region, the families that hatch from eggs and their evolutions, the wild horde, the bosses and the legendaries. Hover (or tap) to see the sprite walk, and use ★ to see the shiny.`,
     filters: 'Filters',
     search: 'Search',
     searchPlaceholder: 'Name or number',
@@ -74,6 +75,7 @@ export const siteEn: SiteMessages = {
     special: 'Special attack',
     specialFinal: 'At the final evolution',
     learnset: 'Moves it learns',
+    learnStart: 'from the start',
     wildStats: { hp: 'HP', damage: 'Contact damage', speed: 'Speed', xp: 'EXP' },
     eventNote: 'Shows up as a map event: it runs from you and drops coins with every hit. Knock it out before it escapes for the Pay Day jackpot.',
     wildNote: 'Base values. Regular enemies get tougher every minute; bosses don\'t.',
@@ -86,12 +88,23 @@ export const siteEn: SiteMessages = {
     boss: (at: string) => `Boss at ${at}`,
     bossChance: (at: string, percent: number) => `Boss at ${at} (${n(percent)}% chance)`,
     trio: (at: string, trio: string) => `Boss at ${at} in runs that draw the ${trio} trio (1 in 3)`,
-    rift: (from: string) => `Behind a legendary rift, from ${from} (optional arena)`,
+    rift: (from: string) => `In its domain, behind a legendary rift, from ${from} (optional)`,
+    place: (name: string, from: string) => `Lives in the ${name}, from ${from} (optional place)`,
+    placeBoss: (name: string, from: string) => `Breaks out of the Odd Keystone in the ${name}, from ${from}`,
+    places: { cave: 'Dark Cave', graveyard: 'Haunted Graveyard', sky: 'sky above the clouds (Flying types only)' },
     reaper: (at: string) => `The endless mode's reaper, from ${at}`,
     attacks: 'Attacks',
     shinyNote: 'Can show up shiny (1 in 450): an elite with 8x HP.',
+    riftShinyNote: (odds: number) => `Can show up shiny in 1 of ${n(odds)} rifts: it pays double ₽ plus another Poké Ball.`,
     summoned: (by: string) => `Called in by ${by}`,
+    retinue: (by: string) => `In ${by}'s domain, behind a legendary rift`,
     behavior: 'Behavior',
+    legendMode: 'Legend Mode',
+    capture: (need: number) => (need === 1 ? 'Beat it once as a boss, in any mode, and it becomes playable in Legend Mode (its own ranking, a tougher horde, awakenings at Lv 12 and 28).' : `Beat it ${need} times as a boss, in any mode, and it becomes playable in Legend Mode (its own ranking, a tougher horde, awakenings at Lv 12 and 28).`),
+    captureLast: 'The last trophy: it can only be caught in endless mode, once the other 22 legendaries are caught.',
+    captureShiny: 'Beating a shiny one on the catching win, or after, unlocks its shiny.',
+    innate: (name: string) => `Innate (always on): ${name}`,
+    opens: (move: string) => `Starts with ${move}`,
   },
 
   traits: {
@@ -102,6 +115,7 @@ export const siteEn: SiteMessages = {
       kamikaze: 'Kamikaze',
       beam: 'Beam',
       leaper: 'Leaper',
+      spitter: 'Spitter',
     },
     effects: {
       healer: (every: number, percent: number) => `Every ${n(every)}s, a green pulse heals ${n(percent)}% of the max HP of wounded allies nearby.`,
@@ -114,6 +128,8 @@ export const siteEn: SiteMessages = {
       beam: (aim: number, damage: number) => `Stops, draws the beam's line on the ground for ${n(aim)}s and fires: ${n(damage)}x its contact damage.`,
       leaper: (warn: number, damage: number) =>
         `Leaps over the horde to where you stood. The shadow on the ground marks the landing ${n(warn)}s ahead, and the impact deals ${n(damage)}x its contact damage.`,
+      spitter: (charge: number, damage: number) =>
+        `Keeps its distance, glows for ${n(charge)}s and spits a slow shot at where you stand: ${n(damage)}x its contact damage. Its type shapes the shot: a fireball, a bubble, sludge that leaves a puddle, a fast spark or three seeds.`,
     },
     tips: {
       healer: 'Take it down first, or the horde keeps topping up.',
@@ -122,6 +138,7 @@ export const siteEn: SiteMessages = {
       kamikaze: 'Get out of the red circle, or lure it into the horde: the blast hurts enemies too.',
       beam: 'The aim locks when the line shows up: one step aside is enough.',
       leaper: 'Get off the shadow before it lands.',
+      spitter: 'The shot is slow: one step aside is enough. Standing still is what it wants.',
     },
   },
 
@@ -132,6 +149,33 @@ export const siteEn: SiteMessages = {
     ring: (count: number, every: number, damage: number) => `Ring of ${count} projectiles every ${n(every)}s (${damage} damage)`,
     trail: (ttl: number, damage: number) => `Leaves a harmful trail for ${n(ttl)}s (${damage} damage)`,
     stance: { close: 'Up close', ranged: 'At range' },
+    path: (count: number, every: number, damage: number) =>
+      `${count} marked strikes along your path, from where you stand to where you're heading, every ${n(every)}s (${damage} damage)`,
+    leap: (every: number, damage: number) => `Leaps onto you, a circle marking where it lands, every ${n(every)}s (${damage} damage)`,
+    volley: (count: number, every: number, damage: number) =>
+      `Volley of ${count} ${s(count, 'projectile', 'projectiles')} aimed at you, with aim lines before it fires, every ${n(every)}s (${damage} damage)`,
+    far: 'if you keep away',
+    below: (percent: number) => `under ${n(percent)}% HP`,
+    from: { normal: 'on every difficulty', hard: 'on Hard and Nightmare', nightmare: 'on Nightmare only' },
+    beam: (count: number, every: number, damage: number) => `${count > 1 ? `${count} beams` : 'A beam'} out of itself, its line blinking first, every ${n(every)}s (${damage} damage)`,
+    lances: (count: number, every: number, damage: number) => `${count} parallel lances across the screen, the gaps between them safe, every ${n(every)}s (${damage} damage)`,
+    dash: (count: number, every: number, damage: number) => `Charges down a marked lane${count > 1 ? `, ${count} in a row` : ''}, every ${n(every)}s (${damage} damage)`,
+    dive: (every: number, damage: number) => `Vanishes while its shadow chases you; it stops and it lands there, every ${n(every)}s (${damage} damage)`,
+    teleport: (every: number, damage: number) => `Teleports and lands on a marked circle, every ${n(every)}s (${damage} damage)`,
+    blast: (safe: BlastSafe, damage: number) =>
+      `A blast over everything (${damage} damage), except ${({ cover: 'behind a rock', dry: 'on the islands', near: 'right next to it', far: 'far from it', spots: 'in the marked shelters' } satisfies Record<BlastSafe, string>)[safe]}`,
+    cage: (every: number, damage: number) => `Shuts you in a circle of flames or rocks, every ${n(every)}s (${damage} damage)`,
+    closing: (count: number, every: number, damage: number) => `Ring of ${count} projectiles closing on you, with one way out, every ${n(every)}s (${damage} damage)`,
+    summon: (every: number) => `Calls helpers every ${n(every)}s`,
+    phase: (i: number, percent: number) => (i === 0 ? 'Phase 1' : `Phase ${i + 1} (under ${n(percent)}% HP)`),
+    ultimate: (move: string, every: number) => `Ultimate ${move}, every ${n(every)}s:`,
+    reborn: (i: number, percent: number) => `Phase ${i + 1} (rises from its ashes with ${n(percent)}% HP)`,
+    swoop: (count: number, every: number, damage: number) => `Swoops down a marked lane${count > 1 ? `, ${count} times` : ''}, every ${n(every)}s (${damage} damage)`,
+    whirlpool: (count: number, every: number, damage: number) => `${count > 1 ? `${count} whirlpools pull` : 'A whirlpool pulls'} you toward the eye, every ${n(every)}s (${damage} damage in the eye)`,
+    gust: (count: number, every: number, damage: number) => `Fan of ${count} gusts that shove you, every ${n(every)}s (${damage} damage)`,
+    timeStop: (every: number, duration: number) => `Stops time: your attacks freeze in mid-air for ${n(duration)}s, every ${n(every)}s`,
+    phantoms: (count: number, every: number, damage: number) => `${count} ${s(count, 'copy streaks', 'copies streak')} down a marked lane through where you stand, one after another, every ${n(every)}s (${damage} damage)`,
+    guard: (names: string, every: number) => `Raises a barrier linked to ${names}: while one stands, it takes no damage (back ${n(every)}s after the last one falls)`,
   },
 
   trios: {
@@ -171,12 +215,12 @@ export const siteEn: SiteMessages = {
   },
 
   guide: {
-    title: 'How to play Pokémon Survivors: complete guide',
+    title: 'How to play Pokémon World: complete guide',
     description:
-      'Pokémon Survivors guide: keyboard, gamepad and phone controls, how a run works, levels, moves, move evolutions with held items, the special attack, types and status, bosses, shinies, map items, map events and the Poké Mart.',
+      'Pokémon World guide: keyboard, gamepad and phone controls, how a run works, levels, moves, move evolutions with held items, the special attack, types and status, bosses, shinies, map items, map events and the Poké Mart.',
     h1: 'How to play',
     intro:
-      'Pokémon Survivors is a Vampire Survivors-style roguelite: you only move, and your Pokémon attacks on its own. This guide explains everything that happens in a run, with the game\'s numbers.',
+      'Pokémon World is a Vampire Survivors-style roguelite: you only move, and your Pokémon attacks on its own. This guide explains everything that happens in a run, with the game\'s numbers.',
     toc: 'In this guide',
     sections: {
       controls: 'Controls',
@@ -190,7 +234,10 @@ export const siteEn: SiteMessages = {
       bosses: 'Bosses',
       traits: 'Special enemies',
       rifts: 'Legendary rifts and endless mode',
+      places: 'Places: the cave, the graveyard and the sky',
+      landmarks: 'Landmarks on the map',
       megas: 'Mega Evolution',
+      legends: 'Legend Mode',
       shinies: 'Shinies',
       eggs: 'Eggs and the incubator',
       items: 'Map items',
@@ -224,7 +271,7 @@ export const siteEn: SiteMessages = {
       paragraphs: (minutes: number, starters: number) => [
         `Pick one of ${starters} starters, Kanto to Paldea. Each one has its own stats, starting move, learnset and special attack (see the Pokédex).`,
         `Walk around and dodge: your moves fire on their own as their cooldowns come back. Survive ${minutes} minutes of ever bigger hordes. At the end Mewtwo shows up, and beating it wins the run. After that you can keep going in endless mode.`,
-        'If your HP hits zero the run is over (unless you are holding a Revive, or are in a rift’s arena, which just casts you back out). The Poké Dollars you picked up go to your wallet.',
+        'If your HP hits zero the run is over (unless you are holding a Revive, or are in a rift’s arena or a place, which just send you back out to the map). The Poké Dollars you picked up go to your wallet.',
       ],
       scaling: (rows: readonly (readonly [string, string, string])[]) =>
         `Regular enemies get tougher every minute (bosses don't): ${rows.map(([at, hp, dmg]) => `at ${at}, ${hp}x HP and ${dmg}x damage`).join('; ')}.`,
@@ -264,6 +311,15 @@ export const siteEn: SiteMessages = {
         'Type items (Charcoal, Mystic Water…) only show up if your Pokémon learns moves of that type. When there is nothing left to offer, you get an Oran Berry (+40 HP).',
         'Reroll (draw new offers) and Skip (pass on a level up without picking anything, handy when no offer fits) are charges bought in the Poké Mart.',
       ],
+      choices: (rarePercent: number, shinyOneIn: number) => [
+        'A run starts with a draft: with the clock stopped, you pick your 2nd move out of 3 from your Pokémon’s list.',
+        'Every base move splits into two paths at Lv 4 and Lv 7: the card says "2 paths" and, once picked, opens into both. Each path changes how the move plays (bouncing, exploding, leaving a trail, echoing…), not just its numbers.',
+        `Every card rolls a rarity: a rare one (${n(rarePercent)}% chance, blue frame) gives 2 levels at once, and a shiny one (1 in ${shinyOneIn}, twice as often with the Shiny Charm) is a free pick, followed by another.`,
+        'Forget takes an offer out of the run: the card flies off, the slot is rerolled and that move or item never comes back. Charges come from the Poké Mart’s Escape Rope, every boss beaten and every evolution.',
+        'The move list grows with your Pokémon: each evolution unlocks new moves (a toast shows which), and they show up more often for the next 3 level ups. There are more moves than slots, so every run leaves some out.',
+        'Beaten bosses drop a TM with a move from outside the learnset, the Move Tutor teaches moves that suit your type, and clearing a rift offers the legendary’s own move (one per run). With every slot full, learning one asks you to forget a move.',
+      ],
+      abilities: 'At its first evolution, your Pokémon awakens an Ability: pick 1 of 3 (the third is the Hidden Ability), and it lasts the whole run. Eevee, Snorunt, Scyther, Charcadet, Kirlia and Poliwhirl also ask what to evolve into, and each form has its own type, special, moves and Abilities.',
       evolution: (first: number, second: number) =>
         `Your Pokémon evolves at Lv ${first} and Lv ${second}, just like on the handhelds. Each evolution adds HP and stats, and the final one powers up the special attack.`,
       itemsTitle: 'Held items',
@@ -280,6 +336,20 @@ export const siteEn: SiteMessages = {
       itemHead: 'Item',
       resultHead: 'Evolution',
       noEvolution: (moves: string) => `No evolution yet: ${moves}.`,
+      neverEvolves: 'Signature, TM, legendary and duo moves don’t evolve: they are already a final move and grow along their own paths.',
+      duoTitle: 'Duo moves',
+      duoParagraphs: [
+        'Take two moves to max level (or evolve them) and, if their types make one of the recipes below, a golden card offers to fuse them into a duo move: it takes the first one’s slot, frees the second’s and grows up to Lv 5. The two moves it used never come back.',
+        'Recipes go by type, so they work with any Pokémon. A run fits only 1 duo move, and the Poké Ball never fuses moves on its own.',
+      ],
+      duoTypesHead: 'Types',
+      duoHead: 'Duo move',
+      cursedTitle: 'Cursed items',
+      cursedParagraphs: (minutes: number, chance: number, max: number) => [
+        `From ${minutes.toLocaleString('en-US')} min on, a locked chest has a ${Math.round(chance * 100)}% chance to hide a cursed item: very strong, but with a price. You choose to take it or leave it. It takes no item slot, stays until the run ends, and you can hold up to ${max}.`,
+      ],
+      cursedUpHead: 'Upside',
+      cursedDownHead: 'Price',
     },
     special: {
       paragraphs: (min: number) => [
@@ -300,16 +370,36 @@ export const siteEn: SiteMessages = {
       statusHead: 'Status',
       movesHead: 'Inflicted by',
       effectHead: 'Effect',
-      names: { burn: 'Burn', poison: 'Poison', paralysis: 'Paralysis', slow: 'Slow', sleep: 'Sleep' },
+      names: { burn: 'Burn', poison: 'Poison', paralysis: 'Paralysis', slow: 'Slow', sleep: 'Sleep', freeze: 'Freeze', mark: 'Mark', confuse: 'Confusion', seed: 'Seed', weaken: 'Weakened' },
       effects: {
         burn: (attack: number) => `Damage over time. Burned enemies deal only ${n(attack * 100)}% contact damage.`,
         poison: (stacks: number) => `Damage over time that stacks up to ${stacks}x.`,
         paralysis: (boss: number) => `Freezes the enemy for a moment, then it stutters now and then. Lasts ${n(boss * 100)}% as long on bosses.`,
         slow: (boss: number) => `Slows down anything close. Lasts ${n(boss * 100)}% as long on bosses.`,
         sleep: (seconds: number, boss: number) => `Enemies on screen fall asleep for ${seconds}s. Lasts ${n(boss * 100)}% as long on bosses.`,
+        freeze: (shatter: number, boss: number) => `Freezes the enemy in place. The next hit deals ${shatter}x damage and breaks the ice. Lasts ${n(boss * 100)}% as long on bosses.`,
+        mark: (stacks: number) => `A marked enemy takes more damage from every hit, stacking up to ${stacks}x.`,
+        confuse: () => 'The enemy wanders aimlessly and hurts the enemies it bumps into. Bosses are immune.',
+        seed: (heal: number, jumps: number) => `Damage over time that heals you for ${n(heal * 100)}% of it. When the enemy faints, the seed jumps to ${jumps} neighbors.`,
+        weaken: (boss: number) => `Mud in the eyes: the enemy deals less contact damage. On bosses it lasts ${n(boss * 100)}% as long.`,
       },
       flute: 'Poké Flute (map item)',
       itemsNote: 'King\'s Rock raises the status chance, Toxic Orb raises burn and poison damage, and Light Clay makes statuses last longer.',
+    },
+    legends: {
+      paragraphs: (m: { count: number; awaken: readonly number[] }) => [
+        `All ${m.count} legendaries in the game can be caught and played in Legend Mode. To catch one, beat it as a boss, in any mode: every win before the catch, it breaks free of the Poké Ball and the game keeps count (Kyogre broke free… 2/3); on the win that completes it, it's caught and shows up in the Legendaries tab of the partner select. Beating a shiny one on the catching win, or on any win after, unlocks its shiny.`,
+        `In Legend Mode the legendary doesn't evolve: it awakens at Lv ${m.awaken[0]} and Lv ${m.awaken[1]} (an Ability, power and a Forget charge; Kyogre and Groudon turn Primal, Rayquaza turns Mega), starts with its legendary move and an innate ability that's always on, and the horde comes tougher (Pressure). Latias, Latios and Mewtwo Mega Evolve with the Mega Stone and the MEGA button, like everyone else, and Deoxys's special swaps its Forme (Normal, Attack, Defense, Speed). A run lasts as long as ever, all three difficulties still apply and the mode has its own ranking, split by difficulty: on the rankings, the Standard | Legendary row switches boards.`,
+        'The legendaries on the map (the run’s trio, the rare mythical beside Mewtwo, Mewtwo at the end and Arceus in endless mode) make an entrance with a title card and fight in three phases, building to an ultimate with a marked safe spot. When one falls, the capture plays right there in a quick scene; rift legendaries are caught at the end of their domain. A legendary never faces itself: the rifts, the trio and the mythical skip the one you play, and a Mewtwo takes on the Mewtwo Clone at the end.',
+      ],
+      legendHead: 'Legendary',
+      whereHead: 'Where to beat it',
+      winsHead: 'Wins',
+      innateHead: 'Innate',
+      opensHead: 'Legendary move',
+      pressureTitle: 'Difficulties in Legend Mode',
+      pressure: 'Pressure stacks on every difficulty: these are Legend Mode’s multipliers.',
+      where: { rift: 'Legendary rift', trio: 'Legendary trio', mythical: 'Beside Mewtwo (1 in 10)', finale: 'Final boss', endless: 'Endless mode, last of all' },
     },
     megas: {
       paragraphs: (m) => [
@@ -323,16 +413,18 @@ export const siteEn: SiteMessages = {
     },
     rifts: {
       paragraphs: (r) => [
-        `From ${r.first}, roughly every ${n(r.every)} minutes, a legendary rift opens off screen, with a purple arrow on the edge pointing at it. It stays open for ${r.portal}s. If a boss is alive when it's due, it waits up to ${r.bossWait}s for the boss to fall, so every run gets 3 rifts, even when bosses take a while.`,
-        `Stepping in is optional: stand inside the rift for ${n(r.enter)}s. It takes you to the arena of a legendary from another generation, each with its own shape and terrain: islands in shallow water, pillars for cover, a pool whose tide rises, lava rivers with bridges, an edge that falls away, an island ringed by surf, a meteor in space. You have ${r.arena}s to win; if time runs out the rift collapses and throws you back with no reward. Fainting in the arena doesn’t end the run either: the rift casts you back onto the map with ${r.fallHp}% HP, no reward, and your Revive stays in the Bag.`,
-        'The run clock keeps ticking inside, but the horde outside freezes and nothing new spawns. When you come back, enemies are stronger because time passed, and any events you missed arrive at once.',
+        `Every run has 2 legendary rifts: one around ${r.first} and another around ${r.second}. Each one starts with an omen: the legendary's weather takes over the sky (pouring rain, harsh sun, a gale, a storm, a rainbow, a meteor shower, time stumbling) and a huge tear opens in the air off screen, with a purple arrow on the edge pointing at it. It stays open for ${r.portal}s. If a boss is alive when it's due, the rift waits up to ${r.bossWait}s for the boss to fall, so both rifts come even when bosses take a while.`,
+        `Stepping in is optional: stand inside the tear for ${n(r.enter)}s. Each legendary has its own domain (table below), and first comes the crossing: a place bigger than the screen, heading north, with the Pokémon that serve the legendary coming at you and a threat closing in from behind (the tide, a wall of lava, floors crumbling away, time coming apart) that hurts whoever lags. At the end, the way back seals, the camera travels to the legendary and it arrives with a title card and its own theme.`,
+        `The battle has three phases, marked on the HP bar. Each phase transforms the arena (the cavern floods into islands, lava rises in channels, the top of the Sky Pillar falls into the sky) and builds to an ultimate, always telegraphed and with a marked safe spot: behind a rock, on an island, in the gap between beams, under Ho-Oh's wings. Standing still doesn't work: attacks land where you stand. Latias and Latios fight together, and Deoxys swaps Formes every phase. If the battle runs past about ${n(r.battle)} minutes, the domain collapses and throws you back with no reward.`,
+        `Once beaten, the legendary kneels and you throw the Poké Ball: every win counts toward catching it (see Legend Mode). Fainting inside doesn't end the run: the rift casts you back onto the map with ${r.fallHp}% HP, no reward, and your Revive stays in the Bag. The run clock stops inside; the horde outside freezes and nothing new spawns until you come back.`,
         `The reward is worth the risk: lots of EXP, two bags of ₽ on top of the boss shower, extra Poké Balls, a Rare Candy, a Super Potion and half your HP back. In 1 of ${r.shiny} rifts the legendary is shiny and pays double ₽ plus another Poké Ball.`,
       ],
+      domainHead: 'Domain',
       legendHead: 'Legendary',
       typesHead: 'Types',
       hpHead: 'Base HP',
       attacksHead: 'Attacks',
-      hpNote: (percent) => `Base HP is the first rift's, at 3:30. After that, the legendary's HP and contact damage grow with the clock: +${n(percent)}% HP per minute. Every rift brings a different legendary.`,
+      hpNote: (percent) => `Base HP is the first rift's, at 4:00. After that, the legendary's HP and contact damage grow with the clock: +${n(percent)}% HP per minute. Every rift brings a different legendary.`,
       endlessTitle: 'Endless mode',
       endless: (e) => [
         'After you beat Mewtwo, the victory screen offers to keep going in endless mode. If you don\'t want to, you leave with the regular victory, and the bonus is paid right away.',
@@ -341,10 +433,67 @@ export const siteEn: SiteMessages = {
         `Time survived is the main score: every minute past 15:00 pays ₽${n(e.perMinute)} in the bonus, and every defeated Arceus another ₽${e.reaperBonus}.`,
       ],
     },
+    landmarks: {
+      paragraphs: (p) => [
+        `The map has landmarks, placed from the run's seed like mountains and lakes: at most one per ${p.block}×${p.block} stretch of the map (${p.odds}% of them have one), always dressed for the biome the run is in. As you come close, a wooden sign names it in the corner of the screen.`,
+        `Four of them keep a treasure: stand next to it for ${p.open}s to open it. Each opens once per run, and a glint marks the ones still closed. The tunnel has no treasure but it's a shortcut: stand in one of its mouths for ${p.tunnel}s and you come out of the other, on the far side of the ridge, while the horde loses track of you.`,
+        `Between them, bushes, fallen logs and lone rocks and trees. All of it blocks whoever walks (the horde too), but flying Pokémon, ghosts and bosses go over it.`,
+      ],
+      names: { cottage: 'Abandoned Cottage', tunnel: 'Mine Tunnel', maze: 'Hedge Maze', ruins: 'Unown Ruins', camp: 'Abandoned Camp' },
+      placeHead: 'Landmark',
+      whatHead: "What's there",
+      lootHead: 'Treasure',
+      what: {
+        cottage: 'A stone cottage without its roof: walk in through the door. Windows, a fireplace, an old bed and a crate in the corner, and a well in the yard.',
+        tunnel: 'A long ridge with a mine mouth at each end, rails and an ore cart.',
+        maze: 'Tall hedges with a single way to the chest at the heart. Walkers get lost in the dead ends; you don’t have to.',
+        ruins: 'Standing stones carved with Unown glyphs in a ring, an altar in the middle and fallen columns.',
+        camp: 'A tent, logs around a fire still burning and a forgotten backpack.',
+      },
+      noLoot: 'Shortcut: in one mouth, out the other',
+      loot: (l) =>
+        [l.coins, l.items > 0 ? (l.items === 1 ? 'an item' : `${l.items} items`) : '', l.berries > 0 ? `${l.berries} Oran Berries` : '', l.xp > 0 ? `Exp. Candy (about ${l.xp}% of a level)` : '', l.egg > 0 ? `a ${l.egg}% chance of an egg` : '']
+          .filter(Boolean)
+          .join(', '),
+    },
+    places: {
+      paragraphs: (p: { first: string; every: number; bossWait: number; open: number; enter: string; rescue: number }) => [
+        `From ${p.first}, about every ${n(p.every)} minutes, the entrance to a place shows up off screen, with an arrow on the edge pointing at it: a cave’s mouth in a hill, a graveyard’s gate or an updraft between standing stones. It stays open for ${p.open}s and, if a boss is alive, waits up to ${p.bossWait}s for it to fall. A run shows different places before any repeats.`,
+        `Going in is optional: stand ${p.enter}s in the doorway. Inside, the world waits, as in a rift: the horde freezes and nothing new spawns, but the run clock keeps going. Each place has its own Pokémon, which get stronger as the run goes on, and a time limit; when it runs out, you come back out the way you went in. Fainting inside doesn’t end the run: a rescue team takes you back to the door with ${p.rescue}% of your HP, without the reward and with your Revive kept.`,
+      ],
+      names: { cave: 'Dark Cave', graveyard: 'Haunted Graveyard', sky: 'Above the Clouds' },
+      placeHead: 'Place',
+      timeHead: 'Time',
+      speciesHead: 'Who lives there',
+      seconds: (s: number) => `${s}s`,
+      cave: (c: { floors: number; light: number; fire: number; electric: number; time: number; wind: string; house: number; egg: number }) => [
+        `Dark Cave, a Mystery Dungeon: ${c.floors} floors of rooms and corridors in the dark, laid out anew on each visit, then the treasure chamber. You only see a circle of light around your Pokémon (${c.light} px); Fire types carry a flame (${c.fire} px) and Electric types use Flash (${c.electric} px). Crystals glow in the rooms, and Pokémon out in the dark show only their eyes.`,
+        `Find each floor’s stairs, which glow in the dark, and head down; items and ₽ lie on the floor. In the treasure chamber the chest is guarded by a Monster House of ${c.house} Pokémon (one more every 2 minutes of the run): stand next to it to open it. It pays ₽, a Poké Ball, a Rare Candy and a Super Potion, with a ${c.egg}% chance of an egg.`,
+        `As in the games, a wind warns three times (with ${c.wind} left) and, at ${c.time}s, blows you out of the cave.`,
+      ],
+      graveyard: (g: { spirits: number; time: number; shiny: number; hp: string; egg: number }) => [
+        `Haunted Graveyard: only ghosts live there, and they rise from the graves. They float through the headstones; you don’t. Every ghost you defeat sends its spirit into the Odd Keystone in the middle of the graveyard.`,
+        `With ${g.spirits} spirits the keystone cracks and Spiritomb breaks out (${g.hp} HP at 1:30, more as the clock runs; 1 in ${g.shiny} is shiny). Beating it pays ₽, a Poké Ball, a Rare Candy and a Super Potion, heals 30% of your HP and has a ${g.egg}% chance of an egg. At ${g.time}s dawn breaks and the ghosts fade, Spiritomb beaten or not.`,
+      ],
+      sky: (s: { time: number; tailwind: number; every: number; flock: number }) => [
+        `Above the Clouds: only a Flying-type Pokémon can ride the updraft up, and it doesn’t even show up for those who can’t fly. Up there you fly with a tailwind (+${s.tailwind}% speed), only flying Pokémon come and a flock crosses the sky every ${s.flock}s.`,
+        `Every ${s.every}s a wing drifts in on the wind and across the sky: grab it before it’s gone. Each wing raises a stat for the rest of the run. At ${s.time}s the wind calms and you glide back down.`,
+      ],
+      wingHead: 'Wing',
+      effectHead: 'Effect',
+      wings: {
+        healthWing: (n: number) => `+${n} max HP`,
+        muscleWing: (n: number) => `+${n}% damage`,
+        resistWing: (n: number) => `+${n} defense`,
+        swiftWing: (n: number) => `+${n} speed`,
+        prettyWing: (n: number) => `₽${n} on the spot`,
+      },
+    },
     bosses: {
       paragraphs: (r) => [
         'Bosses arrive at fixed times. Legendaries make an entrance with a screen flash, their cry and a banner. All of them get an HP bar at the top and their own attacks: marked circles on the ground show where a hit will land, so step out of them.',
         `Each boss switches between two ways of fighting every ${r.stance[0]} to ${r.stance[1]} seconds: up close, it rushes in and slams the area around itself; at range, it stops a few steps away and aims at you. Under ${n(r.below * 100)}% HP it enrages (red outline, cry and a screen flash): ${n(Math.round((r.speed - 1) * 100))}% faster, ${n(Math.round((1 - r.wait) * 100))}% less time between attacks and, ${n(r.chain * 100)}% of the time, a second attack right after the first.`,
+        `Standing still doesn't work: every boss aims where you stand or along the path you're taking, and running far away earns you a leap or an aimed volley. Enraging also unlocks a new attack. On Hard bosses attack ${n(Math.round((1 - r.press.hard.pace) * 100))}% more often, with ${n(Math.round((r.press.hard.more - 1) * 100))}% more projectiles and slightly shorter warnings, and chain ${n(r.press.hard.chain * 100)}% of the time when enraged; on Nightmare, ${n(Math.round((1 - r.press.nightmare.pace) * 100))}% more often, ${n(Math.round((r.press.nightmare.more - 1) * 100))}% more projectiles, ${n(r.press.nightmare.chain * 100)}% chains and one extra attack each. The legendaries on the map (the trio, the mythical, Mewtwo and Arceus) fight in three phases, ticked on the HP bar: each phase brings a new way to move (flying with a shadow, charges, teleports, cages) and the last one an ultimate with a marked safe spot (shelters, the gap between lances, a ring's way out, far from or right next to the boss). From Hard up, Mewtwo's last phase also leaps and fires wide volleys.`,
         'Bosses don\'t get tougher over time, and each one drops a Poké Ball and a shower of Poké Dollars.',
         `For each boss's first ${r.window}s, while it's nearby, only ${n(r.fight * 100)}% of the regular enemies spawn, so the fight is with it; then the horde comes back. Each boss has until the next one arrives: if it's still standing when the next boss shows up, it flees and leaves nothing behind. Mewtwo is the last one: it blasts the horde away when it arrives and, while it stands, only ${n(r.finale * 100)}% of the regular enemies spawn, so the fight is about dodging its attacks.`,
       ],
@@ -381,7 +530,7 @@ export const siteEn: SiteMessages = {
         `Bosses, locked chests and rifts sometimes leave an egg, at most ${perRun} per run. It goes to the incubator, which has ${slots} slots. Every ${stepPx} px walked in a run counts as a step, and every egg in the incubator walks along. An egg found mid-run already counts the steps taken after it.`,
         `Once an egg is ready, it hatches when you leave the run or in the incubator (in the main menu and in the Eggs tab of the Pokémon select). Families you don't have yet come out ${weight}x more often. The hatchling has a 1 in ${shiny} chance to be shiny, and then it stays shiny in every run.`,
         'A duplicate, or an egg found with the incubator full, becomes Poké Dollars. A player who never had an egg is sure to get the first one.',
-        "The Friendship Egg never drops in runs: it comes as a Mystery Gift when you sign up through someone's invite, and when a friend you invited plays 3 verified runs. Only Munchlax hatches from it. At 3 friends you get the Ambassador title and an exclusive frame, and at 10, a shiny Munchlax.",
+        "The Friendship Egg never drops in runs: it comes as a Mystery Gift when you sign up through someone's invite, and when a friend you invited finishes 3 runs. Only Munchlax hatches from it. At 3 friends you get the Ambassador title and an exclusive frame, at 5 an Ultra rare egg, and at 10 a shiny Dratini. Your link and each friend's progress are on the Invite friends card, on the home screen.",
       ],
       tierHead: 'Egg',
       stepsHead: 'Steps',
@@ -394,8 +543,10 @@ export const siteEn: SiteMessages = {
         boss: 'Onix, Snorlax and the legendary trio',
         chest: 'Locked chest',
         rift: 'A rift legendary',
+        place: "The cave's chest and Spiritomb, in the graveyard",
         final: 'Mewtwo and the rare mythical (Mew, Celebi or Jirachi)',
         reaper: 'Arceus, in endless mode',
+        mission: 'Field mission: the defended nest (Normal / Hard / Nightmare)',
       },
     },
     items: {
@@ -459,6 +610,17 @@ export const siteEn: SiteMessages = {
         how: (ttl: number) => `Runs from you and escapes after ${ttl}s. Your moves can hit it.`,
         reward: (jackpot: string) => `A coin with every hit, and the Pay Day (${jackpot}) if it faints.`,
       },
+      tutor: {
+        name: 'Move Tutor',
+        how: (from: number, until: number) => `Pitches a tent once between minutes ${from} and ${until} (sometimes once more). Stand in its ring.`,
+        reward: (price: string) => `Teaches 1 of 2 moves that suit your Pokémon's type and that it doesn't learn on its own (never a Water move for Grovyle). The first lesson is free; the next costs ${price} of the run's money.`,
+      },
+      field: {
+        name: 'Field missions',
+        how: (first, gap) =>
+          `From ${first} on, one at a time, every ${gap} min or so, a walk away and against the clock: defend an egg in its nest from a raid (stay in the ring), find lost Poké Balls scattered around, or lead a lost Togepi back to its nest. Ignoring one costs nothing.`,
+        reward: "A level of rare cards (on Nightmare the first one is shiny), ₽ and the mission's prize: a shot at an egg, an item and a heal.",
+      },
     },
     mart: {
       paragraphs: (coins: readonly number[], minute: number, kills: number, victory: number) => [
@@ -502,18 +664,18 @@ export const siteEn: SiteMessages = {
   },
 
   changelog: {
-    title: 'Pokémon Survivors changelog: every update',
+    title: 'Pokémon World changelog: every update',
     description:
-      'Everything that changed in Pokémon Survivors, update by update: starters, legendary bosses, shinies, move evolutions, the Poké Mart, the mobile version and more.',
+      'Everything that changed in Pokémon World, update by update: starters, legendary bosses, shinies, move evolutions, the Poké Mart, the mobile version and more.',
     h1: 'Changelog',
-    intro: 'The game\'s update history, newest first. Each entry links to the pull request with the details on GitHub.',
-    pr: (n: number) => `PR #${n}`,
+    intro: 'Everything that changed in the game, update by update, newest first. Each one opens with its highlights.',
+    changes: (n: number) => `All changes (${n})`,
   },
 
   support: {
-    title: 'Support Pokémon Survivors | Donate by card, Apple Pay or Google Pay',
+    title: 'Support Pokémon World | Donate by card, Apple Pay or Google Pay',
     description:
-      'Pokémon Survivors is free, with no ads and nothing for sale. If you want to help pay for the servers, donate by card, Apple Pay or Google Pay from any country (Stripe), or by Pix or a Brazilian card from Brazil (AbacatePay). With an account, donors get a cosmetic thank-you in the game: a title, a card frame, a badge, a shiny of their choice and a companion.',
+      'Pokémon World is free, with no ads and nothing for sale. If you want to help pay for the servers, donate by card, Apple Pay or Google Pay from any country (Stripe), or by Pix or a Brazilian card from Brazil (AbacatePay). With an account, donors get a cosmetic thank-you in the game: a title, a card frame, a badge, a shiny of their choice and a companion.',
     h1: 'Support the project',
     lead: 'The game is free and will stay that way, with no ads and nothing for sale. If you had fun and want to help pay for the servers (accounts, rankings and the Daily Challenge), any amount helps. As a thank-you, donors with an account get cosmetic rewards in the game, nothing that changes a run.',
     thanks: 'Thank you for your support! ♥',
@@ -572,9 +734,9 @@ export const siteEn: SiteMessages = {
   },
 
   legal: {
-    title: 'Legal, privacy and credits | Pokémon Survivors',
+    title: 'Legal, privacy and credits | Pokémon World',
     description:
-      'Pokémon Survivors is an unofficial, free fan game with no ads and no purchases. Licenses (MIT code, CC BY-NC 4.0 sprites), privacy (optional accounts with a public ranking profile; as a guest, nothing leaves your device), credits and contact.',
+      'Pokémon World is an unofficial, free fan game with no ads and no purchases. Licenses (MIT code, CC BY-NC 4.0 sprites), privacy (optional accounts with a public ranking profile; as a guest, nothing leaves your device), credits and contact.',
     h1: 'Legal, privacy and credits',
     sections: {
       fanGame: 'Unofficial fan game',
@@ -584,7 +746,7 @@ export const siteEn: SiteMessages = {
       contact: 'Contact and takedown requests',
     },
     fanGame: [
-      'Pokémon Survivors is an unofficial, non-commercial fan game made by fans for fans by Pedro Barretto.',
+      'Pokémon World is an unofficial, non-commercial fan game made by fans for fans by Pedro Barretto.',
       'It is not affiliated with, endorsed, sponsored or approved by Nintendo, The Pokémon Company, GAME FREAK inc., Creatures Inc. or Spike Chunsoft.',
       'Pokémon and Pokémon character names are trademarks of Nintendo. Pokémon © Nintendo, Creatures Inc. and GAME FREAK inc. All other trademarks belong to their respective owners.',
     ],
@@ -608,8 +770,8 @@ export const siteEn: SiteMessages = {
       nonCommercial: 'Because the sprites are CC BY-NC, the game as a whole can\'t be used commercially.',
     },
     privacy: [
-      'Playing as a guest is the default and needs no sign-up: that way the game has no cookies, ads or trackers, and collects no personal data.',
-      'Everything the game remembers lives in your browser\'s localStorage, on your device. As a guest, none of it is sent to any server:',
+      'Playing as a guest is the default and needs no sign-up: the game has no cookies or ads and never asks for personal data such as your name or email.',
+      'Everything the game remembers lives in your browser\'s localStorage, on your device. As a guest, none of it is sent to any server, except the random id in ph_ps, which goes with the usage statistics (below):',
     ],
     storage: {
       'ps:save': 'Poké Dollars, the upgrades bought in the Poké Mart, the in-game Pokédex (species seen, how many you defeated and which you caught), the eggs in the incubator (eggs), the Pokémon hatched (hatched), mission progress, achievements, records (like Pokémon defeated and your longest survival) and the title you picked.',
@@ -618,11 +780,12 @@ export const siteEn: SiteMessages = {
       'ps:muted': 'Only if you played an older version: the mute flag from before Settings existed. The game only reads it and no longer writes it.',
       'ps:account': 'Only if you sign in: which account is signed in on this device (its id, your name and your username) and the last version of your progress it synced.',
       'ps:runs': 'Only with an account: run results that have not reached the ranking yet (for example, while offline). They leave as soon as the server gets them.',
+      ph_ps: 'A random id for this device, which PostHog uses to count runs and errors (below). It says nothing about who you are.',
     },
     account: [
       'Accounts are optional and keep your progress in the cloud so you can continue on another device. Sign-in is with Google, handled by Clerk (clerk.com), which gets your name, email and picture from Google and uses its own cookies to keep you signed in. The game never sees your password.',
       'With an account, a copy of ps:save is kept on our server, tied to your account id. It is sent when you sign in, when you open the game and at the end of every run. Our server keeps the account id, your progress, when it was created and last used and what the ranking needs (below), not your email.',
-      'With an account, every run also goes to the ranking: the Pokémon, the difficulty, the time survived, the level, how many enemies you defeated, whether you won and the game version, with when the run started and ended, tied to your account id. Guest runs never reach the ranking. The replay of the run goes along (its seed and the inputs you gave, nothing personal), which the server plays again to check the result and deletes once checked.',
+      'With an account, every run also goes to the ranking: the Pokémon, the difficulty, the time survived, the level, how many enemies you defeated, whether you won and the game version, with when the run started and ended, tied to your account id. Guest runs never reach the ranking. The replay of the run goes along (its seed and the inputs you gave, nothing personal), which the server may play again to check the result. It is deleted once checked, or as soon as the server decides not to check the run.',
       'Your profile is public. When you sign in you pick a display name and a unique username, which goes in your profile link. Anyone, with or without an account, can see on the ranking and on your profile: those two names, your equipped title, your records per difficulty, your Pokédex progress, your recent runs and how many followers you have and how many you follow. Your email and picture never show. Who you follow and who follows you is kept on the server; the profile only shows the counts.',
       'Signing out keeps your progress on this device. To delete your account, your profile, your ranked runs and the progress kept in it, ask through the contact below.',
     ],
@@ -630,6 +793,7 @@ export const siteEn: SiteMessages = {
       'To delete this data, clear the site data in your browser settings.',
       'Sprites, sounds and fonts are served by this site, with no calls to third-party services. The site is hosted on Vercel which, like any web server, may log technical access data (such as IP addresses) to run and protect the service.',
       'To know how many people visit and play, the site uses Vercel Web Analytics and its own Umami instance, on our own server. They count visits anonymously and in aggregate (page, country, browser, device and referring site) and, in Umami\'s case, a summary of each run (starter Pokémon, the minute and level you reached and whether you won), with no cookies and without identifying you or following you across sites.',
+      'In the game we also use PostHog (posthog.com, with data stored in the United States) to understand how it is played and to fix bugs. It receives a summary of each run (Pokémon, difficulty, moves, items, the minute and level you reached and how it ended), which menu screens you open and, when the game hits an error, the error message and the replay of the run in progress (its seed and your inputs, nothing personal). All of it is tied to the random id in ph_ps and, if you signed in, to your account id and username, never to your email or name. PostHog uses no cookies here and does not follow you across sites.',
       'Donations are paid on AbacatePay\'s pages (abacatepay.com: Pix and Brazilian cards) or Stripe\'s (stripe.com: cards from other countries, Apple Pay and Google Pay). Your payment details go straight to them, and the game never sees your card. They show us the amount and, as they would to anyone receiving a payment, details of who paid (such as name and email), which we use for nothing but recording the donation. If you give an @ (or redeem the donation\'s code), it\'s tied to that game account so the rewards reach it; the amount is never shown publicly, only the supporter badge, which you can hide.',
     ],
     contact: [

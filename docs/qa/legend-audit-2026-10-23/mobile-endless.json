@@ -1,0 +1,36 @@
+{
+  "coordinates": "world pixels; x right, y down; view centered on player",
+  "phase": "playing",
+  "mode": "legend",
+  "time": 0.11666666666666665,
+  "starter": "articuno",
+  "awakening": 0,
+  "biome": "meadow",
+  "player": {
+    "x": 0,
+    "y": 0,
+    "hp": 135,
+    "level": 1,
+    "stage": 0,
+    "moves": [
+      {
+        "id": "snowscape",
+        "level": 1,
+        "cooldown": 0.2833333333333334,
+        "path": 0
+      },
+      {
+        "id": "swift",
+        "level": 1,
+        "cooldown": 0.08333333333333337,
+        "path": 0
+      }
+    ]
+  },
+  "ability": null,
+  "stance": null,
+  "specialCooldown": 0,
+  "kills": 1,
+  "enemies": [],
+  "menu": "Lv 1\n1\n1\n00:00\n1\n₽ 0\n무한 +00:00\n프리져\nLv1\nHP\n눈숨기\n135/135\n필살기\n울트라 레어 알을 발견했다! 부화기로 들어간다.\n뮤츠 포획 실패… 1/5\n4번 더 쓰러뜨리면 포획할 수 있어요."
+}
