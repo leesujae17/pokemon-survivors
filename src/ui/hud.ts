@@ -72,7 +72,7 @@ export const createHud = (root: HTMLElement, onSpecial: () => void, onMega: () =
   /** The boss whose phase ticks the bar shows (`BOSS_PHASES`), so they're laid once per boss. */
   let ticked: string | null = null
   const portrait = h('img', { class: 'status-portrait', alt: '' })
-  const shinyBadge = h('img', { class: 'shiny-badge hidden', src: sparkleIcon(), alt: 'Shiny' })
+  const shinyBadge = h('img', { class: 'shiny-badge hidden', src: sparkleIcon(), alt: t().title.shiny })
   const name = h('div', { class: 'status-name' })
   const level = h('div', { class: 'status-level' })
   const hpFill = h('div', { class: 'hp-fill' })
@@ -153,9 +153,9 @@ export const createHud = (root: HTMLElement, onSpecial: () => void, onMega: () =
         buffFills.push(fill)
         return h('div', { class: 'buff' }, h('img', { src: consumableIcon(b.id), alt: '' }), h('div', { class: 'buff-bar' }, fill))
       }),
-      ...(g.revives > 0 ? [h('div', { class: 'buff revive', title: 'Revive' }, h('img', { src: consumableIcon('revive'), alt: '' }))] : []),
+      ...(g.revives > 0 ? [h('div', { class: 'buff revive', title: localName('Revive') }, h('img', { src: consumableIcon('revive'), alt: '' }))] : []),
       // Cursed items stay for the run, in their purple frame.
-      ...g.curses.held.map((id) => h('div', { class: 'buff cursed', title: `${CURSES[id].name}: ${t().curses[id].downside}` }, h('img', { src: curseIcon(id), alt: '' }))),
+      ...g.curses.held.map((id) => h('div', { class: 'buff cursed', title: `${localName(CURSES[id].name)}: ${t().curses[id].downside}` }, h('img', { src: curseIcon(id), alt: '' }))),
     )
   }
 

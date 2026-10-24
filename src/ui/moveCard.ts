@@ -65,7 +65,7 @@ const evolutionLine = (g: Game, id: MoveId, level: number) => {
       h('span', { class: 'card-evo-label' }, m.moveCard.evolvedFrom),
       h('span', { class: 'card-req met' }, h('img', { src: moveIcon(from.from), alt: '' }), localName(MOVES[from.from].name)),
       '+',
-      h('span', { class: 'card-req met' }, h('img', { src: itemIcon(from.item), alt: '' }), ITEMS[from.item].name),
+      h('span', { class: 'card-req met' }, h('img', { src: itemIcon(from.item), alt: '' }), localName(ITEMS[from.item].name)),
     )
   }
   const evo = evolutionOf(id)
@@ -78,7 +78,7 @@ const evolutionLine = (g: Game, id: MoveId, level: number) => {
     h('span', { class: 'card-evo-label' }, m.moveCard.evolves, maxed && held && h('b', {}, m.levelUp.ready)),
     h('span', { class: maxed ? 'card-req met' : 'card-req' }, m.level(maxMoveLevel(id))),
     '+',
-    h('span', { class: held ? 'card-req met' : 'card-req' }, h('img', { src: itemIcon(evo.item), alt: '' }), ITEMS[evo.item].name),
+    h('span', { class: held ? 'card-req met' : 'card-req' }, h('img', { src: itemIcon(evo.item), alt: '' }), localName(ITEMS[evo.item].name)),
     h('span', { class: 'card-evo-to' }, '→', h('span', { class: 'card-req to' }, h('img', { src: moveIcon(evo.to), alt: '' }), localName(MOVES[evo.to].name))),
   )
 }
@@ -98,7 +98,7 @@ export const moveCard = (g: Game, id: MoveId, { level, from, path, describe = fa
       h(
         'div',
         { class: 'card-title' },
-        h('b', {}, def.name),
+        h('b', {}, localName(def.name)),
         // Evolved moves keep leveling: the star says where they came from.
         h('span', { class: 'tag' }, evolved && `${m.moveCard.evolved} · `, m.moveCard.level(level, maxMoveLevel(id))),
       ),

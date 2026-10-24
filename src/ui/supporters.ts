@@ -170,7 +170,7 @@ const shinyPicker = (root: HTMLElement, input: Input, actions: { play: (id: Play
       h(
         'div',
         { class: 'dialog box pop supporters pick-reveal' },
-        h('div', { class: 'portrait-wrap' }, h('img', { class: 'result-portrait', src: portraitUrl(def.line[0].dex, true), alt: '' }), h('img', { class: 'shiny-badge', src: sparkleIcon(), alt: 'Shiny' })),
+        h('div', { class: 'portrait-wrap' }, h('img', { class: 'result-portrait', src: portraitUrl(def.line[0].dex, true), alt: '' }), h('img', { class: 'shiny-badge', src: sparkleIcon(), alt: t().title.shiny })),
         h('p', { class: 'hatch-text' }, rich(m.picked(localName(def.line[0].name))), h('small', {}, m.pickedNote)),
         h('div', { class: 'buttons' }, ...buttons),
       ),

@@ -1,0 +1,164 @@
+{
+  "results": [
+    {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "cards": 2189,
+      "fork": "Lv 1\n3\n1\n00:00\n0\n₽ 0\nCharmander\nLv1\nHP\n90/90\n불꽃세례 Lv 4 · 강화 방향 선택\n추적 불꽃\n불씨가 적을 추적; 쿨타임 10% 감소\n불씨 자취\n불타는 지대를 남기지만 비행 속도 감소\n\n눌러서 선택 · 길게 눌러 기술 확인",
+      "tm": "Lv 1\n4\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n프리져: 기술머신을 남겼어요!\n\n원래 배울 수 없는 기술이에요. 배울까요?\n\n냉동빔\n신규!\nTM\n가까운 적에게 직선 얼음 광선을 쏴요. 동결시키면 다음 공격이 2배로 들어가며 얼음을 깨뜨려요.\n두고 가기\n\n터치해서 선택",
+      "learned": "Lv 1\n4\n1\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n드래그해서 이동\n필살기\n필살기\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!",
+      "state": {
+        "coordinates": "world pixels; x right, y down; view centered on player",
+        "phase": "playing",
+        "mode": "normal",
+        "time": 0.6166666666666669,
+        "starter": "charmander",
+        "awakening": null,
+        "biome": "meadow",
+        "player": {
+          "x": 0,
+          "y": 0,
+          "hp": 90,
+          "level": 1,
+          "stage": 0,
+          "moves": [
+            {
+              "id": "ember",
+              "level": 4,
+              "cooldown": 0.7833333333333328,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "fireSpin",
+              "level": 1,
+              "cooldown": 2.9833333333333347,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "iceBeam",
+              "level": 1,
+              "cooldown": 0.25,
+              "path": 0
+            }
+          ]
+        },
+        "ability": null,
+        "stance": null,
+        "specialCooldown": 0,
+        "kills": 0,
+        "enemies": [],
+        "menu": "Lv 1\n4\n1\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n드래그해서 이동\n필살기\n필살기\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!"
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "touch": true,
+      "cards": 2189,
+      "fork": "Lv 1\n3\n1\n00:00\n0\n₽ 0\nCharmander\nLv1\nHP\n90/90\n불꽃세례 Lv 4 · 강화 방향 선택\n추적 불꽃\n불씨가 적을 추적; 쿨타임 10% 감소\n불씨 자취\n불타는 지대를 남기지만 비행 속도 감소",
+      "tm": "Lv 1\n4\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n프리져: 기술머신을 남겼어요!\n\n원래 배울 수 없는 기술이에요. 배울까요?\n\n냉동빔\n신규!\nTM\n가까운 적에게 직선 얼음 광선을 쏴요. 동결시키면 다음 공격이 2배로 들어가며 얼음을 깨뜨려요.\n얼음\n두고 가기",
+      "learned": "Lv 1\n4\n1\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n드래그해서 이동\n필살기\n필살기\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!",
+      "state": {
+        "coordinates": "world pixels; x right, y down; view centered on player",
+        "phase": "playing",
+        "mode": "normal",
+        "time": 0.6166666666666669,
+        "starter": "charmander",
+        "awakening": null,
+        "biome": "meadow",
+        "player": {
+          "x": 0,
+          "y": 0,
+          "hp": 90,
+          "level": 1,
+          "stage": 0,
+          "moves": [
+            {
+              "id": "ember",
+              "level": 4,
+              "cooldown": 0.7833333333333328,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "dragonBreath",
+              "level": 1,
+              "cooldown": 0.8833333333333341,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "iceBeam",
+              "level": 1,
+              "cooldown": 0.25,
+              "path": 0
+            }
+          ]
+        },
+        "ability": null,
+        "stance": null,
+        "specialCooldown": 0,
+        "kills": 0,
+        "enemies": [],
+        "menu": "Lv 1\n4\n1\n1\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n드래그해서 이동\n필살기\n필살기\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!"
+      }
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "touch": false,
+      "cards": 2189,
+      "fork": "Lv 1\n3\n1\nSPACE\n00:00\n0\n₽ 0\nCharmander\nLv1\nHP\n90/90\n불꽃세례 Lv 4 · 강화 방향 선택\nA\n추적 불꽃\n불씨가 적을 추적; 쿨타임 10% 감소\nB\n불씨 자취\n불타는 지대를 남기지만 비행 속도 감소\n\n↑ ↑ 선택 · ENTER 확인 · 1-2 단축키",
+      "tm": "Lv 1\n4\n1\nSPACE\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n프리져: 기술머신을 남겼어요!\n\n원래 배울 수 없는 기술이에요. 배울까요?\n\n1\n냉동빔\n신규!\nTM\n가까운 적에게 직선 얼음 광선을 쏴요. 동결시키면 다음 공격이 2배로 들어가며 얼음을 깨뜨려요.\n얼음\n두고 가기\n\n↑ ↓ 선택 · ENTER 확인",
+      "learned": "Lv 1\n4\n1\n1\nSPACE\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!",
+      "state": {
+        "coordinates": "world pixels; x right, y down; view centered on player",
+        "phase": "playing",
+        "mode": "normal",
+        "time": 0.6166666666666669,
+        "starter": "charmander",
+        "awakening": null,
+        "biome": "meadow",
+        "player": {
+          "x": 0,
+          "y": 0,
+          "hp": 90,
+          "level": 1,
+          "stage": 0,
+          "moves": [
+            {
+              "id": "ember",
+              "level": 4,
+              "cooldown": 0.7833333333333328,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "willOWisp",
+              "level": 1,
+              "cooldown": 6.083333333333335,
+              "path": 0,
+              "walkedAt": 0
+            },
+            {
+              "id": "iceBeam",
+              "level": 1,
+              "cooldown": 0.25,
+              "path": 0
+            }
+          ]
+        },
+        "ability": null,
+        "stance": null,
+        "specialCooldown": 0,
+        "kills": 0,
+        "enemies": [],
+        "menu": "Lv 1\n4\n1\n1\nSPACE\n00:00\n0\n₽ 0\n파이리\nLv1\nHP\n90/90\n터검니가 대량발생했다!\n오늘은 훨씬 자주 나타나고, 이로치도 마찬가지예요.\n냉동빔 기술을 배웠어요!"
+      }
+    }
+  ],
+  "errors": []
+}

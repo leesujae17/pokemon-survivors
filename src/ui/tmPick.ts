@@ -63,7 +63,7 @@ const tmCard = (g: Game, offer: Extract<Offer, { kind: 'tm' }>, i: number) => {
     h(
       'div',
       { class: 'offer-body' },
-      h('div', { class: 'offer-name' }, def.name, h('span', { class: isNew ? 'tag tag-new' : 'tag' }, tag), offer.source !== 'tutor' && h('span', { class: 'tag tag-tm' }, m.tm.tag)),
+      h('div', { class: 'offer-name' }, localName(def.name), h('span', { class: isNew ? 'tag tag-new' : 'tag' }, tag), offer.source !== 'tutor' && h('span', { class: 'tag tag-tm' }, m.tm.tag)),
       h('div', { class: 'offer-desc' }, isNew ? m.moves[offer.id].description : tmLine(offer.id, offer.level)),
     ),
     typeBadge(def.type),
@@ -79,7 +79,7 @@ const forgetCard = (g: Game, offer: Extract<Offer, { kind: 'forget' }>, i: numbe
     { class: 'tm-forget-move', style: `--type:${TYPE_COLORS[def.type]};--i:${i}` },
     h('span', { class: 'offer-key' }, i + 1),
     h('img', { src: moveIcon(offer.id), alt: '' }),
-    h('span', { class: 'tm-forget-name' }, def.name, h('small', {}, t().level(owned?.level ?? 1))),
+    h('span', { class: 'tm-forget-name' }, localName(def.name), h('small', {}, t().level(owned?.level ?? 1))),
     typeBadge(def.type),
   )
 }

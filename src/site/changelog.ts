@@ -27,6 +27,19 @@ export type ChangelogUpdate = {
  */
 export const CHANGELOG: readonly ChangelogUpdate[] = [
   {
+    date: '2026-10-24',
+    title: { pt: 'Tradução coreana durante a partida', en: 'Complete Korean in-game text', es: 'Textos de la partida en coreano', ko: '성장 메뉴와 전투 메시지 한국어 개선' },
+    highlights: [
+      { pt: 'Os nomes e efeitos de todas as melhorias e ramificações agora estão em coreano.', en: 'Every upgrade and fork now has Korean names and effect descriptions.', es: 'Todas las mejoras y ramificaciones tienen nombres y efectos en coreano.', ko: '모든 기술의 레벨별 강화 효과와 분기 이름·설명을 한국어로 표시해요.' },
+      { pt: 'MTs, itens amaldiçoados, missões de campo e exploração receberam tradução.', en: 'TMs, cursed items, field missions and exploration messages are translated.', es: 'Se tradujeron las MT, los objetos malditos y los mensajes de misiones y exploración.', ko: '기술머신, 저주받은 도구, 현장 미션과 탐험 알림의 영문을 한국어로 바꿨어요.' },
+      { pt: 'Avisos, cartões e dicas mostram os nomes coreanos de Pokémon, golpes e itens.', en: 'Alerts, cards and tooltips use Korean Pokémon, move and item names.', es: 'Los avisos, tarjetas y descripciones muestran los nombres coreanos de Pokémon, movimientos y objetos.', ko: '알림과 카드, 상세 정보에 포켓몬·기술·도구 이름이 영어로 섞이지 않도록 고쳤어요.' },
+    ],
+    changes: [{
+      title: { pt: 'Cobertura de tradução', en: 'Translation coverage', es: 'Cobertura de traducción', ko: '번역 누락 방지' },
+      notes: [{ pt: 'As verificações cobrem os textos das melhorias, ambas as ramificações, mensagens dinâmicas e nomes dos dados de jogo. As regras e valores de combate não mudaram.', en: 'Checks cover all upgrades, both fork choices, dynamic messages and gameplay names. Combat rules and values are unchanged.', es: 'Las comprobaciones cubren mejoras, ambas ramificaciones, mensajes dinámicos y nombres del juego. Las reglas y los valores de combate no cambiaron.', ko: '강화 문구와 양쪽 분기, 동적으로 생성되는 메시지, 게임 데이터 이름을 검사해 번역 누락을 찾도록 했어요. 전투 규칙과 수치는 그대로예요.' }],
+    }],
+  },
+  {
     date: '2026-10-23',
     title: { pt: 'Modo Lendário no Pokémon World', en: 'Legend Mode in Pokémon World', es: 'Modo Legendario en Pokémon World', ko: '포켓몬 월드에 찾아온 전설의 포켓몬' },
     highlights: [

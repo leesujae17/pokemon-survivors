@@ -27,7 +27,7 @@ const entryRow = (e: BoardEntry, me: boolean) =>
     'button',
     { class: `rank-row${me ? ' me' : ''}${e.rank <= 3 ? ` top${e.rank}` : ''}` },
     h('span', { class: 'rank-pos' }, `#${e.rank}`),
-    h('img', { src: runPortrait(e), alt: runForm(e).name, title: runForm(e).name }),
+    h('img', { src: runPortrait(e), alt: localName(runForm(e).name), title: localName(runForm(e).name) }),
     h('span', { class: 'rank-who' }, h('b', {}, e.name, supporterBadge(e.supporter)), h('small', {}, `@${e.handle}`, me && ` · ${t().ranking.you}`)),
     h('span', { class: 'rank-time' }, h('b', {}, formatTime(e.time)), h('small', {}, t().ranking.outcomes[e.outcome])),
   )
@@ -50,7 +50,7 @@ const pokemonSelect = (mode: RunMode, value: PlayableId | null, onPick: (id: Pla
   const groups =
     mode === 'legend'
       ? [h('optgroup', { label: m.legendGroup }, ...LEGEND_IDS.map(option))]
-      : [...REGIONS.map((r) => h('optgroup', { label: r.name }, ...r.starters.map(option))), h('optgroup', { label: m.eggGroup }, ...HATCHLING_IDS.map(option))]
+      : [...REGIONS.map((r) => h('optgroup', { label: localName(r.name) }, ...r.starters.map(option))), h('optgroup', { label: m.eggGroup }, ...HATCHLING_IDS.map(option))]
   const select = h('select', { class: 'rank-select', 'aria-label': m.pokemon }, h('option', { value: '' }, m.allPokemon), ...groups)
   select.addEventListener('change', () => {
     // Back to the game's keys: the arrows move through the board again.
@@ -122,7 +122,7 @@ export const rankingScreen = (root: HTMLElement, input: Input, onClose: () => vo
     nav?.off()
     el.classList.add('hidden')
     const difficulty = tab === 'challenge' ? dailyChallenge(challengeDay(day)).difficulty : filter.difficulty
-    const run = e.run ? { id: e.run, pokemon: runForm(e).name, time: e.time, difficulty } : null
+    const run = e.run ? { id: e.run, pokemon: localName(runForm(e).name), time: e.time, difficulty } : null
     sub = reportDialog(root, input, { handle: e.handle, name: e.name, run }, () => {
       sub = null
       el.classList.remove('hidden')

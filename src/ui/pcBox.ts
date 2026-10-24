@@ -114,7 +114,7 @@ export const pcBoxScreen = (root: HTMLElement, input: Input, actions: PcActions,
       return
     }
     name.classList.remove('empty')
-    name.replaceChildren(h('small', {}, `#${String(e.dex).padStart(4, '0')}`), localName(e.name), h('img', { src: sparkleIcon(), alt: 'Shiny' }))
+    name.replaceChildren(h('small', {}, `#${String(e.dex).padStart(4, '0')}`), localName(e.name), h('img', { src: sparkleIcon(), alt: t().title.shiny }))
     types.replaceChildren(...e.types.map(typeBadge))
   }
 

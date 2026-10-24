@@ -1,3 +1,4 @@
+import { localName } from '../i18n/names'
 import { accountState, accountsEnabled, linkDiscord, onAccountChange, type AccountState } from '../account'
 import { playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
@@ -61,7 +62,7 @@ export const discordScreen = (root: HTMLElement, input: Input, onClose: () => vo
         status.kind === 'linked' && h('p', { class: 'account-line discord-linked' }, h('b', {}, `✓ ${m.connected(status.name)}`)),
         status.kind === 'link' && line(m.linkPitch, 'account-note'),
         status.kind === 'guest' && line(m.guestPitch, 'account-note'),
-        unlinked && h('p', { class: 'account-line discord-gift' }, h('img', { src: gift.src, alt: '' }), rich(m.gift(HATCHLINGS[DISCORD_GIFT.family].name))),
+        unlinked && h('p', { class: 'account-line discord-gift' }, h('img', { src: gift.src, alt: '' }), rich(m.gift(localName(HATCHLINGS[DISCORD_GIFT.family].name)))),
         status.kind === 'busy' && line(m.busy, 'blink'),
         failed && line(m.failed, 'account-error'),
         h('div', { class: 'buttons account-buttons' }, ...buttons),

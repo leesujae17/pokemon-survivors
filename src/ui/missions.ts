@@ -39,7 +39,7 @@ export const missionText = (goal: MissionGoal, target: number) => {
 export const achievementGoal = (id: AchievementId) => {
   const a = t().achievements
   const def: AchievementDef = ACHIEVEMENTS[id]
-  if (def.stat === 'region') return a.region(REGIONS.find((r) => r.gen === def.gen)?.name ?? '')
+  if (def.stat === 'region') return a.region(localName(REGIONS.find((r) => r.gen === def.gen)?.name ?? ''))
   return a.goals[def.stat](def.stat === 'coins' ? formatPokeDollars(def.target) : formatNumber(def.target))
 }
 

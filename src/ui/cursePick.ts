@@ -1,3 +1,4 @@
+import { localName } from '../i18n/names'
 import { playSfx } from '../engine/audio'
 import type { Input } from '../engine/input'
 import { CURSES } from '../data/curses'
@@ -52,7 +53,7 @@ export const cursePick = (root: HTMLElement, input: Input, g: Game, onChoose: (o
       h('div', { class: 'dialog-title' }, m.curse.title),
       h('p', { class: 'curse-sub' }, m.curse.subtitle),
       h('div', { class: 'curse-art' }, h('span', { class: 'curse-aura', 'aria-hidden': 'true' }), h('img', { src: curseIcon(id), alt: '' })),
-      h('div', { class: 'curse-name' }, CURSES[id].name),
+      h('div', { class: 'curse-name' }, localName(CURSES[id].name)),
       h('p', { class: 'curse-line up' }, h('b', {}, '▲'), text.upside),
       h('p', { class: 'curse-line down' }, h('b', {}, '▼'), text.downside),
       h('p', { class: 'curse-note' }, m.curse.note),

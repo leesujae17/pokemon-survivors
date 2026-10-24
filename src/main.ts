@@ -284,7 +284,7 @@ const queueMega = () => {
 }
 
 /** The player's name right now: its stage's, or its Mega form's while that lasts. */
-const playerName = (g: Game) => (g.mega.active > 0 && heldMega(g)?.name) || localName(playerForm(g).name)
+const playerName = (g: Game) => localName((g.mega.active > 0 && heldMega(g)?.name) || playerForm(g).name)
 
 /** Classes every screen shares, which say nothing about which one it is. */
 const SCREEN_CLASSES = new Set(['screen', 'shell', 'dim', 'pop', 'hidden'])
@@ -875,7 +875,7 @@ const abilityFeedback = (g: Game, id: AbilityId, moment: 'picked' | 'proc') => {
 }
 
 /** The move or item a Poké Ball held, by its official name. */
-const offerName = (offer: Offer) => (offer.kind === 'move' ? MOVES[offer.id].name : offer.kind === 'item' ? localName(ITEMS[offer.id].name) : '')
+const offerName = (offer: Offer) => (offer.kind === 'move' ? localName(MOVES[offer.id].name) : offer.kind === 'item' ? localName(ITEMS[offer.id].name) : '')
 
 const offerLabel = (offer: Extract<GameEvent, { kind: 'pokeball' }>['offer']) => {
   const m = t().toast
@@ -1071,19 +1071,19 @@ const handleEvent = (r: Run, e: GameEvent) => {
     case 'moveEvolved':
       playSfx('evolve')
       playCry(playerCry(g), 0.3)
-      return toast(ui, rich(t().toast.moveEvolved(MOVES[e.from].name, MOVES[e.to].name), { class: 'toast-evo' }), 3500)
+      return toast(ui, rich(t().toast.moveEvolved(localName(MOVES[e.from].name), localName(MOVES[e.to].name)), { class: 'toast-evo' }), 3500)
     case 'duoFused':
       playSfx('duoFuse')
       playCry(playerCry(g), 0.3)
       return toast(
         ui,
-        h('span', { class: 'item-toast toast-duo' }, h('img', { src: moveIcon(e.to), alt: '' }), rich(t().duo.fused(MOVES[e.from[0]].name, MOVES[e.from[1]].name, MOVES[e.to].name))),
+        h('span', { class: 'item-toast toast-duo' }, h('img', { src: moveIcon(e.to), alt: '' }), rich(t().duo.fused(localName(MOVES[e.from[0]].name), localName(MOVES[e.from[1]].name), localName(MOVES[e.to].name)))),
         3800,
       )
     case 'curse': {
       // The chest's choice has its own screen; Life Orb and Flame Orb bite quietly (the purple number says it).
       if (e.moment === 'found' || e.moment === 'recoil') return
-      const line = e.moment === 'taken' ? t().curse.taken(CURSES[e.id].name) : t().curse.left(CURSES[e.id].name)
+      const line = e.moment === 'taken' ? t().curse.taken(localName(CURSES[e.id].name)) : t().curse.left(localName(CURSES[e.id].name))
       return toast(ui, h('span', { class: 'item-toast toast-curse' }, h('img', { src: curseIcon(e.id), alt: '' }), rich(line)), 3000)
     }
     case 'pokeball':
@@ -1102,15 +1102,15 @@ const handleEvent = (r: Run, e: GameEvent) => {
       return
     case 'tmLearned': {
       const m = t().tm
-      const name = MOVES[e.move].name
+      const name = localName(MOVES[e.move].name)
       playSfx('levelUp')
       playCry(playerCry(g), 0.35)
-      const text = e.forgot ? m.learnedInstead(MOVES[e.forgot].name, name) : e.level > 1 ? m.raised(name, e.level) : m.learned(name)
+      const text = e.forgot ? m.learnedInstead(localName(MOVES[e.forgot].name), name) : e.level > 1 ? m.raised(name, e.level) : m.learned(name)
       return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: moveIcon(e.move), alt: '' }), rich(text)), 3200, 'tm')
     }
     case 'tmMastered':
       playSfx('coin')
-      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: moveIcon(e.move), alt: '' }), rich(t().tm.mastered(MOVES[e.move].name, formatPokeDollars(e.coins)))), 3000)
+      return toast(ui, h('span', { class: 'item-toast' }, h('img', { src: moveIcon(e.move), alt: '' }), rich(t().tm.mastered(localName(MOVES[e.move].name), formatPokeDollars(e.coins)))), 3000)
     case 'banish':
       // The level-up screen plays the toss itself.
       return
@@ -1175,8 +1175,8 @@ const handleEvent = (r: Run, e: GameEvent) => {
       playSfx('thunder')
       // Rayquaza's Air Lock ends what Kyogre or Groudon stirred up earlier in the run.
       const calmed = e.enemy === 'rayquaza' ? g.rift.met.find((l) => l === 'kyogre' || l === 'groudon') : undefined
-      const nod = calmed ? ` ${t().rifts.calms(ENEMIES[calmed].name)}` : ''
-      return toast(ui, rich(lines ? `${lines.omen}${nod} ${t().rifts.omen(ENEMIES[e.enemy].name)}` : t().rifts.omenFaint), 4200)
+      const nod = calmed ? ` ${t().rifts.calms(localName(ENEMIES[calmed].name))}` : ''
+      return toast(ui, rich(lines ? `${lines.omen}${nod} ${t().rifts.omen(localName(ENEMIES[e.enemy].name))}` : t().rifts.omenFaint), 4200)
     }
     case 'riftEnter': {
       const def = ENEMIES[e.enemy]
@@ -1206,12 +1206,12 @@ const handleEvent = (r: Run, e: GameEvent) => {
     }
     case 'bossUltimate':
       playSfx('legendary')
-      return toast(ui, h('span', { class: 'toast-ultimate' }, `${e.move}!`), 2400, 'ultimate')
+      return toast(ui, h('span', { class: 'toast-ultimate' }, `${localName(e.move)}!`), 2400, 'ultimate')
     case 'riftCapture': {
       // A pair's capture throws a ball at each: the toast follows the one this event is for.
       const both = g.rift.arena?.domain?.capture
       const capture = both?.kind === e.enemy ? both : both?.partner?.kind === e.enemy ? both.partner : null
-      const name = ENEMIES[e.enemy].name
+      const name = localName(ENEMIES[e.enemy].name)
       if (showCapture(ui, e.enemy)) return
       if (capture && captureOutcome(capture) === 'caught') {
         playSfx('unlock')
@@ -1228,21 +1228,21 @@ const handleEvent = (r: Run, e: GameEvent) => {
     case 'pairDown':
       playSfx('quake')
       playCry(sprites(ENEMIES[e.partner].dex).cry, 0.9)
-      return toast(ui, rich(t().rifts.pairDown(ENEMIES[e.enemy].name, ENEMIES[e.partner].name)), 3600)
+      return toast(ui, rich(t().rifts.pairDown(localName(ENEMIES[e.enemy].name), localName(ENEMIES[e.partner].name))), 3600)
     case 'pairRevive':
       playSfx('evolve')
       playCry(sprites(ENEMIES[e.partner].dex).cry, 0.8)
-      return toast(ui, rich(t().rifts.pairRevive(ENEMIES[e.enemy].name, ENEMIES[e.partner].name)), 3200)
+      return toast(ui, rich(t().rifts.pairRevive(localName(ENEMIES[e.enemy].name), localName(ENEMIES[e.partner].name))), 3200)
     case 'bossGuard':
       playSfx(e.up ? 'legendary' : 'break')
-      return toast(ui, rich(e.up ? t().rifts.guardUp(ENEMIES[e.enemy].name) : t().rifts.guardDown), e.up ? 3400 : 2200)
+      return toast(ui, rich(e.up ? t().rifts.guardUp(localName(ENEMIES[e.enemy].name)) : t().rifts.guardDown), e.up ? 3400 : 2200)
     case 'legendTitle':
       playSfx('legendary')
       playCry(sprites(ENEMIES[e.enemy].dex, e.shiny).cry, 0.9)
       return flashScreen(ui)
     case 'bossCapture': {
       const capture = g.legendScene?.capture
-      const name = ENEMIES[e.enemy].name
+      const name = localName(ENEMIES[e.enemy].name)
       if (showCapture(ui, e.enemy)) return
       if (capture && captureOutcome(capture) === 'caught') {
         playSfx('unlock')
@@ -1255,7 +1255,7 @@ const handleEvent = (r: Run, e: GameEvent) => {
     case 'riftCleared': {
       playSfx('evolve')
       const partner = partnerOf(e.enemy)
-      const text = partner ? t().rifts.pairCleared(ENEMIES[e.enemy].name, ENEMIES[partner].name) : t().rifts.cleared(ENEMIES[e.enemy].name)
+      const text = partner ? t().rifts.pairCleared(localName(ENEMIES[e.enemy].name), localName(ENEMIES[partner].name)) : t().rifts.cleared(localName(ENEMIES[e.enemy].name))
       return toast(ui, rich(text, { class: 'toast-evo' }), 3500)
     }
     case 'riftFall':

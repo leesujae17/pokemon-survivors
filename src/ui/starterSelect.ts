@@ -118,7 +118,7 @@ export const starterSelect = (root: HTMLElement, input: Input, actions: SelectAc
       h('i', { style: `width:${sheet.fw}px;height:${sheet.fh}px;background-image:url(${sheet.url});transform:translateY(${((bodyH - 2 * footY) * scale) / 2}px) scale(${scale})` }),
     )
   }
-  const shinyTag = () => h('img', { class: 'partner-cell-shiny', src: sparkleIcon(), alt: 'Shiny' })
+  const shinyTag = () => h('img', { class: 'partner-cell-shiny', src: sparkleIcon(), alt: t().title.shiny })
   /** What a family's clear says (`game/clears.ts`): the hardest difficulty it beat Mewtwo on. */
   const clearText = (id: PlayableId) => {
     const level = save.clears[id]

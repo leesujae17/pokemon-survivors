@@ -87,7 +87,7 @@ export const challengeScreen = (root: HTMLElement, input: Input, actions: Challe
             'div',
             { class: 'challenge-id' },
             h('small', {}, m.day(formatDay(c.day))),
-            h('b', { class: 'challenge-name' }, localName(PLAYABLE[c.starter].name), shiny && h('img', { src: sparkleIcon(), alt: 'Shiny' })),
+            h('b', { class: 'challenge-name' }, localName(PLAYABLE[c.starter].name), shiny && h('img', { src: sparkleIcon(), alt: t().title.shiny })),
             h('div', { class: 'types' }, ...form.types.map(typeBadge), difficultyTag(c.difficulty)),
             h('small', { class: 'challenge-outbreak' }, m.outbreak(localName(ENEMIES[c.outbreak].name))),
           ),

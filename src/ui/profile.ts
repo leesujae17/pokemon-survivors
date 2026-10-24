@@ -47,7 +47,7 @@ const recordCell = (d: Difficulty, run: ProfileRun | undefined) =>
     'div',
     { class: run ? 'profile-record' : 'profile-record empty' },
     difficultyTag(d),
-    run ? h('img', { src: runPortrait(run), alt: runForm(run).name, title: runForm(run).name }) : null,
+    run ? h('img', { src: runPortrait(run), alt: localName(runForm(run).name), title: localName(runForm(run).name) }) : null,
     h('b', {}, run ? formatTime(run.time) : t().profile.noRecord),
   )
 
@@ -56,7 +56,7 @@ const recentRow = (run: ProfileRun) =>
     'div',
     { class: `profile-run ${run.outcome}` },
     h('img', { src: runPortrait(run), alt: '' }),
-    h('span', { class: 'profile-run-name' }, runForm(run).name),
+    h('span', { class: 'profile-run-name' }, localName(runForm(run).name)),
     difficultyTag(run.difficulty),
     h('b', {}, formatTime(run.time)),
     h('small', {}, `${t().ranking.outcomes[run.outcome]} · ${runDay(run.at)}`),

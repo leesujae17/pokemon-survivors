@@ -229,7 +229,7 @@ const offerView = (g: Game, offer: Offer) => {
       return { icon: itemIcon(offer.id), name: localName(ITEMS[offer.id].name), tag: isNew && !rare ? m.new : m.level(offer.level), isNew, desc, type: null, fork: false, mods: NO_MODS }
     }
     case 'berry':
-      return { icon: berryIcon(), name: 'Oran Berry', tag: '', isNew: false, desc: m.levelUp.berry(localName(PLAYABLE[g.starter].name)), type: null, fork: false, mods: NO_MODS }
+      return { icon: berryIcon(), name: localName('Oran Berry'), tag: '', isNew: false, desc: m.levelUp.berry(localName(PLAYABLE[g.starter].name)), type: null, fork: false, mods: NO_MODS }
     case 'evolution': {
       const to: MoveDef = MOVES[offer.to]
       const desc = m.levelUp.evolves(localName(MOVES[offer.from].name), m.moves[offer.to].description)
@@ -242,11 +242,11 @@ const offerView = (g: Game, offer: Offer) => {
     }
     // Cursed items, branches and abilities have screens of their own (`ui/cursePick.ts`, `ui/abilityPick.ts`); this is their plain row.
     case 'curse':
-      return { icon: curseIcon(offer.id), name: CURSES[offer.id].name, tag: offer.take ? m.curse.take : m.curse.leave, isNew: false, desc: m.curses[offer.id].upside, type: null, fork: false, mods: NO_MODS }
+      return { icon: curseIcon(offer.id), name: localName(CURSES[offer.id].name), tag: offer.take ? m.curse.take : m.curse.leave, isNew: false, desc: m.curses[offer.id].upside, type: null, fork: false, mods: NO_MODS }
     // Branches and abilities have screens of their own (`ui/abilityPick.ts`); this is their plain row.
     case 'form': {
       const b = BRANCHES[offer.id]
-      return { icon: portraitUrl(b.dex), name: b.name, tag: '', isNew: false, desc: m.branch.subtitle, type: b.types[0] ?? null, fork: false, mods: NO_MODS }
+      return { icon: portraitUrl(b.dex), name: localName(b.name), tag: '', isNew: false, desc: m.branch.subtitle, type: b.types[0] ?? null, fork: false, mods: NO_MODS }
     }
     case 'ability':
       return { icon: abilityIcon(offer.id), name: localName(ABILITIES[offer.id].name), tag: offer.hidden ? m.ability.hidden : '', isNew: offer.hidden, desc: m.abilities[offer.id], type: null, fork: false, mods: NO_MODS }
@@ -519,8 +519,8 @@ const statTable = (g: Game) => {
 
 /** Paired item hint for a loadout move: shows what it needs and whether it is ready. */
 const loadoutHint = (g: Game, id: MoveId) => {
-  if (evolvedFrom(id)) return h('span', { class: 'tag tag-new' }, '★ EVO')
-  if (isDuo(id)) return h('span', { class: 'tag tag-duo' }, '✦ DUO')
+  if (evolvedFrom(id)) return h('span', { class: 'tag tag-new' }, t().moveCard.evolved)
+  if (isDuo(id)) return h('span', { class: 'tag tag-duo' }, t().duo.tag)
   // A legendary's move never evolves: a gold star says where it came from.
   if (isLegendary(id)) return h('span', { class: 'tag tag-legendary' }, '★')
   const evo = evolutionOf(id)
@@ -840,7 +840,7 @@ export const results = (
         'div',
         { class: 'portrait-wrap' },
         h('img', { class: 'result-portrait', src: sprites(playerDex(g), g.player.shiny).portrait.src, alt: '' }),
-        g.player.shiny && h('img', { class: 'shiny-badge', src: sparkleIcon(), alt: 'Shiny' }),
+        g.player.shiny && h('img', { class: 'shiny-badge', src: sparkleIcon(), alt: t().title.shiny }),
       ),
       h('div', { class: 'dialog-title' }, victory ? m.victory : g.endless ? r.endlessOver(name) : m.fainted(name)),
       extras.badge,

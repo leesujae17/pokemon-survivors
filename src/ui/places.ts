@@ -1,3 +1,4 @@
+import { localName } from '../i18n/names'
 import { playCry, playSfx } from '../engine/audio'
 import { ENEMIES } from '../data/enemies'
 import { CAVE, GRAVEYARD, WINGS, type PlaceId } from '../data/places'
@@ -58,7 +59,7 @@ export const placeFeedback = (root: HTMLElement, place: PlaceId, notice: PlaceNo
       return toast(root, place === 'graveyard' ? m.dawnSoon : m.calmSoon, 2600, 'place')
     case 'wing':
       playSfx('item')
-      return toast(root, h('span', { class: 'item-toast' }, h('b', {}, WINGS[notice.wing].name), m.wings[notice.wing](wingAmount(notice.wing))), 2200, notice.wing)
+      return toast(root, h('span', { class: 'item-toast' }, h('b', {}, localName(WINGS[notice.wing].name)), m.wings[notice.wing](wingAmount(notice.wing))), 2200, notice.wing)
     case 'flock':
       return
     case 'landed':

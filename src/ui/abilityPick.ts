@@ -100,7 +100,7 @@ const branchCard = (g: Game, offer: Extract<Offer, { kind: 'form' }>, i: number)
     h('span', { class: 'offer-key' }, i + 1),
     favor && h('span', { class: 'evo-card-favor' }, h('img', { src: sparkleIcon(), alt: '' }), m.branch.favored(favor)),
     h('div', { class: 'evo-card-art' }, h('img', { class: 'evo-card-portrait', src: portraitUrl(def.dex, g.player.shiny), alt: '' })),
-    h('div', { class: 'evo-card-name' }, def.name),
+    h('div', { class: 'evo-card-name' }, localName(def.name)),
     h('div', { class: 'types' }, ...def.types.map(typeBadge)),
     h('div', { class: 'evo-card-stats' }, ...statLines(def.bonus).map((line) => h('span', {}, line))),
     h(

@@ -6,6 +6,7 @@ import { locale, type Locale } from '.'
  * names the Korean games never used (picked from Korean Pokémon GO and wiki usage).
  */
 const KO_EXTRA: Readonly<Record<string, string>> = {
+  'Mist Ball + Luster Purge': '미스트볼 + 라스트퍼지',
   'Health Wing': '체력날개',
   'Hyper Beam': '파괴광선',
   'Burn Up': '불사르기',
